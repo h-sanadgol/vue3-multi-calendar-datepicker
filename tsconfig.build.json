@@ -4,6 +4,7 @@
     "strict": false,
     "skipLibCheck": true,
     "noEmitOnError": false,
+    "module": "Node16",
     "moduleResolution": "node16",
     "isolatedModules": false
   },

@@ -1,7 +1,7 @@
 {
   "name": "@h-sanadgol/vue3-persian-datepicker",
   "description": "A datepicker component for select date (vue 3). This is a fork of @alireza-ab/vue3-persian-datepicker.",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "private": false,
   "files": [
     "dist/*",

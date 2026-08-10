@@ -61,54 +61,49 @@ app.mount('#app');
 
 ```html
 <template>
-  <DatePicker
-    v-model="date"
-    type="date"
-    :minute-step="5"
-    :hour-step="2"
-  />
+  <DatePicker v-model="date" type="date" :minute-step="5" :hour-step="2" />
 </template>
 ```
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `type` | `String` | `'date'` | Type of picker: `date`, `time`, or `datetime` |
-| `format` | `String` | `'YYYY-MM-DD'` | Format of the model value |
-| `inputFormat` | `String` | same as `type` | Format of the input value |
-| `displayFormat` | `String` | `'?D ?MMMM'` | Format shown in the footer |
-| `from` | `String` | `'1300'` | Start date of the picker |
-| `to` | `String` | `'1499'` | End date of the picker |
-| `mode` | `String` | `'range'` | Selection mode: `single` or `range` |
-| `locale` | `String` | `'fa'` | Locale: `fa`, `en`, `fa,en`, etc. |
-| `column` | `Number \| Object` | `{ 576: 1 }` | Number of columns |
-| `minuteStep` | `Number` | `1` | Step increment for minutes |
-| `hourStep` | `Number` | `1` | Step increment for hours |
-| `autoSubmit` | `Boolean` | `true` | Auto submit when selection is complete |
-| `clearable` | `Boolean` | `false` | Allow clearing the selected date |
-| `modal` | `Boolean` | `false` | Show picker as modal |
-| `show` | `Boolean` | `false` | Controlled visibility of picker |
-| `clickOn` | `String` | `'all'` | Trigger picker on: `all`, `input`, `icon`, `none` |
-| `label` | `String` | `undefined` | Label text |
-| `dualInput` | `Boolean` | `false` | Use two inputs for display |
-| `iconInside` | `Boolean` | `false` | Show icon inside input |
-| `shortcut` | `Boolean \| Object` | `false` | Shortcuts for quick selection |
-| `disable` | `Array \| String \| Function \| RegExp` | `undefined` | Disable specific dates/times |
-| `localeConfig` | `Object` | `undefined` | Custom locale configuration |
-| `styles` | `Object` | `undefined` | Custom styles |
-| `color` | `String` | `undefined` | Preset color: `red`, `green`, `blue`, etc. |
+| Prop            | Type                                    | Default        | Description                                       |
+| --------------- | --------------------------------------- | -------------- | ------------------------------------------------- |
+| `type`          | `String`                                | `'date'`       | Type of picker: `date`, `time`, or `datetime`     |
+| `format`        | `String`                                | `'YYYY-MM-DD'` | Format of the model value                         |
+| `inputFormat`   | `String`                                | same as `type` | Format of the input value                         |
+| `displayFormat` | `String`                                | `'?D ?MMMM'`   | Format shown in the footer                        |
+| `from`          | `String`                                | `'1300'`       | Start date of the picker                          |
+| `to`            | `String`                                | `'1499'`       | End date of the picker                            |
+| `mode`          | `String`                                | `'range'`      | Selection mode: `single` or `range`               |
+| `locale`        | `String`                                | `'fa'`         | Locale: `fa`, `en`, `fa,en`, etc.                 |
+| `column`        | `Number \| Object`                      | `{ 576: 1 }`   | Number of columns                                 |
+| `minuteStep`    | `Number`                                | `1`            | Step increment for minutes                        |
+| `hourStep`      | `Number`                                | `1`            | Step increment for hours                          |
+| `autoSubmit`    | `Boolean`                               | `true`         | Auto submit when selection is complete            |
+| `clearable`     | `Boolean`                               | `false`        | Allow clearing the selected date                  |
+| `modal`         | `Boolean`                               | `false`        | Show picker as modal                              |
+| `show`          | `Boolean`                               | `false`        | Controlled visibility of picker                   |
+| `clickOn`       | `String`                                | `'all'`        | Trigger picker on: `all`, `input`, `icon`, `none` |
+| `label`         | `String`                                | `undefined`    | Label text                                        |
+| `dualInput`     | `Boolean`                               | `false`        | Use two inputs for display                        |
+| `iconInside`    | `Boolean`                               | `false`        | Show icon inside input                            |
+| `shortcut`      | `Boolean \| Object`                     | `false`        | Shortcuts for quick selection                     |
+| `disable`       | `Array \| String \| Function \| RegExp` | `undefined`    | Disable specific dates/times                      |
+| `localeConfig`  | `Object`                                | `undefined`    | Custom locale configuration                       |
+| `styles`        | `Object`                                | `undefined`    | Custom styles                                     |
+| `color`         | `String`                                | `undefined`    | Preset color: `red`, `green`, `blue`, etc.        |
 
 ## Events
 
-| Event | Payload | Description |
-|-------|---------|-------------|
-| `select` | `date` | Emitted when a date/time is selected |
-| `submit` | `date \| dates` | Emitted when selection is submitted |
-| `open` | - | Emitted when picker opens |
-| `close` | - | Emitted when picker closes |
-| `clear` | - | Emitted when selection is cleared |
-| `update:modelValue` | `value` | Emitted when model value changes |
+| Event               | Payload         | Description                          |
+| ------------------- | --------------- | ------------------------------------ |
+| `select`            | `date`          | Emitted when a date/time is selected |
+| `submit`            | `date \| dates` | Emitted when selection is submitted  |
+| `open`              | -               | Emitted when picker opens            |
+| `close`             | -               | Emitted when picker closes           |
+| `clear`             | -               | Emitted when selection is cleared    |
+| `update:modelValue` | `value`         | Emitted when model value changes     |
 
 ## Nuxt Module
 

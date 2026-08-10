@@ -1,86 +1,213 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" dir="ltr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vue3 Persian Datepicker - Documentation</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; }
-    .header { background: #2c3e50; color: white; padding: 2rem; text-align: center; }
-    .header h1 { margin-bottom: 0.5rem; }
-    .header a { color: #42b983; }
-    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
-    .section { margin-bottom: 3rem; }
-    .section h2 { color: #2c3e50; border-bottom: 2px solid #42b983; padding-bottom: 0.5rem; margin-bottom: 1rem; }
-    .section h3 { color: #34495e; margin: 1.5rem 0 0.5rem; }
-    .feature-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 1rem 0; }
-    .feature { background: #f8f9fa; padding: 1rem; border-radius: 8px; border-left: 4px solid #42b983; }
-    code { background: #f4f4f4; padding: 0.2rem 0.4rem; border-radius: 4px; font-family: 'Courier New', monospace; }
-    pre { background: #f4f4f4; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; }
-    table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
-    th, td { border: 1px solid #ddd; padding: 0.75rem; text-align: left; }
-    th { background: #f8f9fa; }
-    .note { background: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; margin: 1rem 0; border-radius: 4px; }
-    .improvement { background: #d4edda; border-left: 4px solid #28a745; padding: 1rem; margin: 1rem 0; border-radius: 4px; }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>Vue3 Persian Datepicker</h1>
-    <p>A datepicker component for selecting Persian (Jalali/Shamsi) dates in Vue 3</p>
-    <p>
-      <a href="https://github.com/h-sanadgol/vue3-persian-datepicker">GitHub</a> |
-      <a href="https://www.npmjs.com/package/@h-sanadgol/vue3-persian-datepicker">npm</a>
-    </p>
-  </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 Persian Datepicker - Documentation</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+          sans-serif;
+        line-height: 1.6;
+        color: #333;
+      }
+      .header {
+        background: #2c3e50;
+        color: white;
+        padding: 2rem;
+        text-align: center;
+      }
+      .header h1 {
+        margin-bottom: 0.5rem;
+      }
+      .header a {
+        color: #42b983;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+      .section {
+        margin-bottom: 3rem;
+      }
+      .section h2 {
+        color: #2c3e50;
+        border-bottom: 2px solid #42b983;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+      }
+      .section h3 {
+        color: #34495e;
+        margin: 1.5rem 0 0.5rem;
+      }
+      .feature-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+      }
+      .feature {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #42b983;
+      }
+      code {
+        background: #f4f4f4;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+      }
+      pre {
+        background: #f4f4f4;
+        padding: 1rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 1rem 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 0.75rem;
+        text-align: left;
+      }
+      th {
+        background: #f8f9fa;
+      }
+      .note {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 4px;
+      }
+      .improvement {
+        background: #d4edda;
+        border-left: 4px solid #28a745;
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Vue3 Persian Datepicker</h1>
+      <p>
+        A datepicker component for selecting Persian (Jalali/Shamsi) dates in
+        Vue 3
+      </p>
+      <p>
+        <a href="https://github.com/h-sanadgol/vue3-persian-datepicker"
+          >GitHub</a
+        >
+        |
+        <a
+          href="https://www.npmjs.com/package/@h-sanadgol/vue3-persian-datepicker"
+          >npm</a
+        >
+      </p>
+    </div>
 
-  <div class="container">
-    <div class="section">
-      <h2>About</h2>
-      <p>This is a fork of the original <a href="https://github.com/alireza-ab/vue3-persian-datepicker">@alireza-ab/vue3-persian-datepicker</a> maintained by <a href="https://github.com/alireza-ab">Alireza Alibeiki</a>. All credits for the original work belong to the original author.</p>
-      <div class="note">
-        <strong>Note:</strong> This fork includes additional improvements and bug fixes. See the SET section below for details.
+    <div class="container">
+      <div class="section">
+        <h2>About</h2>
+        <p>
+          This is a fork of the original
+          <a href="https://github.com/alireza-ab/vue3-persian-datepicker"
+            >@alireza-ab/vue3-persian-datepicker</a
+          >
+          maintained by
+          <a href="https://github.com/alireza-ab">Alireza Alibeiki</a>. All
+          credits for the original work belong to the original author.
+        </p>
+        <div class="note">
+          <strong>Note:</strong> This fork includes additional improvements and
+          bug fixes. See the SET section below for details.
+        </div>
       </div>
-    </div>
 
-    <div class="section">
-      <h2>Features</h2>
-      <div class="feature-list">
-        <div class="feature"><strong>Nuxt Support</strong><br>Works with Nuxt 3 out of the box</div>
-        <div class="feature"><strong>Single & Range Selection</strong><br>Select single dates or date ranges</div>
-        <div class="feature"><strong>Date & Time</strong><br>Pick dates, times, or both together</div>
-        <div class="feature"><strong>Keyboard Support</strong><br>Navigate with arrow keys</div>
-        <div class="feature"><strong>Customizable Style</strong><br>Fully styleable with CSS variables</div>
-        <div class="feature"><strong>Localization</strong><br>Persian and English built-in</div>
-        <div class="feature"><strong>Minute/Hour Step</strong><br>Configurable time increments</div>
-        <div class="feature"><strong>Dual Input</strong><br>Optional separate start/end inputs</div>
+      <div class="section">
+        <h2>Features</h2>
+        <div class="feature-list">
+          <div class="feature">
+            <strong>Nuxt Support</strong><br />Works with Nuxt 3 out of the box
+          </div>
+          <div class="feature">
+            <strong>Single & Range Selection</strong><br />Select single dates
+            or date ranges
+          </div>
+          <div class="feature">
+            <strong>Date & Time</strong><br />Pick dates, times, or both
+            together
+          </div>
+          <div class="feature">
+            <strong>Keyboard Support</strong><br />Navigate with arrow keys
+          </div>
+          <div class="feature">
+            <strong>Customizable Style</strong><br />Fully styleable with CSS
+            variables
+          </div>
+          <div class="feature">
+            <strong>Localization</strong><br />Persian and English built-in
+          </div>
+          <div class="feature">
+            <strong>Minute/Hour Step</strong><br />Configurable time increments
+          </div>
+          <div class="feature">
+            <strong>Dual Input</strong><br />Optional separate start/end inputs
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="section">
-      <h2>SET (Improvements)</h2>
-      <div class="improvement">
-        <h3>New Features in This Fork</h3>
-        <ul>
-          <li><strong>minuteStep prop</strong> - Control the step increment for minute selection in time/datetime pickers</li>
-          <li><strong>hourStep prop</strong> - Control the step increment for hour selection in time/datetime pickers</li>
-          <li><strong>Time step bug fixes</strong> - Fixed issues with time navigation when using custom step values</li>
-        </ul>
-        <p>These features are especially useful for appointment scheduling, time slot selection, and similar use cases where you need to restrict time choices to specific intervals.</p>
+      <div class="section">
+        <h2>SET (Improvements)</h2>
+        <div class="improvement">
+          <h3>New Features in This Fork</h3>
+          <ul>
+            <li>
+              <strong>minuteStep prop</strong> - Control the step increment for
+              minute selection in time/datetime pickers
+            </li>
+            <li>
+              <strong>hourStep prop</strong> - Control the step increment for
+              hour selection in time/datetime pickers
+            </li>
+            <li>
+              <strong>Time step bug fixes</strong> - Fixed issues with time
+              navigation when using custom step values
+            </li>
+          </ul>
+          <p>
+            These features are especially useful for appointment scheduling,
+            time slot selection, and similar use cases where you need to
+            restrict time choices to specific intervals.
+          </p>
+        </div>
       </div>
-    </div>
 
-    <div class="section">
-      <h2>Installation</h2>
-      <pre>npm install @h-sanadgol/vue3-persian-datepicker</pre>
-      <p>or</p>
-      <pre>pnpm add @h-sanadgol/vue3-persian-datepicker</pre>
-    </div>
+      <div class="section">
+        <h2>Installation</h2>
+        <pre>npm install @h-sanadgol/vue3-persian-datepicker</pre>
+        <p>or</p>
+        <pre>pnpm add @h-sanadgol/vue3-persian-datepicker</pre>
+      </div>
 
-    <div class="section">
-      <h2>Basic Usage</h2>
-      <pre><code>&lt;template&gt;
+      <div class="section">
+        <h2>Basic Usage</h2>
+        <pre><code>&lt;template&gt;
   &lt;DatePicker
     v-model="date"
     type="date"
@@ -92,64 +219,233 @@
 &lt;script setup&gt;
 import DatePicker from '@h-sanadgol/vue3-persian-datepicker';
 &lt;/script&gt;</code></pre>
-    </div>
+      </div>
 
-    <div class="section">
-      <h2>Props</h2>
-      <table>
-        <tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr>
-        <tr><td><code>type</code></td><td>String</td><td><code>'date'</code></td><td>Picker type: <code>date</code>, <code>time</code>, or <code>datetime</code></td></tr>
-        <tr><td><code>format</code></td><td>String</td><td><code>'YYYY-MM-DD'</code></td><td>Format of the model value</td></tr>
-        <tr><td><code>inputFormat</code></td><td>String</td><td>same as type</td><td>Format of the input value</td></tr>
-        <tr><td><code>displayFormat</code></td><td>String</td><td><code>'?D ?MMMM'</code></td><td>Format shown in the footer</td></tr>
-        <tr><td><code>from</code></td><td>String</td><td><code>'1300'</code></td><td>Start date of the picker</td></tr>
-        <tr><td><code>to</code></td><td>String</td><td><code>'1499'</code></td><td>End date of the picker</td></tr>
-        <tr><td><code>mode</code></td><td>String</td><td><code>'range'</code></td><td>Selection mode: <code>single</code> or <code>range</code></td></tr>
-        <tr><td><code>locale</code></td><td>String</td><td><code>'fa'</code></td><td>Locale: <code>fa</code>, <code>en</code>, <code>fa,en</code>, etc.</td></tr>
-        <tr><td><code>column</code></td><td>Number | Object</td><td><code>{ 576: 1 }</code></td><td>Number of columns</td></tr>
-        <tr><td><code>minuteStep</code></td><td>Number</td><td><code>1</code></td><td>Step increment for minutes</td></tr>
-        <tr><td><code>hourStep</code></td><td>Number</td><td><code>1</code></td><td>Step increment for hours</td></tr>
-        <tr><td><code>autoSubmit</code></td><td>Boolean</td><td><code>true</code></td><td>Auto submit when selection is complete</td></tr>
-        <tr><td><code>clearable</code></td><td>Boolean</td><td><code>false</code></td><td>Allow clearing the selected date</td></tr>
-        <tr><td><code>modal</code></td><td>Boolean</td><td><code>false</code></td><td>Show picker as modal</td></tr>
-        <tr><td><code>show</code></td><td>Boolean</td><td><code>false</code></td><td>Controlled visibility of picker</td></tr>
-        <tr><td><code>clickOn</code></td><td>String</td><td><code>'all'</code></td><td>Trigger picker on: <code>all</code>, <code>input</code>, <code>icon</code>, <code>none</code></td></tr>
-        <tr><td><code>label</code></td><td>String</td><td>undefined</td><td>Label text</td></tr>
-        <tr><td><code>dualInput</code></td><td>Boolean</td><td><code>false</code></td><td>Use two inputs for display</td></tr>
-        <tr><td><code>iconInside</code></td><td>Boolean</td><td><code>false</code></td><td>Show icon inside input</td></tr>
-        <tr><td><code>shortcut</code></td><td>Boolean | Object</td><td><code>false</code></td><td>Shortcuts for quick selection</td></tr>
-        <tr><td><code>disable</code></td><td>Array | String | Function | RegExp</td><td>undefined</td><td>Disable specific dates/times</td></tr>
-        <tr><td><code>localeConfig</code></td><td>Object</td><td>undefined</td><td>Custom locale configuration</td></tr>
-        <tr><td><code>styles</code></td><td>Object</td><td>undefined</td><td>Custom styles</td></tr>
-        <tr><td><code>color</code></td><td>String</td><td>undefined</td><td>Preset color: <code>red</code>, <code>green</code>, <code>blue</code>, etc.</td></tr>
-      </table>
-    </div>
+      <div class="section">
+        <h2>Props</h2>
+        <table>
+          <tr>
+            <th>Prop</th>
+            <th>Type</th>
+            <th>Default</th>
+            <th>Description</th>
+          </tr>
+          <tr>
+            <td><code>type</code></td>
+            <td>String</td>
+            <td><code>'date'</code></td>
+            <td>
+              Picker type: <code>date</code>, <code>time</code>, or
+              <code>datetime</code>
+            </td>
+          </tr>
+          <tr>
+            <td><code>format</code></td>
+            <td>String</td>
+            <td><code>'YYYY-MM-DD'</code></td>
+            <td>Format of the model value</td>
+          </tr>
+          <tr>
+            <td><code>inputFormat</code></td>
+            <td>String</td>
+            <td>same as type</td>
+            <td>Format of the input value</td>
+          </tr>
+          <tr>
+            <td><code>displayFormat</code></td>
+            <td>String</td>
+            <td><code>'?D ?MMMM'</code></td>
+            <td>Format shown in the footer</td>
+          </tr>
+          <tr>
+            <td><code>from</code></td>
+            <td>String</td>
+            <td><code>'1300'</code></td>
+            <td>Start date of the picker</td>
+          </tr>
+          <tr>
+            <td><code>to</code></td>
+            <td>String</td>
+            <td><code>'1499'</code></td>
+            <td>End date of the picker</td>
+          </tr>
+          <tr>
+            <td><code>mode</code></td>
+            <td>String</td>
+            <td><code>'range'</code></td>
+            <td>Selection mode: <code>single</code> or <code>range</code></td>
+          </tr>
+          <tr>
+            <td><code>locale</code></td>
+            <td>String</td>
+            <td><code>'fa'</code></td>
+            <td>
+              Locale: <code>fa</code>, <code>en</code>, <code>fa,en</code>, etc.
+            </td>
+          </tr>
+          <tr>
+            <td><code>column</code></td>
+            <td>Number | Object</td>
+            <td><code>{ 576: 1 }</code></td>
+            <td>Number of columns</td>
+          </tr>
+          <tr>
+            <td><code>minuteStep</code></td>
+            <td>Number</td>
+            <td><code>1</code></td>
+            <td>Step increment for minutes</td>
+          </tr>
+          <tr>
+            <td><code>hourStep</code></td>
+            <td>Number</td>
+            <td><code>1</code></td>
+            <td>Step increment for hours</td>
+          </tr>
+          <tr>
+            <td><code>autoSubmit</code></td>
+            <td>Boolean</td>
+            <td><code>true</code></td>
+            <td>Auto submit when selection is complete</td>
+          </tr>
+          <tr>
+            <td><code>clearable</code></td>
+            <td>Boolean</td>
+            <td><code>false</code></td>
+            <td>Allow clearing the selected date</td>
+          </tr>
+          <tr>
+            <td><code>modal</code></td>
+            <td>Boolean</td>
+            <td><code>false</code></td>
+            <td>Show picker as modal</td>
+          </tr>
+          <tr>
+            <td><code>show</code></td>
+            <td>Boolean</td>
+            <td><code>false</code></td>
+            <td>Controlled visibility of picker</td>
+          </tr>
+          <tr>
+            <td><code>clickOn</code></td>
+            <td>String</td>
+            <td><code>'all'</code></td>
+            <td>
+              Trigger picker on: <code>all</code>, <code>input</code>,
+              <code>icon</code>, <code>none</code>
+            </td>
+          </tr>
+          <tr>
+            <td><code>label</code></td>
+            <td>String</td>
+            <td>undefined</td>
+            <td>Label text</td>
+          </tr>
+          <tr>
+            <td><code>dualInput</code></td>
+            <td>Boolean</td>
+            <td><code>false</code></td>
+            <td>Use two inputs for display</td>
+          </tr>
+          <tr>
+            <td><code>iconInside</code></td>
+            <td>Boolean</td>
+            <td><code>false</code></td>
+            <td>Show icon inside input</td>
+          </tr>
+          <tr>
+            <td><code>shortcut</code></td>
+            <td>Boolean | Object</td>
+            <td><code>false</code></td>
+            <td>Shortcuts for quick selection</td>
+          </tr>
+          <tr>
+            <td><code>disable</code></td>
+            <td>Array | String | Function | RegExp</td>
+            <td>undefined</td>
+            <td>Disable specific dates/times</td>
+          </tr>
+          <tr>
+            <td><code>localeConfig</code></td>
+            <td>Object</td>
+            <td>undefined</td>
+            <td>Custom locale configuration</td>
+          </tr>
+          <tr>
+            <td><code>styles</code></td>
+            <td>Object</td>
+            <td>undefined</td>
+            <td>Custom styles</td>
+          </tr>
+          <tr>
+            <td><code>color</code></td>
+            <td>String</td>
+            <td>undefined</td>
+            <td>
+              Preset color: <code>red</code>, <code>green</code>,
+              <code>blue</code>, etc.
+            </td>
+          </tr>
+        </table>
+      </div>
 
-    <div class="section">
-      <h2>Events</h2>
-      <table>
-        <tr><th>Event</th><th>Payload</th><th>Description</th></tr>
-        <tr><td><code>select</code></td><td><code>date</code></td><td>Emitted when a date/time is selected</td></tr>
-        <tr><td><code>submit</code></td><td><code>date | dates</code></td><td>Emitted when selection is submitted</td></tr>
-        <tr><td><code>open</code></td><td>-</td><td>Emitted when picker opens</td></tr>
-        <tr><td><code>close</code></td><td>-</td><td>Emitted when picker closes</td></tr>
-        <tr><td><code>clear</code></td><td>-</td><td>Emitted when selection is cleared</td></tr>
-        <tr><td><code>update:modelValue</code></td><td><code>value</code></td><td>Emitted when model value changes</td></tr>
-      </table>
-    </div>
+      <div class="section">
+        <h2>Events</h2>
+        <table>
+          <tr>
+            <th>Event</th>
+            <th>Payload</th>
+            <th>Description</th>
+          </tr>
+          <tr>
+            <td><code>select</code></td>
+            <td><code>date</code></td>
+            <td>Emitted when a date/time is selected</td>
+          </tr>
+          <tr>
+            <td><code>submit</code></td>
+            <td><code>date | dates</code></td>
+            <td>Emitted when selection is submitted</td>
+          </tr>
+          <tr>
+            <td><code>open</code></td>
+            <td>-</td>
+            <td>Emitted when picker opens</td>
+          </tr>
+          <tr>
+            <td><code>close</code></td>
+            <td>-</td>
+            <td>Emitted when picker closes</td>
+          </tr>
+          <tr>
+            <td><code>clear</code></td>
+            <td>-</td>
+            <td>Emitted when selection is cleared</td>
+          </tr>
+          <tr>
+            <td><code>update:modelValue</code></td>
+            <td><code>value</code></td>
+            <td>Emitted when model value changes</td>
+          </tr>
+        </table>
+      </div>
 
-    <div class="section">
-      <h2>Nuxt Module</h2>
-      <pre><code>// nuxt.config.ts
+      <div class="section">
+        <h2>Nuxt Module</h2>
+        <pre><code>// nuxt.config.ts
 export default defineNuxtConfig({
   modules: ['@h-sanadgol/vue3-persian-datepicker/nuxt'],
 });</code></pre>
-    </div>
+      </div>
 
-    <div class="section">
-      <h2>Original Documentation</h2>
-      <p>For the original documentation and examples, visit <a href="https://alireza-ab.ir/datepicker">https://alireza-ab.ir/datepicker</a>.</p>
+      <div class="section">
+        <h2>Original Documentation</h2>
+        <p>
+          For the original documentation and examples, visit
+          <a href="https://alireza-ab.ir/datepicker"
+            >https://alireza-ab.ir/datepicker</a
+          >.
+        </p>
+      </div>
     </div>
-  </div>
-</body>
+  </body>
 </html>

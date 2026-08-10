@@ -78,8 +78,8 @@ app.mount('#app');
 | `mode`          | `String`                                | `'range'`      | Selection mode: `single` or `range`               |
 | `locale`        | `String`                                | `'fa'`         | Locale: `fa`, `en`, `fa,en`, etc.                 |
 | `column`        | `Number \| Object`                      | `{ 576: 1 }`   | Number of columns                                 |
-| `minuteStep`    | `Number`                                | `1`            | Step increment for minutes                        |
-| `hourStep`      | `Number`                                | `1`            | Step increment for hours                          |
+| `minuteStep`    | `Number`                                | `1`            | Step increment for adding minutes                 |
+| `hourStep`      | `Number`                                | `1`            | Step increment for adding hours                   |
 | `autoSubmit`    | `Boolean`                               | `true`         | Auto submit when selection is complete            |
 | `clearable`     | `Boolean`                               | `false`        | Allow clearing the selected date                  |
 | `modal`         | `Boolean`                               | `false`        | Show picker as modal                              |

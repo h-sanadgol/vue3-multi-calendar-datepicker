@@ -1,5 +1,11 @@
 # Release Notes
 
+## 2.0.2 — README and demo links
+
+- Added the live demo link to the package README.
+- Clarified the documentation and API guide links.
+- Published the updated package metadata for npm users.
+
 ## 2.0.1 — Documentation and community release
 
 - Clarified the project's independent development history and current multi-calendar scope.

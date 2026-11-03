@@ -22,6 +22,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "build:docs-demo": "vite build --config vite.docs.config.ts",
     "build:lib": "rollup -c",
     "build:nuxt": "unbuild",
     "test": "cypress run --component",

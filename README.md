@@ -329,7 +329,8 @@ Calendar adapters keep calendar-specific conversion and navigation logic separat
 
 ## Documentation and Demo
 
-- [Interactive documentation](https://h-sanadgol.github.io/vue3-multi-calendar-datepicker)
+- [Interactive documentation and API guide](https://h-sanadgol.github.io/vue3-multi-calendar-datepicker/)
+- [Live library demo](https://h-sanadgol.github.io/vue3-multi-calendar-datepicker/demo/)
 - [GitHub repository](https://github.com/h-sanadgol/vue3-multi-calendar-datepicker)
 - [npm package](https://www.npmjs.com/package/@h-sanadgol/vue3-multi-calendar-datepicker)
 - [Issue tracker](https://github.com/h-sanadgol/vue3-multi-calendar-datepicker/issues)

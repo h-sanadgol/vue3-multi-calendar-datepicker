@@ -429,27 +429,21 @@
                 name="picker-type"
                 type="radio"
                 value="date"
-              />{{
-                t.date
-              }}</label
+              />{{ t.date }}</label
             ><label class="radio-option"
               ><input
                 v-model="pickerType"
                 name="picker-type"
                 type="radio"
                 value="time"
-              />{{
-                t.time
-              }}</label
+              />{{ t.time }}</label
             ><label class="radio-option"
               ><input
                 v-model="pickerType"
                 name="picker-type"
                 type="radio"
                 value="datetime"
-              />{{
-                t.datetime
-              }}</label
+              />{{ t.datetime }}</label
             >
           </fieldset>
           <fieldset class="control-block mode-fieldset">
@@ -461,9 +455,7 @@
                 type="radio"
                 value="single"
                 @change="mode = 'single'"
-              />{{
-                t.single
-              }}</label
+              />{{ t.single }}</label
             ><label class="radio-option"
               ><input
                 v-model="mode"
@@ -471,9 +463,7 @@
                 type="radio"
                 value="range"
                 @change="mode = 'range'"
-              />{{
-                t.range
-              }}</label
+              />{{ t.range }}</label
             >
           </fieldset>
           <details class="advanced-options">
@@ -557,13 +547,19 @@
                   :value="6"
                 />Saturday</label
               ><label class="check-option"
-                ><input v-model="advancedClearable" type="checkbox" />Clearable</label
+                ><input
+                  v-model="advancedClearable"
+                  type="checkbox"
+                />Clearable</label
               ><label class="check-option"
-                ><input v-model="advancedAutoSubmit" type="checkbox" />Auto submit</label
+                ><input v-model="advancedAutoSubmit" type="checkbox" />Auto
+                submit</label
               ><label class="check-option"
-                ><input v-model="advancedIconInside" type="checkbox" />Icon inside</label
+                ><input v-model="advancedIconInside" type="checkbox" />Icon
+                inside</label
               ><label class="check-option"
-                ><input v-model="advancedDualInput" type="checkbox" />Dual input</label
+                ><input v-model="advancedDualInput" type="checkbox" />Dual
+                input</label
               >
             </div>
           </details>
@@ -599,7 +595,9 @@
               :from="advancedFrom || selectedCalendar.from"
               :to="advancedTo || selectedCalendar.to"
               :week-starts-on="advancedWeekStart"
-              :weekend-days="advancedWeekendDays.length ? advancedWeekendDays : undefined"
+              :weekend-days="
+                advancedWeekendDays.length ? advancedWeekendDays : undefined
+              "
               :color="advancedColor"
               :click-on="advancedClickOn"
               :minute-step="advancedMinuteStep"

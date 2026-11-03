@@ -24,16 +24,12 @@ function gregorianToJulianDay(date: Date): number {
 
 function gregorianToIslamic(date: Date): CalendarParts {
   const julianDay = Math.floor(gregorianToJulianDay(date)) + 0.5;
-  const year = Math.floor(
-    (30 * (julianDay - islamicEpoch) + 10_646) / 10_631,
-  );
+  const year = Math.floor((30 * (julianDay - islamicEpoch) + 10_646) / 10_631);
   const month = Math.min(
     12,
     Math.ceil((julianDay - (29 + islamicToJulianDay(year, 1, 1))) / 29.5) + 1,
   );
-  const day = Math.floor(
-    julianDay - islamicToJulianDay(year, month, 1) + 1,
-  );
+  const day = Math.floor(julianDay - islamicToJulianDay(year, month, 1) + 1);
 
   return {
     year,
@@ -70,7 +66,7 @@ export function createTabularHijriAdapter(): CalendarAdapter {
       const current = gregorianToIslamic(date);
       const absoluteMonth = current.year * 12 + current.month - 1 + amount;
       const year = Math.floor(absoluteMonth / 12);
-      const month = ((absoluteMonth % 12) + 12) % 12 + 1;
+      const month = (((absoluteMonth % 12) + 12) % 12) + 1;
       const maxDay = month % 2 === 1 ? 30 : 29;
       return this.fromParts({
         ...current,

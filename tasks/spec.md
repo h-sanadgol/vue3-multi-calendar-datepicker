@@ -56,7 +56,7 @@ tasks/             مشخصات و برنامه توسعه
   locale="fa"
   type="date"
   mode="single"
-/> 
+/>
 ```
 
 نام دقیق propها در مرحله طراحی adapter نهایی می‌شود، اما `calendar` نباید از `locale` استخراج شود.

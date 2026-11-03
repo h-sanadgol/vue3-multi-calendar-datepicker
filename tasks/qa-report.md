@@ -20,13 +20,13 @@
 
 ## وضعیت تست
 
-| بررسی | نتیجه |
-|---|---|
-| ESLint | موفق |
-| Library build | موفق با warning dependency |
-| Vue typecheck | ناموفق؛ خطاهای ناسازگاری dependencyهای Nuxt/Vue و خطاهای type قدیمی در پروژه |
-| Cypress | مسدود به علت GPU و DevToolsActivePort ویندوز |
-| Browser visual QA | مسدود؛ browser automation در این نشست غیرفعال بود |
+| بررسی             | نتیجه                                                                        |
+| ----------------- | ---------------------------------------------------------------------------- |
+| ESLint            | موفق                                                                         |
+| Library build     | موفق با warning dependency                                                   |
+| Vue typecheck     | ناموفق؛ خطاهای ناسازگاری dependencyهای Nuxt/Vue و خطاهای type قدیمی در پروژه |
+| Cypress           | مسدود به علت GPU و DevToolsActivePort ویندوز                                 |
+| Browser visual QA | مسدود؛ browser automation در این نشست غیرفعال بود                            |
 
 ## تست بصری Chrome — ۲ نوامبر ۲۰۲۶
 

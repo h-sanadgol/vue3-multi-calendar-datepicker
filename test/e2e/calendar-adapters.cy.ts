@@ -1,7 +1,4 @@
-import {
-  createCalendarAdapter,
-  type CalendarId,
-} from '../../src/calendars';
+import { createCalendarAdapter, type CalendarId } from '../../src/calendars';
 import PersianDate from '@alireza-ab/persian-date';
 
 describe('calendar adapters', () => {
@@ -35,9 +32,13 @@ describe('calendar adapters', () => {
   });
 
   it('round-trips the demo date with the tabular Hijri provider', () => {
-    const adapter = createCalendarAdapter('hijri', { hijriProvider: 'tabular' });
+    const adapter = createCalendarAdapter('hijri', {
+      hijriProvider: 'tabular',
+    });
     const gregorian = adapter.fromParts({ year: 1446, month: 10, day: 6 });
-    expect(new PersianDate().fromGregorian(gregorian.getTime()).valueOf()).to.be.a('number');
+    expect(
+      new PersianDate().fromGregorian(gregorian.getTime()).valueOf(),
+    ).to.be.a('number');
     expect(adapter.getParts(gregorian)).to.deep.include({
       year: 1446,
       month: 10,
@@ -65,7 +66,9 @@ describe('calendar adapters', () => {
 
   it('converts the demo Umm al-Qura sample back to Gregorian', () => {
     const adapter = createCalendarAdapter('hijri');
-    expect(adapter.getParts(adapter.fromParts({ year: 1446, month: 10, day: 6 }))).to.deep.include({
+    expect(
+      adapter.getParts(adapter.fromParts({ year: 1446, month: 10, day: 6 })),
+    ).to.deep.include({
       year: 1446,
       month: 10,
       day: 6,
@@ -74,8 +77,12 @@ describe('calendar adapters', () => {
 
   it('converts the demo Hijri range boundaries', () => {
     const adapter = createCalendarAdapter('hijri');
-    expect(adapter.getParts(adapter.fromParts({ year: 1400, month: 1, day: 1 }))).to.deep.include({ year: 1400, month: 1, day: 1 });
-    expect(adapter.getParts(adapter.fromParts({ year: 1500, month: 1, day: 1 }))).to.deep.include({ year: 1500, month: 1, day: 1 });
+    expect(
+      adapter.getParts(adapter.fromParts({ year: 1400, month: 1, day: 1 })),
+    ).to.deep.include({ year: 1400, month: 1, day: 1 });
+    expect(
+      adapter.getParts(adapter.fromParts({ year: 1500, month: 1, day: 1 })),
+    ).to.deep.include({ year: 1500, month: 1, day: 1 });
   });
 
   it('supports adding months without mutating the original Date', () => {

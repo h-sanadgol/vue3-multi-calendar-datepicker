@@ -27,15 +27,44 @@ function parsePart(value: string | undefined): number {
 }
 
 function isHebrewLeapYear(year: number): boolean {
-  return ((7 * year + 1) % 19) < 7;
+  return (7 * year + 1) % 19 < 7;
 }
 
 function parseHebrewMonth(value: string | undefined, year: number): number {
   const month = value || '';
   const names = isHebrewLeapYear(year)
-    ? ['Tishri', 'Cheshvan', 'Kislev', 'Tevet', 'Shevat', 'Adar I', 'Adar', 'Nisan', 'Iyar', 'Sivan', 'Tammuz', 'Av', 'Elul']
-    : ['Tishri', 'Cheshvan', 'Kislev', 'Tevet', 'Shevat', 'Adar', 'Nisan', 'Iyar', 'Sivan', 'Tammuz', 'Av', 'Elul'];
-  const index = names.findIndex((name) => month.toLowerCase() === name.toLowerCase());
+    ? [
+        'Tishri',
+        'Cheshvan',
+        'Kislev',
+        'Tevet',
+        'Shevat',
+        'Adar I',
+        'Adar',
+        'Nisan',
+        'Iyar',
+        'Sivan',
+        'Tammuz',
+        'Av',
+        'Elul',
+      ]
+    : [
+        'Tishri',
+        'Cheshvan',
+        'Kislev',
+        'Tevet',
+        'Shevat',
+        'Adar',
+        'Nisan',
+        'Iyar',
+        'Sivan',
+        'Tammuz',
+        'Av',
+        'Elul',
+      ];
+  const index = names.findIndex(
+    (name) => month.toLowerCase() === name.toLowerCase(),
+  );
   return index >= 0 ? index + 1 : parsePart(value);
 }
 
@@ -162,9 +191,8 @@ export function createIntlAdapter(
     addMonths(date, amount) {
       const current = formatParts(formatter, date);
       const targetMonth = current.month + amount;
-      const targetYear =
-        current.year + Math.floor((targetMonth - 1) / 12);
-      const normalizedMonth = ((targetMonth - 1) % 12 + 12) % 12 + 1;
+      const targetYear = current.year + Math.floor((targetMonth - 1) / 12);
+      const normalizedMonth = ((((targetMonth - 1) % 12) + 12) % 12) + 1;
       const targetDay = Math.min(
         current.day,
         (() => {

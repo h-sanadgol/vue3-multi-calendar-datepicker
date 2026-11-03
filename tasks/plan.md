@@ -87,14 +87,14 @@
 
 ## Risks and Mitigations
 
-| Risk | Impact | Mitigation |
-|---|---|---|
-| اختلاف محاسبات قمری با رؤیت محلی | High | انتخاب الگوریتم رسمی و امکان تزریق adapter/adjustment |
-| پیچیدگی تقویم چینی | High | پیاده‌سازی در فاز جدا و عدم مخلوط‌کردن با هجری ساده |
-| شکستن سازگاری model فعلی | High | حفظ حالت پیش‌فرض فعلی و افزودن `modelCalendar` با migration guide |
-| فرض‌های ثابت شمسی در کد فعلی | High | حذف parse و compareهای hard-coded و عبور همه مسیرها از adapter |
-| افزایش حجم bundle | Medium | adapterهای اختیاری و بررسی tree-shaking |
-| تفاوت timezone و تاریخ محلی | Medium | نگهداری تاریخ داخلی با timezone صریح و تست مرز نیمه‌شب |
+| Risk                             | Impact | Mitigation                                                        |
+| -------------------------------- | ------ | ----------------------------------------------------------------- |
+| اختلاف محاسبات قمری با رؤیت محلی | High   | انتخاب الگوریتم رسمی و امکان تزریق adapter/adjustment             |
+| پیچیدگی تقویم چینی               | High   | پیاده‌سازی در فاز جدا و عدم مخلوط‌کردن با هجری ساده               |
+| شکستن سازگاری model فعلی         | High   | حفظ حالت پیش‌فرض فعلی و افزودن `modelCalendar` با migration guide |
+| فرض‌های ثابت شمسی در کد فعلی     | High   | حذف parse و compareهای hard-coded و عبور همه مسیرها از adapter    |
+| افزایش حجم bundle                | Medium | adapterهای اختیاری و بررسی tree-shaking                           |
+| تفاوت timezone و تاریخ محلی      | Medium | نگهداری تاریخ داخلی با timezone صریح و تست مرز نیمه‌شب            |
 
 ## Open Questions
 

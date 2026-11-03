@@ -1,5 +1,12 @@
 # Release Notes
 
+## 2.0.1 — Documentation and community release
+
+- Clarified the project's independent development history and current multi-calendar scope.
+- Added contribution guidance, AI-assisted development disclosure, and issue-reporting guidance.
+- Added the GitHub Pages guide and live demo entry point.
+- Updated package metadata for the `2.0.1` release.
+
 ## 2.0.0 — Multi-calendar fork
 
 ### Package

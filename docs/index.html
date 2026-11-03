@@ -1,602 +1,210 @@
 <!doctype html>
-<html lang="en" dir="ltr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vue3 Persian Datepicker - Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Guide and live demo for Vue 3 Multi-Calendar Datepicker."
+    />
+    <title>Vue 3 Multi-Calendar Datepicker</title>
     <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
+      :root {
+        color-scheme: light;
+        --ink: #18324a;
+        --muted: #60758a;
+        --brand: #0d8a75;
+        --brand-dark: #096452;
+        --surface: #ffffff;
+        --soft: #eef8f5;
+        --line: #dce8e5;
+        --shadow: 0 16px 40px rgba(24, 50, 74, 0.1);
       }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
       body {
-        font-family:
-          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
-          sans-serif;
-        line-height: 1.6;
-        color: #333;
-        background: #f5f5f5;
+        margin: 0;
+        color: var(--ink);
+        background: #f4f8f7;
+        font: 16px/1.65 Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
       }
-      .header {
-        background: #2c3e50;
+      a { color: var(--brand-dark); }
+      .hero {
+        padding: 72px 24px 64px;
         color: white;
-        padding: 2rem;
-        text-align: center;
+        background: linear-gradient(135deg, #16374e, #0d8a75);
       }
-      .header h1 {
-        margin-bottom: 0.5rem;
-      }
-      .header a {
-        color: #42b983;
-      }
-      .container {
-        display: flex;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 2rem;
-        gap: 2rem;
-      }
-      .sidebar {
-        width: 250px;
-        flex-shrink: 0;
-      }
-      .sidebar ul {
-        list-style: none;
-      }
-      .sidebar li {
-        margin-bottom: 0.5rem;
-      }
-      .sidebar a {
-        color: #2c3e50;
-        text-decoration: none;
-        display: block;
-        padding: 0.5rem;
-        border-radius: 4px;
-      }
-      .sidebar a:hover {
-        background: #e9ecef;
-      }
-      .content {
-        flex: 1;
-        background: white;
-        padding: 2rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-      .section {
-        margin-bottom: 3rem;
-      }
-      .section h2 {
-        color: #2c3e50;
-        border-bottom: 2px solid #42b983;
-        padding-bottom: 0.5rem;
-        margin-bottom: 1rem;
-      }
-      .section h3 {
-        color: #34495e;
-        margin: 1.5rem 0 0.5rem;
-      }
-      .feature-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1rem;
-        margin: 1rem 0;
-      }
-      .feature {
-        background: #f8f9fa;
-        padding: 1rem;
-        border-radius: 8px;
-        border-left: 4px solid #42b983;
-      }
-      code {
-        background: #f4f4f4;
-        padding: 0.2rem 0.4rem;
-        border-radius: 4px;
-        font-family: 'Courier New', monospace;
-        font-size: 0.9em;
-      }
-      pre {
-        background: #f4f4f4;
-        padding: 1rem;
-        border-radius: 8px;
-        overflow-x: auto;
-        margin: 1rem 0;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 1rem 0;
-      }
-      th,
-      td {
-        border: 1px solid #ddd;
-        padding: 0.75rem;
-        text-align: left;
-      }
-      th {
-        background: #f8f9fa;
-      }
-      .note {
-        background: #fff3cd;
-        border-left: 4px solid #ffc107;
-        padding: 1rem;
-        margin: 1rem 0;
-        border-radius: 4px;
-      }
-      .improvement {
-        background: #d4edda;
-        border-left: 4px solid #28a745;
-        padding: 1rem;
-        margin: 1rem 0;
-        border-radius: 4px;
-      }
-      .example {
-        background: #f8f9fa;
-        padding: 1rem;
-        border-radius: 8px;
-        margin: 1rem 0;
-      }
-      .example-title {
-        font-weight: bold;
-        margin-bottom: 0.5rem;
-        color: #2c3e50;
-      }
-      a {
-        color: #42b983;
-      }
+      .hero-inner, .layout { max-width: 1180px; margin: 0 auto; }
+      .hero-inner { display: grid; gap: 22px; }
+      .eyebrow { color: #a8f0df; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+      h1, h2, h3 { line-height: 1.2; margin-top: 0; }
+      h1 { max-width: 820px; font-size: clamp(2.3rem, 6vw, 4.8rem); margin-bottom: 0; }
+      .hero p { max-width: 760px; color: #e4fbf5; font-size: 1.15rem; }
+      .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+      .button { display: inline-block; padding: 10px 17px; border-radius: 999px; text-decoration: none; font-weight: 750; border: 1px solid rgba(255,255,255,.45); color: white; }
+      .button.primary { color: var(--brand-dark); background: white; }
+      .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 30px; padding: 38px 24px 70px; }
+      .sidebar { position: sticky; top: 20px; align-self: start; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+      .sidebar a { display: block; padding: 7px 4px; text-decoration: none; }
+      main { display: grid; gap: 24px; }
+      section { padding: 30px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); }
+      section h2 { padding-bottom: 12px; border-bottom: 2px solid var(--soft); }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+      .card { padding: 18px; border-radius: 14px; background: var(--soft); }
+      .demo-banner { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 20px; border-radius: 16px; background: #e6f6f1; }
+      .demo-banner .button { color: white; background: var(--brand); border-color: var(--brand); }
+      pre { overflow-x: auto; padding: 18px; color: #e7fff9; background: #172a35; border-radius: 12px; }
+      code { font-family: "SFMono-Regular", Consolas, monospace; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { padding: 11px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+      th { color: var(--brand-dark); }
+      .note { padding: 16px 18px; border-left: 4px solid var(--brand); background: #f0fbf8; }
+      footer { max-width: 1180px; margin: 0 auto; padding: 0 24px 40px; color: var(--muted); }
+      @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static; } section { padding: 22px; } .demo-banner { align-items: flex-start; flex-direction: column; } }
     </style>
   </head>
   <body>
-    <div class="header">
-      <h1>Vue3 Persian Datepicker</h1>
-      <p>
-        A datepicker component for selecting Persian (Jalali/Shamsi) dates in
-        Vue 3
-      </p>
-      <p>
-        <a href="https://github.com/h-sanadgol/vue3-multi-calendar-datepicker"
-          >GitHub</a
-        >
-        |
-        <a
-          href="https://www.npmjs.com/package/@h-sanadgol/vue3-multi-calendar-datepicker"
-          >npm</a
-        >
-        |
-        <a href="https://alireza-ab.ir/datepicker">Original Docs</a>
-      </p>
-    </div>
+    <header class="hero">
+      <div class="hero-inner">
+        <div class="eyebrow">Vue 3 · Nuxt 3 · Multi-calendar</div>
+        <h1>One simple datepicker for every calendar.</h1>
+        <p>
+          A customizable Vue component for Jalali, Gregorian, Hijri, Hebrew,
+          Thai Buddhist, and Chinese calendars, with date, time, datetime, and
+          range selection.
+        </p>
+        <div class="actions">
+          <a class="button primary" href="demo.html">Open live demo</a>
+          <a class="button" href="https://github.com/h-sanadgol/vue3-multi-calendar-datepicker">View on GitHub</a>
+          <a class="button" href="https://www.npmjs.com/package/@h-sanadgol/vue3-multi-calendar-datepicker">View on npm</a>
+        </div>
+      </div>
+    </header>
 
-    <div class="container">
-      <nav class="sidebar">
-        <ul>
-          <li><a href="#about">About</a></li>
-          <li><a href="#features">Features</a></li>
-          <li><a href="#improvements">SET Improvements</a></li>
-          <li><a href="#installation">Installation</a></li>
-          <li><a href="#basic-usage">Basic Usage</a></li>
-          <li><a href="#props">Props</a></li>
-          <li><a href="#events">Events</a></li>
-          <li><a href="#examples">Examples</a></li>
-          <li><a href="#nuxt">Nuxt Module</a></li>
-        </ul>
+    <div class="layout">
+      <nav class="sidebar" aria-label="Documentation navigation">
+        <strong>Guide</strong>
+        <a href="#about">About</a>
+        <a href="#demo">Live demo</a>
+        <a href="#install">Installation</a>
+        <a href="#usage">Usage</a>
+        <a href="#calendars">Calendars</a>
+        <a href="#props">Props</a>
+        <a href="#nuxt">Nuxt 3</a>
+        <a href="#contribute">Contribute</a>
       </nav>
 
-      <div class="content">
-        <div class="section" id="about">
+      <main>
+        <section id="about">
           <h2>About</h2>
           <p>
-            This is a fork of the original
-            <a href="https://github.com/alireza-ab/vue3-persian-datepicker"
-              >@alireza-ab/vue3-persian-datepicker</a
-            >
-            maintained by
-            <a href="https://github.com/alireza-ab">Alireza Alibeiki</a>. All
-            credits for the original work belong to the original author.
+            Vue 3 Multi-Calendar Datepicker is independently maintained as a
+            general-purpose datepicker. It began from a copied working tree
+            inspired by the original Persian datepicker project, but the
+            current codebase has been substantially redesigned and extended.
           </p>
           <div class="note">
-            <strong>Note:</strong> This fork includes additional improvements
-            and bug fixes. See the
-            <a href="#improvements">SET Improvements</a> section below for
-            details.
+            The project is developed with AI-assisted exploration, coding,
+            testing, and review. Contributions and careful human review remain
+            welcome and important.
           </div>
-        </div>
+        </section>
 
-        <div class="section" id="features">
-          <h2>Features</h2>
-          <div class="feature-list">
-            <div class="feature">
-              <strong>Nuxt Support</strong><br />Works with Nuxt 3 out of the
-              box
+        <section id="demo">
+          <h2>Live demo</h2>
+          <div class="demo-banner">
+            <div>
+              <h3>Try every calendar in the browser</h3>
+              <p>Test locale, calendar, range, time, and advanced props without installing anything.</p>
             </div>
-            <div class="feature">
-              <strong>Single & Range Selection</strong><br />Select single dates
-              or date ranges
-            </div>
-            <div class="feature">
-              <strong>Date & Time</strong><br />Pick dates, times, or both
-              together
-            </div>
-            <div class="feature">
-              <strong>Keyboard Support</strong><br />Navigate with arrow keys
-            </div>
-            <div class="feature">
-              <strong>Customizable Style</strong><br />Fully styleable with CSS
-              variables
-            </div>
-            <div class="feature">
-              <strong>Localization</strong><br />Persian and English built-in
-            </div>
-            <div class="feature">
-              <strong>Minute/Hour Step</strong><br />Configurable time
-              increments
-            </div>
-            <div class="feature">
-              <strong>Dual Input</strong><br />Optional separate start/end
-              inputs
-            </div>
+            <a class="button" href="demo.html">Launch demo</a>
           </div>
-        </div>
+        </section>
 
-        <div class="section" id="improvements">
-          <h2>SET (Improvements)</h2>
-          <div class="improvement">
-            <h3>New Features in This Fork</h3>
-            <ul>
-              <li>
-                <strong>minuteStep prop</strong> - Control the step increment
-                for adding minutes in time/datetime pickers
-              </li>
-              <li>
-                <strong>hourStep prop</strong> - Control the step increment for
-                adding hours in time/datetime pickers
-              </li>
-              <li>
-                <strong>Time step bug fixes</strong> - Fixed issues with time
-                navigation when using custom step values
-              </li>
-            </ul>
-            <p>
-              These features allow more flexible time picking, especially useful
-              for appointment scheduling, time slot selection, and similar use
-              cases.
-            </p>
-          </div>
-        </div>
-
-        <div class="section" id="installation">
+        <section id="install">
           <h2>Installation</h2>
-          <pre>npm install @h-sanadgol/vue3-multi-calendar-datepicker</pre>
-          <p>or</p>
-          <pre>pnpm add @h-sanadgol/vue3-multi-calendar-datepicker</pre>
-        </div>
+          <pre><code>npm install @h-sanadgol/vue3-multi-calendar-datepicker
 
-        <div class="section" id="basic-usage">
-          <h2>Basic Usage</h2>
-          <pre><code>&lt;template&gt;
-  &lt;DatePicker
-    v-model="date"
-    type="date"
-    :minute-step="5"
-    :hour-step="2"
-  /&gt;
-&lt;/template&gt;
+# or
+pnpm add @h-sanadgol/vue3-multi-calendar-datepicker</code></pre>
+        </section>
 
-&lt;script setup&gt;
+        <section id="usage">
+          <h2>Basic usage</h2>
+          <pre><code>&lt;script setup lang="ts"&gt;
+import { ref } from 'vue';
 import DatePicker from '@h-sanadgol/vue3-multi-calendar-datepicker';
-&lt;/script&gt;</code></pre>
-        </div>
 
-        <div class="section" id="props">
-          <h2>Props</h2>
-          <table>
-            <tr>
-              <th>Prop</th>
-              <th>Type</th>
-              <th>Default</th>
-              <th>Description</th>
-            </tr>
-            <tr>
-              <td><code>type</code></td>
-              <td>String</td>
-              <td><code>'date'</code></td>
-              <td>
-                Type of picker: <code>date</code>, <code>time</code>, or
-                <code>datetime</code>
-              </td>
-            </tr>
-            <tr>
-              <td><code>format</code></td>
-              <td>String</td>
-              <td><code>'YYYY-MM-DD'</code></td>
-              <td>Format of the model value</td>
-            </tr>
-            <tr>
-              <td><code>inputFormat</code></td>
-              <td>String</td>
-              <td>same as <code>type</code></td>
-              <td>Format of the input value</td>
-            </tr>
-            <tr>
-              <td><code>displayFormat</code></td>
-              <td>String</td>
-              <td><code>'?D ?MMMM'</code></td>
-              <td>Format shown in the footer</td>
-            </tr>
-            <tr>
-              <td><code>from</code></td>
-              <td>String</td>
-              <td><code>'1300'</code></td>
-              <td>Start date of the picker</td>
-            </tr>
-            <tr>
-              <td><code>to</code></td>
-              <td>String</td>
-              <td><code>'1499'</code></td>
-              <td>End date of the picker</td>
-            </tr>
-            <tr>
-              <td><code>mode</code></td>
-              <td>String</td>
-              <td><code>'range'</code></td>
-              <td>Selection mode: <code>single</code> or <code>range</code></td>
-            </tr>
-            <tr>
-              <td><code>locale</code></td>
-              <td>String</td>
-              <td><code>'fa'</code></td>
-              <td>
-                Locale: <code>fa</code>, <code>en</code>, <code>fa,en</code>,
-                etc.
-              </td>
-            </tr>
-            <tr>
-              <td><code>column</code></td>
-              <td>Number | Object</td>
-              <td><code>{ 576: 1 }</code></td>
-              <td>Number of columns</td>
-            </tr>
-            <tr>
-              <td><code>minuteStep</code></td>
-              <td>Number</td>
-              <td><code>1</code></td>
-              <td>Step increment for adding minutes</td>
-            </tr>
-            <tr>
-              <td><code>hourStep</code></td>
-              <td>Number</td>
-              <td><code>1</code></td>
-              <td>Step increment for adding hours</td>
-            </tr>
-            <tr>
-              <td><code>autoSubmit</code></td>
-              <td>Boolean</td>
-              <td><code>true</code></td>
-              <td>Auto submit when selection is complete</td>
-            </tr>
-            <tr>
-              <td><code>clearable</code></td>
-              <td>Boolean</td>
-              <td><code>false</code></td>
-              <td>Allow clearing the selected date</td>
-            </tr>
-            <tr>
-              <td><code>modal</code></td>
-              <td>Boolean</td>
-              <td><code>false</code></td>
-              <td>Show picker as modal</td>
-            </tr>
-            <tr>
-              <td><code>show</code></td>
-              <td>Boolean</td>
-              <td><code>false</code></td>
-              <td>Controlled visibility of picker</td>
-            </tr>
-            <tr>
-              <td><code>clickOn</code></td>
-              <td>String</td>
-              <td><code>'all'</code></td>
-              <td>
-                Trigger picker on: <code>all</code>, <code>input</code>,
-                <code>icon</code>, <code>none</code>
-              </td>
-            </tr>
-            <tr>
-              <td><code>label</code></td>
-              <td>String</td>
-              <td>undefined</td>
-              <td>Label text</td>
-            </tr>
-            <tr>
-              <td><code>dualInput</code></td>
-              <td>Boolean</td>
-              <td><code>false</code></td>
-              <td>Use two inputs for display</td>
-            </tr>
-            <tr>
-              <td><code>iconInside</code></td>
-              <td>Boolean</td>
-              <td><code>false</code></td>
-              <td>Show icon inside input</td>
-            </tr>
-            <tr>
-              <td><code>shortcut</code></td>
-              <td>Boolean | Object</td>
-              <td><code>false</code></td>
-              <td>Shortcuts for quick selection</td>
-            </tr>
-            <tr>
-              <td><code>disable</code></td>
-              <td>Array | String | Function | RegExp</td>
-              <td>undefined</td>
-              <td>Disable specific dates/times</td>
-            </tr>
-            <tr>
-              <td><code>localeConfig</code></td>
-              <td>Object</td>
-              <td>undefined</td>
-              <td>Custom locale configuration</td>
-            </tr>
-            <tr>
-              <td><code>styles</code></td>
-              <td>Object</td>
-              <td>undefined</td>
-              <td>Custom styles</td>
-            </tr>
-            <tr>
-              <td><code>color</code></td>
-              <td>String</td>
-              <td>undefined</td>
-              <td>
-                Preset color: <code>red</code>, <code>green</code>,
-                <code>blue</code>, etc.
-              </td>
-            </tr>
-          </table>
-        </div>
+const date = ref('1404/01/15');
+&lt;/script&gt;
 
-        <div class="section" id="events">
-          <h2>Events</h2>
-          <table>
-            <tr>
-              <th>Event</th>
-              <th>Payload</th>
-              <th>Description</th>
-            </tr>
-            <tr>
-              <td><code>select</code></td>
-              <td><code>date</code></td>
-              <td>Emitted when a date/time is selected</td>
-            </tr>
-            <tr>
-              <td><code>submit</code></td>
-              <td><code>date | dates</code></td>
-              <td>Emitted when selection is submitted</td>
-            </tr>
-            <tr>
-              <td><code>open</code></td>
-              <td>-</td>
-              <td>Emitted when picker opens</td>
-            </tr>
-            <tr>
-              <td><code>close</code></td>
-              <td>-</td>
-              <td>Emitted when picker closes</td>
-            </tr>
-            <tr>
-              <td><code>clear</code></td>
-              <td>-</td>
-              <td>Emitted when selection is cleared</td>
-            </tr>
-            <tr>
-              <td><code>update:modelValue</code></td>
-              <td><code>value</code></td>
-              <td>Emitted when model value changes</td>
-            </tr>
-          </table>
-        </div>
-
-        <div class="section" id="examples">
-          <h2>Examples</h2>
-
-          <div class="example">
-            <div class="example-title">Date Picker</div>
-            <pre><code>&lt;template&gt;
-  &lt;DatePicker v-model="date" type="date" /&gt;
-&lt;/template&gt;</code></pre>
-          </div>
-
-          <div class="example">
-            <div class="example-title">Time Picker</div>
-            <pre><code>&lt;template&gt;
-  &lt;DatePicker
-    v-model="time"
-    type="time"
-    :minute-step="10"
-    :hour-step="2"
-  /&gt;
-&lt;/template&gt;</code></pre>
-          </div>
-
-          <div class="example">
-            <div class="example-title">DateTime Picker</div>
-            <pre><code>&lt;template&gt;
-  &lt;DatePicker
-    v-model="datetime"
-    type="datetime"
-    :minute-step="5"
-  /&gt;
-&lt;/template&gt;</code></pre>
-          </div>
-
-          <div class="example">
-            <div class="example-title">Range Selection</div>
-            <pre><code>&lt;template&gt;
-  &lt;DatePicker v-model="range" mode="range" /&gt;
-&lt;/template&gt;</code></pre>
-          </div>
-
-          <div class="example">
-            <div class="example-title">Single Selection</div>
-            <pre><code>&lt;template&gt;
-  &lt;DatePicker v-model="date" mode="single" /&gt;
-&lt;/template&gt;</code></pre>
-          </div>
-
-          <div class="example">
-            <div class="example-title">With minuteStep and hourStep</div>
-            <pre><code>&lt;template&gt;
-  &lt;DatePicker
-    v-model="appointment"
-    type="datetime"
-    :minute-step="15"
-    :hour-step="1"
-  /&gt;
-&lt;/template&gt;</code></pre>
-          </div>
-
-          <div class="example">
-            <div class="example-title">With Disabled Dates</div>
-            <pre><code>&lt;template&gt;
+&lt;template&gt;
   &lt;DatePicker
     v-model="date"
-    type="date"
-    disable="1399/6/15"
+    calendar="jalali"
+    locale="fa"
+    mode="single"
+    clearable
   /&gt;
 &lt;/template&gt;</code></pre>
-          </div>
+        </section>
 
-          <div class="example">
-            <div class="example-title">Custom Locale</div>
-            <pre><code>&lt;template&gt;
-  &lt;DatePicker
-    v-model="date"
-    locale="en"
-    :locale-config="customLocale"
-  /&gt;
-&lt;/template&gt;</code></pre>
+        <section id="calendars">
+          <h2>Supported calendars</h2>
+          <div class="grid">
+            <div class="card"><strong>Jalali / Persian</strong><br /><code>calendar="jalali"</code><br />Default locale: <code>fa</code></div>
+            <div class="card"><strong>Gregorian</strong><br /><code>calendar="gregorian"</code><br />Default locale: <code>en</code></div>
+            <div class="card"><strong>Hijri / Islamic</strong><br /><code>calendar="hijri"</code><br />Umm al-Qura by default</div>
+            <div class="card"><strong>Hebrew</strong><br /><code>calendar="hebrew"</code><br />Default locale: <code>he</code></div>
+            <div class="card"><strong>Thai Buddhist</strong><br /><code>calendar="buddhist"</code><br />Default locale: <code>th</code></div>
+            <div class="card"><strong>Chinese</strong><br /><code>calendar="chinese"</code><br />Default locale: <code>zh</code></div>
           </div>
-        </div>
+          <p>Calendar and language are independent. For example, a Jalali calendar can use English labels with <code>calendar="jalali" locale="en"</code>.</p>
+        </section>
 
-        <div class="section" id="nuxt">
-          <h2>Nuxt Module</h2>
+        <section id="props">
+          <h2>Common props</h2>
+          <table>
+            <thead><tr><th>Prop</th><th>Values</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td><code>type</code></td><td><code>date</code>, <code>time</code>, <code>datetime</code></td><td>Choose the value type.</td></tr>
+              <tr><td><code>mode</code></td><td><code>single</code>, <code>range</code></td><td>Choose a single value or start/end range.</td></tr>
+              <tr><td><code>locale</code></td><td><code>fa</code>, <code>en</code>, <code>ar</code>, <code>he</code>, <code>th</code>, <code>zh</code></td><td>Set the UI language.</td></tr>
+              <tr><td><code>hijri-provider</code></td><td><code>ummalqura</code>, <code>tabular</code></td><td>Choose the Hijri calculation method.</td></tr>
+              <tr><td><code>model-calendar</code></td><td>Any supported calendar or <code>active</code></td><td>Choose the calendar used to serialize <code>v-model</code>.</td></tr>
+              <tr><td><code>from</code>, <code>to</code></td><td>Calendar-formatted strings</td><td>Limit the selectable range.</td></tr>
+              <tr><td><code>week-starts-on</code>, <code>weekend-days</code></td><td>Weekday numbers</td><td>Configure the week layout and weekly holidays.</td></tr>
+              <tr><td><code>minute-step</code>, <code>hour-step</code></td><td>Positive numbers</td><td>Control time increments.</td></tr>
+              <tr><td><code>color</code></td><td><code>blue</code>, <code>red</code>, <code>green</code>, etc.</td><td>Choose a preset theme color.</td></tr>
+            </tbody>
+          </table>
+          <p>See the full API and examples in the repository <a href="https://github.com/h-sanadgol/vue3-multi-calendar-datepicker/blob/master/README.md">README</a>.</p>
+        </section>
+
+        <section id="nuxt">
+          <h2>Nuxt 3</h2>
           <pre><code>// nuxt.config.ts
 export default defineNuxtConfig({
   modules: ['@h-sanadgol/vue3-multi-calendar-datepicker/nuxt'],
 });</code></pre>
-        </div>
+          <p>The Nuxt module registers <code>DatePicker</code> globally.</p>
+        </section>
 
-        <div class="section">
-          <h2>Original Documentation</h2>
+        <section id="contribute">
+          <h2>Contribute and report issues</h2>
           <p>
-            For the original documentation and examples, visit
-            <a href="https://alireza-ab.ir/datepicker"
-              >https://alireza-ab.ir/datepicker</a
-            >.
+            Pull requests are welcome. For bugs, incorrect conversions, or
+            locale issues, please open an issue with the calendar, locale,
+            browser/runtime, reproduction steps, and expected result.
           </p>
-        </div>
-      </div>
+          <div class="actions">
+            <a class="button" style="color: white; background: var(--brand); border-color: var(--brand)" href="https://github.com/h-sanadgol/vue3-multi-calendar-datepicker/issues">Report an issue</a>
+            <a class="button" style="color: white; background: var(--brand); border-color: var(--brand)" href="https://github.com/h-sanadgol/vue3-multi-calendar-datepicker/pulls">Open a pull request</a>
+          </div>
+        </section>
+      </main>
     </div>
+
+    <footer>Released under the MIT License · <a href="https://github.com/h-sanadgol/vue3-multi-calendar-datepicker">GitHub repository</a></footer>
   </body>
 </html>

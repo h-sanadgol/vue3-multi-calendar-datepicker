@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Multi-Calendar Datepicker Demo</title>
+    <style>
+      :root { color-scheme: light; font: 16px/1.5 system-ui, sans-serif; color: #19334a; background: #f4f8f7; }
+      body { margin: 0; padding: 32px 18px 70px; }
+      .shell { max-width: 960px; margin: auto; }
+      .top { display: flex; justify-content: space-between; gap: 18px; align-items: center; margin-bottom: 24px; }
+      .top a { color: #096452; }
+      .controls, .preview { background: white; border: 1px solid #dce8e5; border-radius: 18px; padding: 24px; box-shadow: 0 16px 40px rgba(24, 50, 74, .08); }
+      .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+      label { display: grid; gap: 6px; font-weight: 700; }
+      select { padding: 10px; border: 1px solid #c5d8d4; border-radius: 8px; background: white; font: inherit; }
+      .preview { min-height: 360px; }
+      .output { margin-top: 28px; padding: 14px; border-radius: 10px; background: #eef8f5; overflow-wrap: anywhere; }
+      .back { display: inline-block; margin-top: 22px; color: #096452; }
+      @media (max-width: 620px) { .top { align-items: flex-start; flex-direction: column; } }
+    </style>
+  </head>
+  <body>
+    <div id="app" class="shell">
+      <div class="top">
+        <div><h1>Interactive datepicker demo</h1><p>Try the supported calendar systems and picker modes.</p></div>
+        <a href="index.html">Back to guide</a>
+      </div>
+      <div class="controls">
+        <label>Calendar
+          <select v-model="calendar">
+            <option value="jalali">Jalali / Persian</option>
+            <option value="gregorian">Gregorian</option>
+            <option value="hijri">Hijri</option>
+            <option value="hebrew">Hebrew</option>
+            <option value="buddhist">Thai Buddhist</option>
+            <option value="chinese">Chinese</option>
+          </select>
+        </label>
+        <label>Locale
+          <select v-model="locale">
+            <option value="en">English</option><option value="fa">فارسی</option>
+            <option value="ar">العربية</option><option value="he">עברית</option>
+            <option value="th">ไทย</option><option value="zh">中文</option>
+          </select>
+        </label>
+        <label>Type
+          <select v-model="type"><option value="date">Date</option><option value="time">Time</option><option value="datetime">Date &amp; time</option></select>
+        </label>
+        <label>Mode
+          <select v-model="mode"><option value="single">Single</option><option value="range">Range</option></select>
+        </label>
+      </div>
+      <div class="preview">
+        <date-picker
+          :key="`${calendar}-${locale}-${type}-${mode}`"
+          v-model="value"
+          :calendar="calendar"
+          :locale="locale"
+          :type="type"
+          :mode="mode"
+          :column="1"
+          hijri-provider="ummalqura"
+          color="blue"
+          clearable
+        ></date-picker>
+        <div class="output"><strong>v-model:</strong> {{ value || '—' }}</div>
+      </div>
+    </div>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://unpkg.com/@h-sanadgol/vue3-multi-calendar-datepicker@2.0.1/dist/index-umd.js"></script>
+    <script>
+      const DatePickerComponent = window.DatePicker.default || window.DatePicker;
+      const { createApp, ref, watch } = Vue;
+      const app = createApp({
+        setup() {
+          const calendar = ref('gregorian');
+          const locale = ref('en');
+          const type = ref('date');
+          const mode = ref('single');
+          const value = ref('2025-04-04');
+          watch([calendar, type, mode], () => {
+            if (mode.value === 'range') value.value = undefined;
+            else if (type.value === 'time') value.value = '14:30';
+            else value.value = type.value === 'datetime' ? '2025-04-04 14:30' : '2025-04-04';
+          });
+          return { calendar, locale, type, mode, value };
+        },
+      });
+      app.component('DatePicker', DatePickerComponent);
+      app.mount('#app');
+    </script>
+  </body>
+</html>

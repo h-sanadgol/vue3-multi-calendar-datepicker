@@ -336,15 +336,19 @@ Calendar adapters keep calendar-specific conversion and navigation logic separat
 
 ## Contributing
 
-Issues and pull requests are welcome. Before opening a pull request:
+This project is actively developed with the help of AI-assisted development and code review. AI is used to explore implementation options, improve the code, write tests, and identify edge cases; changes are still reviewed and validated against the project's behavior and build requirements.
+
+The project is open to community contributions. Issues and pull requests are welcome:
 
 1. Keep the public API backward-compatible unless the change is intentional and documented.
 2. Add or update tests for behavior changes.
 3. Run `pnpm lint` and `pnpm build`.
 4. Update the README or release notes when changing public behavior.
 
+If you find a bug, an incorrect calendar conversion, a locale problem, or a documentation issue, please [open an issue](https://github.com/h-sanadgol/vue3-multi-calendar-datepicker/issues) with a minimal reproduction, the calendar and locale used, the browser/runtime, and the expected result. This helps the maintainers reproduce and fix the problem quickly.
+
 ## License
 
 This project is released under the [MIT License](./LICENSE).
 
-The project originated as a fork of [@alireza-ab/vue3-persian-datepicker](https://github.com/alireza-ab/vue3-persian-datepicker). See the repository history and package metadata for attribution.
+This project began from a copied working tree inspired by [@alireza-ab/vue3-persian-datepicker](https://github.com/alireza-ab/vue3-persian-datepicker), not from a direct fork workflow. Most of the current codebase has since been redesigned, extended, and adapted for multiple calendar systems. The original project and author are acknowledged for the foundation and inspiration; the current implementation is maintained independently in this repository.

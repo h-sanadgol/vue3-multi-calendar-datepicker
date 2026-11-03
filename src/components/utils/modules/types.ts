@@ -18,7 +18,13 @@ export type RecursivePartial<T> = {
       : T[P];
 };
 
-export type Calendar = 'jalali' | 'gregorian';
+export type Calendar =
+  | 'jalali'
+  | 'gregorian'
+  | 'hijri'
+  | 'hebrew'
+  | 'buddhist'
+  | 'chinese';
 export type Dir = 'rtl' | 'ltr';
 export type Units =
   | 'year'
@@ -43,6 +49,7 @@ export type MonthDays = Obj<
   {
     empty?: boolean;
     friday?: boolean;
+    weekend?: boolean;
     raw?: PersianDate;
     startRange?: boolean;
     endRange?: boolean;

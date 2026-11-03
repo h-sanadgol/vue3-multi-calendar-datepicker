@@ -6,6 +6,7 @@
       { 'pdp-range': mode === 'range' },
       { 'pdp-modal': modal },
       { 'pdp-dual': dualInput },
+      { 'pdp-open': showDatePicker },
       lang.dir.input,
     ]"
   >
@@ -80,7 +81,7 @@
               <li
                 v-for="(year, index) in years"
                 :key="index"
-                :class="{ selected: onDisplay.year() == year }"
+                :class="{ selected: displayYear(onDisplay) == year }"
                 @click="changeSelectedYear(year)"
               >
                 {{ year }}
@@ -88,7 +89,7 @@
             </ul>
           </div>
           <div v-if="type.includes('date')" class="pdp-header">
-            <div v-if="locale.includes(',')" class="top">
+            <div v-if="effectiveLocale.includes(',')" class="top">
               <div>{{ lang.translations.text }}</div>
               <button type="button" :tabindex="tabIndex" @click="changeLocale">
                 {{ nextLocale }}
@@ -101,7 +102,7 @@
                 :class="[
                   'pdp-arrow',
                   {
-                    disabled: !checkDate(onDisplay.clone().subMonth(), 'month'),
+                    disabled: !checkDate(calendarMonthDate(onDisplay, -1), 'month'),
                   },
                 ]"
                 :title="lang.translations.prevMonth"
@@ -125,7 +126,7 @@
                     @click="showPart('month')"
                   >
                     {{
-                      months[onDisplay.clone().addMonth(i).month()].label
+                      months[displayMonth(calendarMonthDate(onDisplay, i))].label
                     }}</button
                   ><button
                     class="pdp-year"
@@ -133,7 +134,7 @@
                     tabindex="-1"
                     @click="showPart('year')"
                   >
-                    {{ onDisplay.clone().addMonth(i).year() }}
+                    {{ displayYear(calendarMonthDate(onDisplay, i)) }}
                   </button>
                 </div>
               </div>
@@ -143,7 +144,7 @@
                 :class="[
                   'pdp-arrow',
                   {
-                    disabled: !checkDate(onDisplay.clone().addMonth(), 'month'),
+                    disabled: !checkDate(calendarMonthDate(onDisplay, 1), 'month'),
                   },
                 ]"
                 :title="lang.translations.nextMonth"
@@ -170,7 +171,7 @@
               >
                 <div class="pdp-week">
                   <div
-                    v-for="(weekday, index) in lang.weekdays"
+                    v-for="(weekday, index) in orderedWeekdays"
                     :key="index"
                     class="pdp-weekday"
                   >
@@ -186,6 +187,7 @@
                         'pdp-day',
                         { empty: day.empty },
                         { friday: day.friday },
+                        { weekend: day.weekend },
                         { today: day.today },
                         { 'start-range': day.startRange },
                         { 'end-range': day.endRange },
@@ -294,10 +296,10 @@
             <div>
               <slot name="footer"></slot>
               <small v-if="selectedDates[0]">
-                {{ selectedDates[0].toString(formats.display) }}
+                {{ formatDateValue(selectedDates[0], formats.display) }}
               </small>
               <small v-if="selectedDates.length == 2">
-                - {{ selectedDates[1].toString(formats.display) }}
+                - {{ formatDateValue(selectedDates[1], formats.display) }}
               </small>
             </div>
             <div>
@@ -357,8 +359,14 @@
   //TODO: refactor and write comment --> pay a high attention
 
   // ************************ Core ************************
-  import { defineComponent, type PropType } from 'vue';
+  import { defineComponent, markRaw, type PropType } from 'vue';
   import { PersianDate, Core } from './utils/modules/core';
+  import {
+    createCalendarAdapter,
+    type CalendarAdapter,
+    type CalendarParts,
+    type HijriProvider,
+  } from '../calendars';
   // ************************ Types ************************
   import type {
     Obj,
@@ -376,6 +384,8 @@
     Months,
     Shortcuts,
     DefaultDate,
+    Calendar,
+    Units,
   } from './utils/modules/types';
   // ************************ Components ************************
   import PDPArrow from './utils/components/PDPArrow.vue';
@@ -383,6 +393,11 @@
   import PDPAlt from './utils/components/PDPAlt.vue';
 
   const isClient = typeof window !== 'undefined';
+
+  // PersianDate exposes overloaded methods whose structural type is not
+  // compatible with Vue's inferred template proxy type. The helpers cast at
+  // the runtime boundary after accepting the template's date-like object.
+  type CalendarDateLike = object;
 
   export { PersianDate };
   export default defineComponent({
@@ -562,7 +577,8 @@
 
       /**
        * the locale of datepicker
-       * @default "fa"
+       * @default calendar-aware (fa for jalali, en for gregorian, ar for hijri,
+       * he for hebrew, th for buddhist, zh for chinese)
        * @type String
        * @values fa | en | fa,en |  en,fa
        * @desc Except above values, you can add
@@ -570,8 +586,63 @@
        * @since 2.0.0
        */
       locale: {
-        default: 'fa',
+        default: undefined,
         type: String,
+      },
+
+      /**
+       * the calendar system used for the picker
+       * @default undefined (uses the selected locale calendar)
+       * @values jalali | gregorian
+       */
+      calendar: {
+        type: String as PropType<Calendar>,
+        validator: (val: string) =>
+          [
+            'jalali',
+            'gregorian',
+            'hijri',
+            'hebrew',
+            'buddhist',
+            'chinese',
+          ].includes(val),
+      },
+
+      /** Calendar used to serialize modelValue. Defaults to the active calendar for compatibility. */
+      modelCalendar: {
+        type: String as PropType<Calendar | 'active'>,
+        default: 'active',
+        validator: (val: string) =>
+          val === 'active' ||
+          [
+            'jalali',
+            'gregorian',
+            'hijri',
+            'hebrew',
+            'buddhist',
+            'chinese',
+          ].includes(val),
+      },
+
+      /** First weekday as a JavaScript weekday (0=Sunday ... 6=Saturday). */
+      weekStartsOn: {
+        type: [Number, String] as PropType<number | 'auto'>,
+        default: 'auto',
+      },
+
+      /** Weekly official holidays as JavaScript weekdays. */
+      weekendDays: {
+        type: Array as PropType<number[]>,
+      },
+
+      /**
+       * Hijri calculation provider
+       * @default "ummalqura"
+       */
+      hijriProvider: {
+        type: String as PropType<HijriProvider>,
+        default: 'ummalqura',
+        validator: (val: string) => ['ummalqura', 'tabular'].includes(val),
       },
 
       /**
@@ -678,14 +749,62 @@
         pickerPlace: {} as PickerPlace,
         documentWidth: isClient ? window.innerWidth : Infinity,
         langs: Core.langs,
-        currentLocale: this.locale.split(',')[0],
+        currentLocale: this.locale || this.defaultLocaleForCalendar(this.calendar),
         interval: null as ReturnType<typeof setInterval> | null,
         submitedValue: [] as PersianDate[],
       };
     },
     computed: {
       lang(): Langs[string] {
-        return this.langs[this.currentLocale];
+        return this.langs[this.currentLocale] || this.langs.en;
+      },
+      effectiveLocale(): string {
+        return this.locale || this.defaultLocaleForCalendar(this.calendar);
+      },
+      activeCalendar(): Calendar {
+        return this.calendar || this.lang.calendar;
+      },
+      calendarLang(): Langs[string] {
+        return this.lang;
+      },
+      calendarWeekStart(): number {
+        if (this.weekStartsOn !== 'auto') return Number(this.weekStartsOn);
+        switch (this.activeCalendar) {
+          case 'jalali':
+          case 'hijri':
+            return 6;
+          default:
+            return 0;
+        }
+      },
+      calendarWeekendDays(): number[] {
+        if (this.weekendDays) return this.weekendDays;
+        switch (this.activeCalendar) {
+          case 'jalali': return [5];
+          case 'hijri': return [5, 6];
+          case 'hebrew': return [6];
+          default: return [0, 6];
+        }
+      },
+      orderedWeekdays(): string[] {
+        const labels = this.calendarLang.weekdays as unknown as string[];
+        const sourceStart = this.currentLocale === 'fa' ? 6 : 0;
+        return Array.from({ length: 7 }, (_, index) =>
+          labels[(this.calendarWeekStart - sourceStart + index + 7) % 7],
+        );
+      },
+      calendarMonthNames(): string[] {
+        const year = this.onDisplay
+          ? this.getCalendarParts(this.onDisplay).year
+          : undefined;
+        return this.monthNamesForYear(year);
+      },
+      calendarAdapter(): CalendarAdapter | undefined {
+        if (this.activeCalendar === 'jalali' || this.activeCalendar === 'gregorian')
+          return undefined;
+        return createCalendarAdapter(this.activeCalendar, {
+          hijriProvider: this.hijriProvider,
+        });
       },
       attrs(): Attrs {
         const attrs: Attrs = {
@@ -725,8 +844,8 @@
         return attrs;
       },
       years(): number[] {
-        let start: number = this.fromDate!.year();
-        const end: number = this.toDate!.year();
+        let start: number = this.displayYear(this.fromDate!);
+        const end: number = this.displayYear(this.toDate!);
         return Array(end - start + 1)
           .fill(null)
           .map(() => start++);
@@ -768,12 +887,13 @@
         const months: MonthDays[][] = [];
         for (let i = 0; i < this.columnCount; i++) {
           let emptyCells;
-          const selectedYear = this.onDisplay!.clone().addMonth(i).year();
-          const selectedMonth = this.onDisplay!.clone().addMonth(i).month();
-          emptyCells = +this.onDisplay!.clone()
-            .parse(selectedYear, selectedMonth, 1)
-            .toString('?d');
-          let daysOfMonthNumber = this.onDisplay!.getDaysInMonth(
+          const monthDate = this.calendarMonthDate(this.onDisplay!, i);
+          const selectedParts = this.getCalendarParts(monthDate);
+          const selectedYear = selectedParts.year;
+          const selectedMonth = selectedParts.month;
+          const firstDay = this.calendarDayDate(monthDate, 1);
+          emptyCells = this.calendarWeekdayOffset(firstDay);
+          let daysOfMonthNumber = this.calendarDaysInMonth(
             selectedYear,
             selectedMonth,
           );
@@ -788,44 +908,28 @@
                 --emptyCells;
               } else if (daysOfMonthNumber) {
                 //FIXME: refactor
+                const dayDate = this.calendarDayDate(monthDate, showDay);
                 month[week][day] = {
-                  friday: day == 6,
-                  raw: this.onDisplay!.clone().addMonth(i).date(showDay),
+                  friday: this.calendarWeekendDays.includes(
+                    new Date(this.getDateTimestamp(dayDate)).getDay(),
+                  ),
+                  weekend: this.calendarWeekendDays.includes(
+                    new Date(this.getDateTimestamp(dayDate)).getDay(),
+                  ),
+                  raw: dayDate,
                   startRange:
                     this.selectedDates[0] &&
-                    this.selectedDates[0].isSame(
-                      selectedYear,
-                      selectedMonth,
-                      showDay,
-                    ),
+                    this.isSameCalendarDate(this.selectedDates[0], dayDate),
                   endRange:
                     this.selectedDates[1] &&
-                    this.selectedDates[1].isSame(
-                      selectedYear,
-                      selectedMonth,
-                      showDay,
-                    ),
+                    this.isSameCalendarDate(this.selectedDates[1], dayDate),
                   inRange:
                     this.selectedDates.length == 2 &&
-                    this.core
-                      .clone()
-                      .parse(selectedYear, selectedMonth, showDay)
-                      .isBetween(
-                        ...(this.selectedDates.map((date) =>
-                          date.toString(),
-                        ) as [string, string]),
-                      ),
+                    this.isBetweenSelectedDates(dayDate),
                   disabled:
-                    !this.checkDate(
-                      this.onDisplay!.clone().addMonth(i).date(showDay),
-                      'date',
-                    ) ||
-                    this.isInDisable(
-                      this.onDisplay!.clone().addMonth(i).date(showDay),
-                    ),
-                  today: this.core
-                    .clone()
-                    .isSame(selectedYear, selectedMonth, showDay),
+                    !this.checkDate(dayDate, 'date') ||
+                    this.isInDisable(dayDate),
+                  today: this.isToday(dayDate),
                   val: showDay++,
                 };
                 --daysOfMonthNumber;
@@ -838,12 +942,18 @@
       },
       months(): Months {
         const months: Months = {};
-        for (let i = 1; i <= 12; i++) {
+        const count = this.activeCalendar === 'hebrew'
+          ? this.calendarMonthNames.length
+          : 12;
+        for (let i = 1; i <= count; i++) {
           months[i] = {
-            label: this.lang.months[i - 1],
-            selected: this.onDisplay!.month() == i,
+            label: this.calendarMonthNames[i - 1] || `Month ${i}`,
+            selected: this.displayMonth(this.onDisplay!) == i,
             disabled: !this.checkDate(
-              this.onDisplay!.clone().month(i),
+              this.calendarMonthDate(
+                this.onDisplay!,
+                i - this.displayMonth(this.onDisplay!),
+              ),
               'month',
             ),
           };
@@ -851,7 +961,7 @@
         return months;
       },
       nextLocale(): string {
-        const locales = this.locale.split(',');
+        const locales = this.effectiveLocale.split(',');
         const index = locales.indexOf(this.currentLocale);
         const locale = locales[index + 1] || locales[0];
         return this.langs[locale].translations.label;
@@ -869,7 +979,10 @@
         };
         return {
           model: this.format || format[this.type],
-          input: this.inputFormat || this.lang.inputFormat || this.type,
+          input:
+            this.inputFormat ||
+            this.lang.inputFormat ||
+            (this.calendarAdapter ? format[this.type] : this.type),
           display:
             this.displayFormat ||
             this.lang.displayFormat ||
@@ -953,6 +1066,11 @@
           this.showDatePicker = val;
         },
       },
+      calendar: {
+        handler: function (val) {
+          if (!this.locale) this.currentLocale = this.defaultLocaleForCalendar(val);
+        },
+      },
       showDatePicker: {
         handler: function (val) {
           if (val) this.$emit('open');
@@ -965,12 +1083,15 @@
       },
       from: {
         handler: function (val) {
-          this.fromDate!.fromJalali(val);
+          this.fromDate = this.parseCalendarDate(val);
         },
       },
       to: {
         handler: function (val) {
-          this.toDate!.fromJalali(val);
+          this.toDate = this.normalizeEndDate(
+            this.parseCalendarDate(val),
+            Core.getLastUnit(this.to, this.type),
+          );
         },
       },
       mode: {
@@ -981,8 +1102,11 @@
       },
       locale: {
         handler: function (val, oldVal) {
-          const index = oldVal.split(',').indexOf(this.currentLocale);
-          this.currentLocale = val.split(',')[index];
+          const next = val || this.defaultLocaleForCalendar(this.calendar);
+          const previous = oldVal || this.effectiveLocale;
+          const index = previous.split(',').indexOf(this.currentLocale);
+          this.currentLocale = next.split(',')[index] || next.split(',')[0];
+          if (!this.langs[this.currentLocale]) this.currentLocale = 'en';
         },
       },
       localeConfig: {
@@ -1010,17 +1134,16 @@
       Core.setColor(this.color, this.$refs.root as HTMLElement);
       Core.setStyles(this.styles, this.$refs.root as HTMLElement);
 
-      const calendar = this.lang.calendar;
-      this.fromDate = this.core
-        .clone()
-        .parse(this.defaultDate.from)
-        .calendar(calendar);
-      this.toDate = this.core
-        .clone()
-        .parse(this.defaultDate.to)
-        .endOf(Core.getLastUnit(this.to, this.type))
-        .calendar(calendar);
-      this.core.calendar(calendar);
+      const calendar = this.activeCalendar;
+      const internalCalendar: 'jalali' | 'gregorian' = this.calendarAdapter
+        ? 'gregorian'
+        : (calendar as 'jalali' | 'gregorian');
+      this.fromDate = this.parseCalendarDate(this.defaultDate.from);
+      this.toDate = this.normalizeEndDate(
+        this.parseCalendarDate(this.defaultDate.to),
+        Core.getLastUnit(this.to, this.type),
+      ).calendar(internalCalendar);
+      this.core.calendar(internalCalendar);
 
       const val = this.$attrs.modelValue as string | string[];
       if (val) {
@@ -1043,6 +1166,260 @@
       this.showDatePicker = this.show;
     },
     methods: {
+      defaultLocaleForCalendar(calendar?: Calendar): string {
+        switch (calendar) {
+          case 'jalali': return 'fa';
+          case 'hijri': return 'ar';
+          case 'hebrew': return 'he';
+          case 'buddhist': return 'th';
+          case 'chinese': return 'zh';
+          case 'gregorian': return 'en';
+          default: return 'fa';
+        }
+      },
+      isHebrewLeapYear(year: number): boolean {
+        return ((7 * year + 1) % 19) < 7;
+      },
+      monthNamesForYear(year?: number): string[] {
+        if (this.activeCalendar === 'jalali') {
+          return this.lang.months as unknown as string[];
+        }
+
+        const fallback: Record<string, string[]> = {
+          hijri: this.currentLocale === 'ar'
+            ? ['محرم', 'صفر', 'ربيع الأول', 'ربيع الثاني', 'جمادى الأولى', 'جمادى الثانية', 'رجب', 'شعبان', 'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة']
+            : ['Muharram', 'Safar', 'Rabi al-awwal', 'Rabi al-thani', 'Jumada al-awwal', 'Jumada al-thani', 'Rajab', 'Sha’ban', 'Ramadan', 'Shawwal', 'Dhu al-Qadah', 'Dhu al-Hijjah'],
+          hebrew: this.isHebrewLeapYear(year || 5785)
+            ? (this.currentLocale === 'he' ? ['תשרי', 'חשוון', 'כסלו', 'טבת', 'שבט', 'אדר א׳', 'אדר', 'ניסן', 'אייר', 'סיוון', 'תמוז', 'אב', 'אלול'] : ['Tishri', 'Cheshvan', 'Kislev', 'Tevet', 'Shevat', 'Adar I', 'Adar', 'Nisan', 'Iyar', 'Sivan', 'Tammuz', 'Av', 'Elul'])
+            : (this.currentLocale === 'he' ? ['תשרי', 'חשוון', 'כסלו', 'טבת', 'שבט', 'אדר', 'ניסן', 'אייר', 'סיוון', 'תמוז', 'אב', 'אלול'] : ['Tishri', 'Cheshvan', 'Kislev', 'Tevet', 'Shevat', 'Adar', 'Nisan', 'Iyar', 'Sivan', 'Tammuz', 'Av', 'Elul']),
+        };
+        if (this.activeCalendar === 'hijri') return fallback.hijri;
+        if (this.activeCalendar === 'chinese') {
+          if (this.currentLocale === 'zh') return ['正月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '冬月', '腊月'];
+          const prefix = this.currentLocale === 'fa' ? 'ماه' : this.currentLocale === 'ar' ? 'الشهر' : 'Month';
+          return Array.from({ length: 12 }, (_, index) => `${prefix} ${index + 1}`);
+        }
+
+        const count = this.activeCalendar === 'hebrew' ? fallback.hebrew.length : 12;
+        const names: string[] = [];
+        const calendarName = this.activeCalendar === 'buddhist' ? 'buddhist' : this.activeCalendar === 'hebrew' ? 'hebrew' : 'gregory';
+        const locale = `${this.currentLocale}-u-ca-${calendarName}-nu-latn`;
+        const formatter = new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' });
+        for (let index = 1; index <= count; index++) {
+          try {
+            const date = this.calendarAdapter
+              ? this.calendarAdapter.fromParts({ year: year || 1, month: index, day: 1 })
+              : new Date(Date.UTC((year || 1970) - (this.activeCalendar === 'buddhist' ? 543 : 0), index - 1, 1));
+            names.push(formatter.format(date));
+          } catch {
+            break;
+          }
+        }
+        return names.length ? names : (fallback.hebrew || this.lang.months as unknown as string[]);
+      },
+      usesCalendarAdapter(): boolean {
+        return this.activeCalendar !== 'jalali';
+      },
+      getCalendarParts(date: CalendarDateLike): CalendarParts {
+        const value = date as PersianDate;
+        if (this.calendarAdapter) {
+          return this.calendarAdapter.getParts(
+            new Date(this.getDateTimestamp(value)),
+          );
+        }
+        const native = value
+          .clone()
+          .calendar(this.activeCalendar === 'gregorian' ? 'gregorian' : 'jalali');
+        return {
+          year: native.year(),
+          month: native.month(),
+          day: native.date(),
+          hour: native.hour(),
+          minute: native.minute(),
+          second: native.second(),
+          millisecond: native.millisecond(),
+        };
+      },
+      getDateTimestamp(date: CalendarDateLike): number {
+        const value = date as PersianDate;
+        const timestamp = Number(value.valueOf());
+        if (Number.isFinite(timestamp)) return timestamp;
+        const native = value.toDate();
+        return Number.isFinite(Number(native))
+          ? Number(native)
+          : Date.parse(String(native));
+      },
+      getDayTimestamp(date: CalendarDateLike): number {
+        return Math.floor(this.getDateTimestamp(date) / 86_400_000) * 86_400_000;
+      },
+      normalizeEndDate(date: PersianDate, unit: Units): PersianDate {
+        return markRaw(new PersianDate()
+          .fromGregorian(this.getDateTimestamp(date))
+          .endOf(unit));
+      },
+      fromCalendarParts(parts: CalendarParts): PersianDate {
+        if (this.calendarAdapter) {
+          return markRaw(new PersianDate().fromGregorian(
+            this.calendarAdapter.fromParts(parts).getTime(),
+          ));
+        }
+        const values: [number, number, number, number, number, number, number] = [
+            parts.year,
+            parts.month,
+            parts.day,
+            parts.hour || 0,
+            parts.minute || 0,
+            parts.second || 0,
+            parts.millisecond || 0,
+        ];
+        return markRaw(
+          this.activeCalendar === 'gregorian'
+            ? this.core.clone().fromGregorian(values)
+            : this.core.clone().fromJalali(values),
+        );
+      },
+      displayYear(date: CalendarDateLike): number {
+        return this.getCalendarParts(date).year;
+      },
+      displayMonth(date: CalendarDateLike): number {
+        return this.getCalendarParts(date).month;
+      },
+      displayDay(date: CalendarDateLike): number {
+        return this.getCalendarParts(date).day;
+      },
+      calendarMonthDate(date: CalendarDateLike, amount: number): PersianDate {
+        const value = date as PersianDate;
+        if (!this.calendarAdapter)
+          return markRaw(value.clone().addMonth(amount));
+        return markRaw(new PersianDate().fromGregorian(
+          this.calendarAdapter
+            .addMonths(new Date(this.getDateTimestamp(value)), amount)
+            .getTime(),
+        ));
+      },
+      calendarDayDate(date: CalendarDateLike, day: number): PersianDate {
+        const value = date as PersianDate;
+        if (!this.calendarAdapter)
+          return markRaw(value.clone().date(day));
+        return this.fromCalendarParts({
+          ...this.getCalendarParts(date),
+          day,
+        });
+      },
+      calendarDaysInMonth(year: number, month: number): number {
+        if (this.calendarAdapter) {
+          return this.calendarAdapter.daysInMonth(year, month);
+        }
+        return this.core.getDaysInMonth(year, month);
+      },
+      calendarWeekdayOffset(date: CalendarDateLike): number {
+        const weekday = new Date(this.getDateTimestamp(date)).getDay();
+        return (weekday - this.calendarWeekStart + 7) % 7;
+      },
+      isToday(date: CalendarDateLike): boolean {
+        return (
+          this.getDayTimestamp(date) === this.getDayTimestamp(this.core)
+        );
+      },
+      isSameCalendarDate(first: CalendarDateLike, second: CalendarDateLike): boolean {
+        const a = this.getCalendarParts(first);
+        const b = this.getCalendarParts(second);
+        return a.year === b.year && a.month === b.month && a.day === b.day;
+      },
+      isBetweenSelectedDates(date: CalendarDateLike): boolean {
+        if (this.selectedDates.length !== 2) return false;
+        const value = this.getDayTimestamp(date);
+        const start = this.getDayTimestamp(this.selectedDates[0]);
+        const end = this.getDayTimestamp(this.selectedDates[1]);
+        return value > Math.min(start, end) && value < Math.max(start, end);
+      },
+      formatDateValue(date: CalendarDateLike, format: string): string {
+        const value = date as PersianDate;
+        if (!this.calendarAdapter) return value.toString(format);
+        const parts = this.getCalendarParts(date);
+        const pad = (value: number, size = 2) =>
+          String(value).padStart(size, '0');
+        const monthName =
+          this.monthNamesForYear(parts.year)[parts.month - 1] ||
+          `Month ${parts.month}`;
+        return format
+          .replace('?MMMM', monthName)
+          .replace('MMMM', monthName)
+          .replace('YYYY', String(parts.year))
+          .replace('YY', String(parts.year).slice(-2))
+          .replace('MM', pad(parts.month))
+          .replace('M', String(parts.month))
+          .replace('DD', pad(parts.day))
+          .replace('D', String(parts.day))
+          .replace('HH', pad(parts.hour || 0))
+          .replace('H', String(parts.hour || 0))
+          .replace('mm', pad(parts.minute || 0))
+          .replace('m', String(parts.minute || 0))
+          .replace('ss', pad(parts.second || 0))
+          .replace('s', String(parts.second || 0));
+      },
+      formatModelValue(date: CalendarDateLike): string {
+        const target = this.modelCalendar === 'active'
+          ? this.activeCalendar
+          : this.modelCalendar;
+        if (!target || target === this.activeCalendar) {
+          return this.formatDateValue(date, this.formats.model);
+        }
+        const value = date as PersianDate;
+        const timestamp = this.getDateTimestamp(value);
+        if (target === 'jalali' || target === 'gregorian') {
+          return new PersianDate()
+            .fromGregorian(timestamp)
+            .calendar(target)
+            .toString(this.formats.model);
+        }
+        const adapter = createCalendarAdapter(target, {
+          hijriProvider: this.hijriProvider,
+        });
+        const parts = adapter.getParts(new Date(timestamp));
+        const pad = (part: number, size = 2) => String(part).padStart(size, '0');
+        return this.formats.model
+          .replace('YYYY', String(parts.year))
+          .replace('YY', String(parts.year).slice(-2))
+          .replace('MM', pad(parts.month))
+          .replace('M', String(parts.month))
+          .replace('DD', pad(parts.day))
+          .replace('D', String(parts.day))
+          .replace('HH', pad(parts.hour || 0))
+          .replace('H', String(parts.hour || 0))
+          .replace('mm', pad(parts.minute || 0))
+          .replace('m', String(parts.minute || 0))
+          .replace('ss', pad(parts.second || 0))
+          .replace('s', String(parts.second || 0));
+      },
+      parseCalendarParts(value: string): CalendarParts {
+        const values = value.split(/[-/ .,\\:]/).filter(Boolean).map(Number);
+        return {
+          year: values[0],
+          month: values[1] || 1,
+          day: values[2] || 1,
+          hour: values[3] || 0,
+          minute: values[4] || 0,
+          second: values[5] || 0,
+        };
+      },
+      parseCalendarDate(value: string): PersianDate {
+        if (this.calendarAdapter) {
+          return this.fromCalendarParts(this.parseCalendarParts(value));
+        }
+        const date = this.core.clone();
+        const sourceCalendar: 'jalali' | 'gregorian' =
+          this.calendar === 'gregorian' ? 'gregorian' : 'jalali';
+        if (!/[-/ ]/.test(value)) {
+          return date.calendar(sourceCalendar).parse(value).calendar(
+            this.activeCalendar as 'jalali' | 'gregorian',
+          );
+        }
+        const parsed = sourceCalendar === 'gregorian'
+          ? date.fromGregorian(value)
+          : date.fromJalali(value);
+        return parsed.calendar(this.activeCalendar as 'jalali' | 'gregorian');
+      },
       showPart(part: CalendarPart): void {
         if (part == 'year') {
           this.showMonthSelect = false;
@@ -1068,16 +1445,31 @@
       changeSelectedMonth(month: 'add' | 'sub' | number): void {
         const clone = this.onDisplay!.clone();
         if (month == 'add') {
-          this.onDisplay!.addMonth();
+          this.onDisplay = this.calendarMonthDate(this.onDisplay!, 1);
         } else if (month == 'sub') {
-          this.onDisplay!.subMonth();
-        } else this.onDisplay!.month(month);
+          this.onDisplay = this.calendarMonthDate(this.onDisplay!, -1);
+        } else {
+          const parts = this.getCalendarParts(this.onDisplay!);
+          this.onDisplay = this.fromCalendarParts({
+            ...parts,
+            month,
+            day: Math.min(
+              parts.day,
+              this.calendarDaysInMonth(parts.year, month),
+            ),
+          });
+        }
         if (this.checkDate(this.onDisplay, 'month'))
           this.showMonthSelect = false;
         else this.onDisplay = clone;
       },
       changeSelectedYear(year: number): void {
-        this.onDisplay!.year(year);
+        const parts = this.getCalendarParts(this.onDisplay!);
+        this.onDisplay = this.fromCalendarParts({
+          ...parts,
+          year,
+          day: Math.min(parts.day, this.calendarDaysInMonth(year, parts.month)),
+        });
         if (!this.checkDate(this.onDisplay, 'date'))
           this.onDisplay = this.nearestDate(this.onDisplay as PersianDate);
         this.showYearSelect = false;
@@ -1195,9 +1587,7 @@
       },
       setModel(date?: PersianDate | PersianDate[] | string | string[]): void {
         if (date === undefined) {
-          date = this.selectedDates.map((el) => {
-            return el.toString(this.formats.model);
-          });
+          date = this.selectedDates.map((el) => this.formatModelValue(el));
           if (this.mode == 'single') date = date[0];
         }
         this.$emit('update:modelValue', date);
@@ -1230,6 +1620,22 @@
           });
       },
       checkDate(date: unknown, part: CalendarPart | TypePart): boolean {
+        if (this.calendarAdapter) {
+          const current = Core.isPersianDate(date)
+            ? (date as PersianDate)
+            : this.parseCalendarDate(date as string);
+          const currentTime = this.getDateTimestamp(current);
+          const fromTime = this.getDateTimestamp(this.fromDate!);
+          const toTime = this.getDateTimestamp(this.toDate!);
+          if (part === 'year' || part === 'month' || part === 'date') {
+            const currentDay = this.getDayTimestamp(current);
+            return (
+              currentDay <= this.getDayTimestamp(this.toDate!) &&
+              currentDay >= this.getDayTimestamp(this.fromDate!)
+            );
+          }
+          return currentTime >= fromTime && currentTime <= toTime;
+        }
         let from, to;
         if (!Core.isPersianDate(date))
           date = this.core.clone().parse(date as PersianDate);
@@ -1263,10 +1669,25 @@
         date = Core.isPersianDate(date)
           ? date.clone()
           : this.core.clone().parse(date);
+        if (this.calendarAdapter && Core.isString(disable)) {
+          const disabled = this.parseCalendarDate(disable as string);
+          if (this.type === 'time') {
+            return (
+              date.hour() === disabled.hour() &&
+              date.minute() === disabled.minute()
+            );
+          }
+          return date.clone().startOf('date').isSame(
+            disabled.clone().startOf('date'),
+          );
+        }
         if (Core.isString(disable)) {
           if (this.type == 'time') disable = date.toString() + ' ' + disable;
           return date.calendar('jalali').isSame(disable as string);
         } else if (disable instanceof RegExp) {
+          if (this.calendarAdapter) {
+            return disable.test(this.formatDateValue(date, this.formats.input));
+          }
           const format = {
             date: 'jYYYY/jM/jD',
             datetime: 'jYYYY/jM/jD H:m',
@@ -1278,9 +1699,18 @@
         } else if (Array.isArray(disable)) {
           return disable.some((val) => {
             if (Core.isString(val)) {
+              if (this.calendarAdapter) {
+                return this.isSameCalendarDate(
+                  date,
+                  this.parseCalendarDate(val as string),
+                );
+              }
               if (this.type == 'time') val = date.toString() + ' ' + val;
               return date.calendar('jalali').isSame(val as string);
             } else if (val instanceof RegExp) {
+              if (this.calendarAdapter) {
+                return val.test(this.formatDateValue(date, this.formats.input));
+              }
               const format = {
                 date: 'jYYYY/jM/jD',
                 datetime: 'jYYYY/jM/jD H:m',
@@ -1475,7 +1905,7 @@
       },
       submitDate(close = true): void {
         const displayDate = this.selectedDates.map((el) => {
-          return el.toString(this.formats.input);
+          return this.formatDateValue(el, this.formats.input);
         });
         if (this.dualInput) this.displayValue = displayDate;
         else this.displayValue[0] = displayDate.join(' - ');
@@ -1524,16 +1954,19 @@
         });
       },
       changeLocale(): void {
-        const locales = this.locale.split(',');
+        const locales = this.effectiveLocale.split(',');
         const index = locales.indexOf(this.currentLocale);
         this.currentLocale = locales[index + 1] || locales[0];
-        const calendar = this.lang.calendar;
-        this.core.calendar(calendar);
-        this.fromDate!.calendar(calendar);
-        this.toDate!.calendar(calendar);
-        this.onDisplay!.calendar(calendar);
+        const calendar = this.activeCalendar;
+        const internalCalendar: 'jalali' | 'gregorian' = this.calendarAdapter
+          ? 'gregorian'
+          : (calendar as 'jalali' | 'gregorian');
+        this.core.calendar(internalCalendar);
+        this.fromDate!.calendar(internalCalendar);
+        this.toDate!.calendar(internalCalendar);
+        this.onDisplay!.calendar(internalCalendar);
         for (const date of this.selectedDates) {
-          date.calendar(calendar);
+          date.calendar(internalCalendar);
         }
         this.submitDate(false);
       },
@@ -1633,17 +2066,13 @@
         if (this.mode == 'single' && typeof dates === 'string') dates = [dates];
         this.selectedDates = [];
         (dates as string[]).some((d, index) => {
-          const date = this.core
-            .clone()
-            .fromGregorian(
-              (this.type == 'time'
-                ? this.core.toString('YYYY-MM-DD') + ' '
-                : '') + d,
-            );
-          if (Core.isPersianDate(date)) {
-            this.selectedDates.push(date.clone());
-            this.selectedTimes.push(date.clone());
-            if (index == 0) this.onDisplay = date.clone();
+          const date = this.parseCalendarDate(
+            (this.type == 'time' ? this.core.toString('YYYY-MM-DD') + ' ' : '') + d,
+          );
+          if (date) {
+            this.selectedDates.push(markRaw(date.clone()));
+            this.selectedTimes.push(markRaw(date.clone()));
+            if (index == 0) this.onDisplay = markRaw(date.clone());
           } else {
             this.selectedDates = this.selectedTimes = [];
             return true;

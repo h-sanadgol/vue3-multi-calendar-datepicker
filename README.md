@@ -1,119 +1,350 @@
-# Vue3 Persian Datepicker
+# Vue 3 Multi-Calendar Datepicker
 
-> **Note:** This is a fork of the original [@alireza-ab/vue3-persian-datepicker](https://github.com/alireza-ab/vue3-persian-datepicker) maintained by [Alireza Alibeiki](https://github.com/alireza-ab). All credits for the original work belong to the original author.
+[![npm version](https://img.shields.io/npm/v/%40h-sanadgol%2Fvue3-multi-calendar-datepicker)](https://www.npmjs.com/package/@h-sanadgol/vue3-multi-calendar-datepicker)
+[![Documentation](https://img.shields.io/badge/docs-online-0f766e)](https://h-sanadgol.github.io/vue3-multi-calendar-datepicker)
+[![License](https://img.shields.io/badge/license-MIT-22c55e)](./LICENSE)
 
-A datepicker component for select persian date.
-It's very customizable and easily for use.
+A lightweight, customizable datepicker for Vue 3 and Nuxt 3 with support for multiple calendar systems in one component.
+
+Use the same API for Jalali, Gregorian, Hijri, Hebrew, Thai Buddhist, and Chinese calendars, with single-date, range, time, and datetime selection modes.
 
 ## Features
 
-- **nuxt** support
-- **single and range selection**
-- select **date** and **time**
-- select with **keyboard**
-- customizable **style**
-- localization
-- **minute step** and **hour step** support for time selection
+- Vue 3 and Nuxt 3 support
+- Jalali/Persian, Gregorian, Hijri, Hebrew, Thai Buddhist, and Chinese calendars
+- Calendar-aware default locales with explicit locale overrides
+- Hijri calculation providers: Umm al-Qura (default) and Tabular
+- Single-date and range selection
+- Date, time, and datetime pickers
+- Keyboard-friendly navigation
+- Configurable first day of week and weekly holidays
+- Date and time boundaries through `from` and `to`
+- Configurable minute and hour steps
+- Clearable values, shortcuts, dual inputs, and icon-inside-input layouts
+- Custom colors, styles, and locale configuration
+- Disable dates or times with arrays, strings, functions, or regular expressions
+- Responsive multi-month layouts
 
-## SET (Improvements)
+## Installation
 
-This fork includes the following improvements over the original package:
-
-- **minuteStep prop**: Control the step increment for minute selection in time/datetime pickers
-- **hourStep prop**: Control the step increment for hour selection in time/datetime pickers
-- Time step bug fixes for better accuracy when navigating through hours and minutes
-
-These features allow more flexible time picking, especially useful for appointment scheduling, time slot selection, and similar use cases.
-
-## Documentation
-
-For full documentation and examples, visit the [documentation site](https://h-sanadgol.github.io/vue3-persian-datepicker).
-
-## Install
-
-```shell
-npm i @h-sanadgol/vue3-persian-datepicker
+```bash
+npm install @h-sanadgol/vue3-multi-calendar-datepicker
 ```
 
-or
-
-```shell
-pnpm add @h-sanadgol/vue3-persian-datepicker
+```bash
+pnpm add @h-sanadgol/vue3-multi-calendar-datepicker
 ```
 
-## Usage
+## Vue 3 Usage
 
-```js
-import DatePicker from '@h-sanadgol/vue3-persian-datepicker';
+```vue
+<script setup lang="ts">
+  import { ref } from 'vue';
+  import DatePicker from '@h-sanadgol/vue3-multi-calendar-datepicker';
 
-const app = Vue.createApp({
-  components: { DatePicker },
-});
+  const date = ref('1404/01/15');
+</script>
 
-app.mount('#app');
-```
-
-```html
-<DatePicker />
-```
-
-## Basic Example
-
-```html
 <template>
-  <DatePicker v-model="date" type="date" :minute-step="5" :hour-step="2" />
+  <DatePicker
+    v-model="date"
+    calendar="jalali"
+    mode="single"
+    type="date"
+    locale="fa"
+    clearable
+  />
 </template>
 ```
 
+The component includes its styles when bundled. No separate CSS import is required for the standard build.
+
+## Calendar Examples
+
+### Gregorian
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="gregorian"
+  locale="en"
+  mode="single"
+  type="date"
+/>
+```
+
+### Jalali / Persian
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="jalali"
+  locale="fa"
+  mode="single"
+  type="date"
+/>
+```
+
+### Hijri / Islamic
+
+Umm al-Qura is the default Hijri calculation provider. Use `tabular` when a tabular Islamic calculation is required.
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="hijri"
+  locale="ar"
+  hijri-provider="ummalqura"
+  mode="single"
+  type="date"
+/>
+```
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="hijri"
+  locale="ar"
+  hijri-provider="tabular"
+  mode="single"
+  type="date"
+/>
+```
+
+### Hebrew, Thai Buddhist, and Chinese
+
+```vue
+<DatePicker v-model="hebrewDate" calendar="hebrew" locale="he" />
+<DatePicker v-model="thaiDate" calendar="buddhist" locale="th" />
+<DatePicker v-model="chineseDate" calendar="chinese" locale="zh" />
+```
+
+These calendars use the browser's `Intl.DateTimeFormat` calendar support. Use a current browser/runtime with the relevant `Intl` calendar implementation enabled.
+
+## Date, Time, and Datetime
+
+```vue
+<DatePicker v-model="time" type="time" mode="single" />
+
+<DatePicker
+  v-model="appointment"
+  calendar="gregorian"
+  type="datetime"
+  mode="single"
+  minute-step="5"
+  hour-step="1"
+/>
+```
+
+The default model formats are:
+
+| Type       | Default format     |
+| ---------- | ------------------ |
+| `date`     | `YYYY-MM-DD`       |
+| `time`     | `HH:mm`            |
+| `datetime` | `YYYY-MM-DD HH:mm` |
+
+The actual calendar representation depends on the selected calendar and the configured `format` or `input-format`.
+
+## Range Selection
+
+In range mode, `v-model` is an array containing the start and end values.
+
+```vue
+<script setup lang="ts">
+  import { ref } from 'vue';
+
+  const range = ref(['1404/01/01', '1404/01/15']);
+</script>
+
+<template>
+  <DatePicker
+    v-model="range"
+    calendar="jalali"
+    locale="fa"
+    mode="range"
+    type="date"
+    auto-submit
+  />
+</template>
+```
+
+## Calendar vs. Locale
+
+`calendar` controls the calendar system used for parsing, displaying, and navigating dates. `locale` controls the language and localized labels. They are independent:
+
+```vue
+<!-- Jalali calendar with English labels -->
+<DatePicker v-model="date" calendar="jalali" locale="en" />
+
+<!-- Gregorian calendar with Persian labels -->
+<DatePicker v-model="date" calendar="gregorian" locale="fa" />
+```
+
+When `locale` is omitted, the component uses a calendar-aware default:
+
+| Calendar      | Default locale |
+| ------------- | -------------- |
+| Jalali        | `fa`           |
+| Gregorian     | `en`           |
+| Hijri         | `ar`           |
+| Hebrew        | `he`           |
+| Thai Buddhist | `th`           |
+| Chinese       | `zh`           |
+
+## Model Calendar
+
+By default, `modelValue` is serialized using the active calendar. Set `model-calendar` to serialize the value using another supported calendar while keeping the displayed calendar unchanged.
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="jalali"
+  model-calendar="gregorian"
+  locale="fa"
+/>
+```
+
+Supported values are `active`, `jalali`, `gregorian`, `hijri`, `hebrew`, `buddhist`, and `chinese`.
+
+## Week Configuration
+
+Weekday values use JavaScript numbering: Sunday is `0` and Saturday is `6`.
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="gregorian"
+  :week-starts-on="1"
+  :weekend-days="[0, 6]"
+/>
+```
+
+Use `week-starts-on="auto"` to use the calendar's default. If `weekend-days` is omitted, the component uses calendar-aware weekly holidays.
+
 ## Props
 
-| Prop            | Type                                    | Default        | Description                                       |
-| --------------- | --------------------------------------- | -------------- | ------------------------------------------------- |
-| `type`          | `String`                                | `'date'`       | Type of picker: `date`, `time`, or `datetime`     |
-| `format`        | `String`                                | `'YYYY-MM-DD'` | Format of the model value                         |
-| `inputFormat`   | `String`                                | same as `type` | Format of the input value                         |
-| `displayFormat` | `String`                                | `'?D ?MMMM'`   | Format shown in the footer                        |
-| `from`          | `String`                                | `'1300'`       | Start date of the picker                          |
-| `to`            | `String`                                | `'1499'`       | End date of the picker                            |
-| `mode`          | `String`                                | `'range'`      | Selection mode: `single` or `range`               |
-| `locale`        | `String`                                | `'fa'`         | Locale: `fa`, `en`, `fa,en`, etc.                 |
-| `column`        | `Number \| Object`                      | `{ 576: 1 }`   | Number of columns                                 |
-| `minuteStep`    | `Number`                                | `1`            | Step increment for adding minutes                 |
-| `hourStep`      | `Number`                                | `1`            | Step increment for adding hours                   |
-| `autoSubmit`    | `Boolean`                               | `true`         | Auto submit when selection is complete            |
-| `clearable`     | `Boolean`                               | `false`        | Allow clearing the selected date                  |
-| `modal`         | `Boolean`                               | `false`        | Show picker as modal                              |
-| `show`          | `Boolean`                               | `false`        | Controlled visibility of picker                   |
-| `clickOn`       | `String`                                | `'all'`        | Trigger picker on: `all`, `input`, `icon`, `none` |
-| `label`         | `String`                                | `undefined`    | Label text                                        |
-| `dualInput`     | `Boolean`                               | `false`        | Use two inputs for display                        |
-| `iconInside`    | `Boolean`                               | `false`        | Show icon inside input                            |
-| `shortcut`      | `Boolean \| Object`                     | `false`        | Shortcuts for quick selection                     |
-| `disable`       | `Array \| String \| Function \| RegExp` | `undefined`    | Disable specific dates/times                      |
-| `localeConfig`  | `Object`                                | `undefined`    | Custom locale configuration                       |
-| `styles`        | `Object`                                | `undefined`    | Custom styles                                     |
-| `color`         | `String`                                | `undefined`    | Preset color: `red`, `green`, `blue`, etc.        |
+| Prop            | Type                                    | Default        | Description                                                                 |
+| --------------- | --------------------------------------- | -------------- | --------------------------------------------------------------------------- |
+| `calendar`      | `Calendar`                              | Locale-based   | `jalali`, `gregorian`, `hijri`, `hebrew`, `buddhist`, or `chinese`          |
+| `modelCalendar` | `Calendar \| 'active'`                  | `'active'`     | Calendar used to serialize `modelValue`                                     |
+| `type`          | `'date' \| 'time' \| 'datetime'`        | `'date'`       | Picker value type                                                           |
+| `mode`          | `'single' \| 'range'`                   | `'range'`      | Single value or range selection                                             |
+| `locale`        | `String`                                | Calendar-aware | UI language, with comma-separated fallback locales supported                |
+| `hijriProvider` | `'ummalqura' \| 'tabular'`              | `'ummalqura'`  | Hijri calculation method                                                    |
+| `format`        | `String`                                | Type-based     | Model value format                                                          |
+| `inputFormat`   | `String`                                | Type-based     | Input parsing format                                                        |
+| `displayFormat` | `String`                                | Type-based     | Footer display format                                                       |
+| `from`          | `String`                                | `'1300'`       | Minimum selectable date/time                                                |
+| `to`            | `String`                                | `'1499'`       | Maximum selectable date/time                                                |
+| `column`        | `Number \| Record<number, number>`      | `{ 576: 1 }`   | Number of visible calendar columns by breakpoint                            |
+| `weekStartsOn`  | `Number \| 'auto'`                      | `'auto'`       | First weekday, from `0` to `6`                                              |
+| `weekendDays`   | `Number[]`                              | Calendar-aware | Weekly holiday weekdays                                                     |
+| `minuteStep`    | `Number`                                | `1`            | Minute increment                                                            |
+| `hourStep`      | `Number`                                | `1`            | Hour increment                                                              |
+| `autoSubmit`    | `Boolean`                               | `true`         | Submit automatically after selection                                        |
+| `clearable`     | `Boolean`                               | `false`        | Show a clear control                                                        |
+| `clickOn`       | `'all' \| 'input' \| 'icon' \| 'none'`  | `'all'`        | Area that opens the picker                                                  |
+| `modal`         | `Boolean`                               | `false`        | Use modal picker presentation                                               |
+| `show`          | `Boolean`                               | `false`        | Control picker visibility                                                   |
+| `label`         | `String`                                | —              | Input label                                                                 |
+| `dualInput`     | `Boolean`                               | `false`        | Render separate inputs for a range                                          |
+| `iconInside`    | `Boolean`                               | `false`        | Render the calendar icon inside the input                                   |
+| `shortcut`      | `Boolean \| Object`                     | `false`        | Enable date/time shortcuts                                                  |
+| `disable`       | `Array \| String \| Function \| RegExp` | —              | Disable dates or times                                                      |
+| `localeConfig`  | `Object`                                | —              | Extend or override locale strings                                           |
+| `styles`        | `Object`                                | —              | Custom component styles                                                     |
+| `color`         | `String`                                | —              | Preset color: `blue`, `red`, `pink`, `orange`, `green`, `purple`, or `gray` |
 
 ## Events
 
-| Event               | Payload         | Description                          |
-| ------------------- | --------------- | ------------------------------------ |
-| `select`            | `date`          | Emitted when a date/time is selected |
-| `submit`            | `date \| dates` | Emitted when selection is submitted  |
-| `open`              | -               | Emitted when picker opens            |
-| `close`             | -               | Emitted when picker closes           |
-| `clear`             | -               | Emitted when selection is cleared    |
-| `update:modelValue` | `value`         | Emitted when model value changes     |
+| Event               | Payload                | Description                             |
+| ------------------- | ---------------------- | --------------------------------------- |
+| `update:modelValue` | `string \| string[]`   | Emitted when the model value changes    |
+| `select`            | Selected date          | Emitted when a date or time is selected |
+| `submit`            | Selected date or dates | Emitted when the selection is submitted |
+| `open`              | —                      | Emitted when the picker opens           |
+| `close`             | —                      | Emitted when the picker closes          |
+| `clear`             | —                      | Emitted when the value is cleared       |
 
-## Nuxt Module
+## Nuxt 3
 
-```js
-// nuxt.config.ts
+Add the module to `nuxt.config.ts`:
+
+```ts
 export default defineNuxtConfig({
-  modules: ['@h-sanadgol/vue3-persian-datepicker/nuxt'],
+  modules: ['@h-sanadgol/vue3-multi-calendar-datepicker/nuxt'],
 });
 ```
 
+The module registers `DatePicker` globally. It can then be used directly in any component:
+
+```vue
+<DatePicker v-model="date" calendar="gregorian" locale="en" />
+```
+
+To enable the `usePersianDate` auto-import, enable the module option:
+
+```ts
+export default defineNuxtConfig({
+  modules: [
+    ['@h-sanadgol/vue3-multi-calendar-datepicker/nuxt', { PersianDate: true }],
+  ],
+});
+```
+
+## Development
+
+```bash
+pnpm install
+pnpm dev
+```
+
+Available scripts:
+
+| Command           | Description                        |
+| ----------------- | ---------------------------------- |
+| `pnpm dev`        | Start the Vite demo application    |
+| `pnpm lint`       | Run ESLint                         |
+| `pnpm test`       | Run Cypress component tests        |
+| `pnpm test:open`  | Open the Cypress test runner       |
+| `pnpm build:lib`  | Build the library bundles          |
+| `pnpm build:nuxt` | Build the Nuxt module              |
+| `pnpm build`      | Build the Nuxt module and library  |
+| `pnpm pretty`     | Format project files with Prettier |
+
+## Project Structure
+
+```text
+src/
+├── components/DatePicker.vue       # Main public component
+├── calendars/                      # Calendar adapters and registry
+├── nuxt/                           # Nuxt module and composables
+└── App.vue                         # Interactive demo application
+test/e2e/                           # Cypress component tests
+docs/                               # Documentation site assets
+```
+
+Calendar adapters keep calendar-specific conversion and navigation logic separate from the picker UI. The Jalali implementation uses the bundled Persian date engine; the other calendar systems use `Intl.DateTimeFormat` adapters, with a dedicated tabular Hijri adapter.
+
+## Documentation and Demo
+
+- [Interactive documentation](https://h-sanadgol.github.io/vue3-multi-calendar-datepicker)
+- [GitHub repository](https://github.com/h-sanadgol/vue3-multi-calendar-datepicker)
+- [npm package](https://www.npmjs.com/package/@h-sanadgol/vue3-multi-calendar-datepicker)
+- [Issue tracker](https://github.com/h-sanadgol/vue3-multi-calendar-datepicker/issues)
+
+## Contributing
+
+Issues and pull requests are welcome. Before opening a pull request:
+
+1. Keep the public API backward-compatible unless the change is intentional and documented.
+2. Add or update tests for behavior changes.
+3. Run `pnpm lint` and `pnpm build`.
+4. Update the README or release notes when changing public behavior.
+
 ## License
 
-Vue Persian Datepicker is available under the [MIT](https://opensource.org/licenses/MIT) license.
+This project is released under the [MIT License](./LICENSE).
+
+The project originated as a fork of [@alireza-ab/vue3-persian-datepicker](https://github.com/alireza-ab/vue3-persian-datepicker). See the repository history and package metadata for attribution.

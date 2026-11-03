@@ -276,6 +276,246 @@
 	        return PersianDate_min.isPersianDate(val);
 	    },
 	};
+	// Built-in language packs used by the calendar-aware locale defaults. They
+	// inherit the complete action/shortcut vocabulary from English and only
+	// override the calendar identity and native labels that are user-visible.
+	Core.langs.ar = {
+	    ...Core.langs.en,
+	    calendar: 'gregorian',
+	    dir: { input: 'rtl', picker: 'rtl' },
+	    weekdays: ['أحد', 'اثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت'],
+	    translations: { ...Core.langs.en.translations, label: 'هجري', text: 'التقويم الهجري', prevMonth: 'الشهر السابق', nextMonth: 'الشهر التالي', now: 'الآن', submit: 'تأكيد' },
+	};
+	Core.langs.he = {
+	    ...Core.langs.en,
+	    calendar: 'hebrew',
+	    dir: { input: 'ltr', picker: 'ltr' },
+	    weekdays: ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'],
+	    translations: { ...Core.langs.en.translations, label: 'עברי', text: 'לוח שנה עברי', prevMonth: 'חודש קודם', nextMonth: 'חודש הבא', now: 'היום', submit: 'אישור' },
+	};
+	Core.langs.th = {
+	    ...Core.langs.en,
+	    calendar: 'buddhist',
+	    dir: { input: 'ltr', picker: 'ltr' },
+	    weekdays: ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'],
+	    translations: { ...Core.langs.en.translations, label: 'พุทธศักราช', text: 'ปฏิทินพุทธศักราช', prevMonth: 'เดือนก่อน', nextMonth: 'เดือนถัดไป', now: 'วันนี้', submit: 'ยืนยัน' },
+	};
+	Core.langs.zh = {
+	    ...Core.langs.en,
+	    calendar: 'chinese',
+	    dir: { input: 'ltr', picker: 'ltr' },
+	    weekdays: ['日', '一', '二', '三', '四', '五', '六'],
+	    translations: { ...Core.langs.en.translations, label: '农历', text: '中国农历', prevMonth: '上个月', nextMonth: '下个月', now: '今天', submit: '确定' },
+	};
+
+	const calendarNames = {
+	    gregorian: 'gregory',
+	    hijri: 'islamic-umalqura',
+	    hebrew: 'hebrew',
+	    buddhist: 'buddhist',
+	    chinese: 'chinese',
+	};
+	const dayMilliseconds$1 = 86_400_000;
+	function parsePart(value) {
+	    return Number.parseInt(value || '0', 10);
+	}
+	function isHebrewLeapYear(year) {
+	    return ((7 * year + 1) % 19) < 7;
+	}
+	function parseHebrewMonth(value, year) {
+	    const month = value || '';
+	    const names = isHebrewLeapYear(year)
+	        ? ['Tishri', 'Cheshvan', 'Kislev', 'Tevet', 'Shevat', 'Adar I', 'Adar', 'Nisan', 'Iyar', 'Sivan', 'Tammuz', 'Av', 'Elul']
+	        : ['Tishri', 'Cheshvan', 'Kislev', 'Tevet', 'Shevat', 'Adar', 'Nisan', 'Iyar', 'Sivan', 'Tammuz', 'Av', 'Elul'];
+	    const index = names.findIndex((name) => month.toLowerCase() === name.toLowerCase());
+	    return index >= 0 ? index + 1 : parsePart(value);
+	}
+	function sameDate(left, right) {
+	    return (left.year === right.year &&
+	        left.month === right.month &&
+	        left.day === right.day);
+	}
+	function formatParts(formatter, date) {
+	    const values = Object.fromEntries(formatter.formatToParts(date).map(({ type, value }) => [type, value]));
+	    const year = parsePart(values.year || values.relatedYear);
+	    return {
+	        year,
+	        month: formatter.resolvedOptions().calendar === 'hebrew'
+	            ? parseHebrewMonth(values.month, year)
+	            : parsePart(values.month),
+	        day: parsePart(values.day),
+	        hour: date.getUTCHours(),
+	        minute: date.getUTCMinutes(),
+	        second: date.getUTCSeconds(),
+	        millisecond: date.getUTCMilliseconds(),
+	    };
+	}
+	function createFormatter(calendar) {
+	    const formatter = new Intl.DateTimeFormat(`en-u-ca-${calendar}-nu-latn`, {
+	        timeZone: 'UTC',
+	        year: 'numeric',
+	        month: 'numeric',
+	        day: 'numeric',
+	    });
+	    if (formatter.resolvedOptions().calendar !== calendar) {
+	        throw new Error(`Calendar is not supported by this runtime: ${calendar}`);
+	    }
+	    return formatter;
+	}
+	function estimateGregorianYear(calendar, year) {
+	    switch (calendar) {
+	        case 'hijri':
+	            return Math.floor((year - 1) * 0.970224 + 622);
+	        case 'hebrew':
+	            return year - 3760;
+	        case 'buddhist':
+	            return year - 543;
+	        default:
+	            return year;
+	    }
+	}
+	function findGregorianDate(formatter, calendar, wanted) {
+	    const estimate = new Date(Date.UTC(estimateGregorianYear(calendar, wanted.year), Math.max(0, wanted.month - 1), Math.max(1, wanted.day)));
+	    // Hijri years drift roughly one month per Gregorian year, so a calendar
+	    // month-shaped estimate can be several months away from the target date.
+	    const searchWindow = calendar === 'hijri' ? 900 : 450;
+	    const start = estimate.getTime() - searchWindow * dayMilliseconds$1;
+	    const end = estimate.getTime() + searchWindow * dayMilliseconds$1;
+	    for (let time = start; time <= end; time += dayMilliseconds$1) {
+	        const candidate = new Date(time);
+	        if (sameDate(formatParts(formatter, candidate), wanted)) {
+	            return candidate;
+	        }
+	    }
+	    throw new RangeError(`Unable to convert ${wanted.year}/${wanted.month}/${wanted.day} from ${calendar}`);
+	}
+	function createIntlAdapter(id, provider = 'ummalqura') {
+	    if (id === 'hijri' && provider !== 'ummalqura') {
+	        throw new Error(`Hijri provider is not implemented yet: ${provider}`);
+	    }
+	    const formatter = createFormatter(calendarNames[id]);
+	    return {
+	        id,
+	        ...(id === 'hijri' ? { provider } : {}),
+	        getParts(date) {
+	            return formatParts(formatter, date);
+	        },
+	        fromParts(parts) {
+	            const date = findGregorianDate(formatter, id, parts);
+	            date.setUTCHours(parts.hour || 0, parts.minute || 0, parts.second || 0, parts.millisecond || 0);
+	            return date;
+	        },
+	        addDays(date, amount) {
+	            return new Date(date.getTime() + amount * dayMilliseconds$1);
+	        },
+	        addMonths(date, amount) {
+	            const current = formatParts(formatter, date);
+	            const targetMonth = current.month + amount;
+	            const targetYear = current.year + Math.floor((targetMonth - 1) / 12);
+	            const normalizedMonth = ((targetMonth - 1) % 12 + 12) % 12 + 1;
+	            const targetDay = Math.min(current.day, (() => {
+	                const first = findGregorianDate(formatter, id, {
+	                    year: targetYear,
+	                    month: normalizedMonth,
+	                    day: 1,
+	                });
+	                let days = 1;
+	                while (sameDate(formatParts(formatter, new Date(first.getTime() + days * dayMilliseconds$1)), { year: targetYear, month: normalizedMonth, day: days + 1 })) {
+	                    days += 1;
+	                }
+	                return days;
+	            })());
+	            return findGregorianDate(formatter, id, {
+	                ...current,
+	                year: targetYear,
+	                month: normalizedMonth,
+	                day: targetDay,
+	            });
+	        },
+	        daysInMonth(year, month) {
+	            const first = findGregorianDate(formatter, id, { year, month, day: 1 });
+	            let count = 1;
+	            while (sameDate(formatParts(formatter, new Date(first.getTime() + count * dayMilliseconds$1)), { year, month, day: count + 1 })) {
+	                count += 1;
+	            }
+	            return count;
+	        },
+	    };
+	}
+
+	const dayMilliseconds = 86_400_000;
+	const islamicEpoch = 1_948_439.5;
+	function islamicToJulianDay(year, month, day) {
+	    return (day +
+	        Math.ceil(29.5 * (month - 1)) +
+	        (year - 1) * 354 +
+	        Math.floor((3 + 11 * year) / 30) +
+	        islamicEpoch -
+	        1);
+	}
+	function julianDayToGregorian(julianDay) {
+	    return new Date((julianDay - 2_440_587.5) * dayMilliseconds);
+	}
+	function gregorianToJulianDay(date) {
+	    return date.getTime() / dayMilliseconds + 2_440_587.5;
+	}
+	function gregorianToIslamic(date) {
+	    const julianDay = Math.floor(gregorianToJulianDay(date)) + 0.5;
+	    const year = Math.floor((30 * (julianDay - islamicEpoch) + 10_646) / 10_631);
+	    const month = Math.min(12, Math.ceil((julianDay - (29 + islamicToJulianDay(year, 1, 1))) / 29.5) + 1);
+	    const day = Math.floor(julianDay - islamicToJulianDay(year, month, 1) + 1);
+	    return {
+	        year,
+	        month,
+	        day,
+	        hour: date.getUTCHours(),
+	        minute: date.getUTCMinutes(),
+	        second: date.getUTCSeconds(),
+	        millisecond: date.getUTCMilliseconds(),
+	    };
+	}
+	function createTabularHijriAdapter() {
+	    return {
+	        id: 'hijri',
+	        provider: 'tabular',
+	        getParts: gregorianToIslamic,
+	        fromParts(parts) {
+	            const date = julianDayToGregorian(islamicToJulianDay(parts.year, parts.month, parts.day));
+	            date.setUTCHours(parts.hour || 0, parts.minute || 0, parts.second || 0, parts.millisecond || 0);
+	            return date;
+	        },
+	        addDays(date, amount) {
+	            return new Date(date.getTime() + amount * dayMilliseconds);
+	        },
+	        addMonths(date, amount) {
+	            const current = gregorianToIslamic(date);
+	            const absoluteMonth = current.year * 12 + current.month - 1 + amount;
+	            const year = Math.floor(absoluteMonth / 12);
+	            const month = ((absoluteMonth % 12) + 12) % 12 + 1;
+	            const maxDay = month % 2 === 1 ? 30 : 29;
+	            return this.fromParts({
+	                ...current,
+	                year,
+	                month,
+	                day: Math.min(current.day, maxDay),
+	            });
+	        },
+	        daysInMonth(year, month) {
+	            if (month % 2 === 1)
+	                return 30;
+	            if (month !== 12)
+	                return 29;
+	            return (year * 11 + 14) % 30 < 11 ? 30 : 29;
+	        },
+	    };
+	}
+
+	function createCalendarAdapter(calendar, options = {}) {
+	    if (calendar === 'hijri' && options.hijriProvider === 'tabular') {
+	        return createTabularHijriAdapter();
+	    }
+	    return createIntlAdapter(calendar, options.hijriProvider);
+	}
 
 	const _hoisted_1$2 = ["transform"];
 	var script$3 = /*@__PURE__*/ vue.defineComponent({
@@ -654,7 +894,8 @@
 	        },
 	        /**
 	         * the locale of datepicker
-	         * @default "fa"
+	         * @default calendar-aware (fa for jalali, en for gregorian, ar for hijri,
+	         * he for hebrew, th for buddhist, zh for chinese)
 	         * @type String
 	         * @values fa | en | fa,en |  en,fa
 	         * @desc Except above values, you can add
@@ -662,8 +903,56 @@
 	         * @since 2.0.0
 	         */
 	        locale: {
-	            default: 'fa',
+	            default: undefined,
 	            type: String,
+	        },
+	        /**
+	         * the calendar system used for the picker
+	         * @default undefined (uses the selected locale calendar)
+	         * @values jalali | gregorian
+	         */
+	        calendar: {
+	            type: String,
+	            validator: (val) => [
+	                'jalali',
+	                'gregorian',
+	                'hijri',
+	                'hebrew',
+	                'buddhist',
+	                'chinese',
+	            ].includes(val),
+	        },
+	        /** Calendar used to serialize modelValue. Defaults to the active calendar for compatibility. */
+	        modelCalendar: {
+	            type: String,
+	            default: 'active',
+	            validator: (val) => val === 'active' ||
+	                [
+	                    'jalali',
+	                    'gregorian',
+	                    'hijri',
+	                    'hebrew',
+	                    'buddhist',
+	                    'chinese',
+	                ].includes(val),
+	        },
+	        /** First weekday as a JavaScript weekday (0=Sunday ... 6=Saturday). */
+	        weekStartsOn: {
+	            type: [Number, String],
+	            default: 'auto',
+	        },
+	        /** Weekly official holidays as JavaScript weekdays. */
+	        weekendDays: {
+	            type: Array,
+	        },
+	        /**
+	         * Hijri calculation provider
+	         * @default "ummalqura"
+	         */
+	        hijriProvider: {
+	            type: String,
+	            default: 'ummalqura',
+	            validator: (val) => ['ummalqura', 'tabular'].includes(val),
 	        },
 	        /**
 	         * user can clear the selected dates or not
@@ -757,14 +1046,62 @@
 	            pickerPlace: {},
 	            documentWidth: isClient ? window.innerWidth : Infinity,
 	            langs: Core.langs,
-	            currentLocale: this.locale.split(',')[0],
+	            currentLocale: this.locale || this.defaultLocaleForCalendar(this.calendar),
 	            interval: null,
 	            submitedValue: [],
 	        };
 	    },
 	    computed: {
 	        lang() {
-	            return this.langs[this.currentLocale];
+	            return this.langs[this.currentLocale] || this.langs.en;
+	        },
+	        effectiveLocale() {
+	            return this.locale || this.defaultLocaleForCalendar(this.calendar);
+	        },
+	        activeCalendar() {
+	            return this.calendar || this.lang.calendar;
+	        },
+	        calendarLang() {
+	            return this.lang;
+	        },
+	        calendarWeekStart() {
+	            if (this.weekStartsOn !== 'auto')
+	                return Number(this.weekStartsOn);
+	            switch (this.activeCalendar) {
+	                case 'jalali':
+	                case 'hijri':
+	                    return 6;
+	                default:
+	                    return 0;
+	            }
+	        },
+	        calendarWeekendDays() {
+	            if (this.weekendDays)
+	                return this.weekendDays;
+	            switch (this.activeCalendar) {
+	                case 'jalali': return [5];
+	                case 'hijri': return [5, 6];
+	                case 'hebrew': return [6];
+	                default: return [0, 6];
+	            }
+	        },
+	        orderedWeekdays() {
+	            const labels = this.calendarLang.weekdays;
+	            const sourceStart = this.currentLocale === 'fa' ? 6 : 0;
+	            return Array.from({ length: 7 }, (_, index) => labels[(this.calendarWeekStart - sourceStart + index + 7) % 7]);
+	        },
+	        calendarMonthNames() {
+	            const year = this.onDisplay
+	                ? this.getCalendarParts(this.onDisplay).year
+	                : undefined;
+	            return this.monthNamesForYear(year);
+	        },
+	        calendarAdapter() {
+	            if (this.activeCalendar === 'jalali' || this.activeCalendar === 'gregorian')
+	                return undefined;
+	            return createCalendarAdapter(this.activeCalendar, {
+	                hijriProvider: this.hijriProvider,
+	            });
 	        },
 	        attrs() {
 	            const attrs = {
@@ -803,8 +1140,8 @@
 	            return attrs;
 	        },
 	        years() {
-	            let start = this.fromDate.year();
-	            const end = this.toDate.year();
+	            let start = this.displayYear(this.fromDate);
+	            const end = this.displayYear(this.toDate);
 	            return Array(end - start + 1)
 	                .fill(null)
 	                .map(() => start++);
@@ -845,12 +1182,13 @@
 	            const months = [];
 	            for (let i = 0; i < this.columnCount; i++) {
 	                let emptyCells;
-	                const selectedYear = this.onDisplay.clone().addMonth(i).year();
-	                const selectedMonth = this.onDisplay.clone().addMonth(i).month();
-	                emptyCells = +this.onDisplay.clone()
-	                    .parse(selectedYear, selectedMonth, 1)
-	                    .toString('?d');
-	                let daysOfMonthNumber = this.onDisplay.getDaysInMonth(selectedYear, selectedMonth);
+	                const monthDate = this.calendarMonthDate(this.onDisplay, i);
+	                const selectedParts = this.getCalendarParts(monthDate);
+	                const selectedYear = selectedParts.year;
+	                const selectedMonth = selectedParts.month;
+	                const firstDay = this.calendarDayDate(monthDate, 1);
+	                emptyCells = this.calendarWeekdayOffset(firstDay);
+	                let daysOfMonthNumber = this.calendarDaysInMonth(selectedYear, selectedMonth);
 	                const numberOfWeek = Math.ceil((daysOfMonthNumber + emptyCells) / 7);
 	                const month = [];
 	                let showDay = 1;
@@ -863,23 +1201,20 @@
 	                        }
 	                        else if (daysOfMonthNumber) {
 	                            //FIXME: refactor
+	                            const dayDate = this.calendarDayDate(monthDate, showDay);
 	                            month[week][day] = {
-	                                friday: day == 6,
-	                                raw: this.onDisplay.clone().addMonth(i).date(showDay),
+	                                friday: this.calendarWeekendDays.includes(new Date(this.getDateTimestamp(dayDate)).getDay()),
+	                                weekend: this.calendarWeekendDays.includes(new Date(this.getDateTimestamp(dayDate)).getDay()),
+	                                raw: dayDate,
 	                                startRange: this.selectedDates[0] &&
-	                                    this.selectedDates[0].isSame(selectedYear, selectedMonth, showDay),
+	                                    this.isSameCalendarDate(this.selectedDates[0], dayDate),
 	                                endRange: this.selectedDates[1] &&
-	                                    this.selectedDates[1].isSame(selectedYear, selectedMonth, showDay),
+	                                    this.isSameCalendarDate(this.selectedDates[1], dayDate),
 	                                inRange: this.selectedDates.length == 2 &&
-	                                    this.core
-	                                        .clone()
-	                                        .parse(selectedYear, selectedMonth, showDay)
-	                                        .isBetween(...this.selectedDates.map((date) => date.toString())),
-	                                disabled: !this.checkDate(this.onDisplay.clone().addMonth(i).date(showDay), 'date') ||
-	                                    this.isInDisable(this.onDisplay.clone().addMonth(i).date(showDay)),
-	                                today: this.core
-	                                    .clone()
-	                                    .isSame(selectedYear, selectedMonth, showDay),
+	                                    this.isBetweenSelectedDates(dayDate),
+	                                disabled: !this.checkDate(dayDate, 'date') ||
+	                                    this.isInDisable(dayDate),
+	                                today: this.isToday(dayDate),
 	                                val: showDay++,
 	                            };
 	                            --daysOfMonthNumber;
@@ -894,17 +1229,20 @@
 	        },
 	        months() {
 	            const months = {};
-	            for (let i = 1; i <= 12; i++) {
+	            const count = this.activeCalendar === 'hebrew'
+	                ? this.calendarMonthNames.length
+	                : 12;
+	            for (let i = 1; i <= count; i++) {
 	                months[i] = {
-	                    label: this.lang.months[i - 1],
-	                    selected: this.onDisplay.month() == i,
-	                    disabled: !this.checkDate(this.onDisplay.clone().month(i), 'month'),
+	                    label: this.calendarMonthNames[i - 1] || `Month ${i}`,
+	                    selected: this.displayMonth(this.onDisplay) == i,
+	                    disabled: !this.checkDate(this.calendarMonthDate(this.onDisplay, i - this.displayMonth(this.onDisplay)), 'month'),
 	                };
 	            }
 	            return months;
 	        },
 	        nextLocale() {
-	            const locales = this.locale.split(',');
+	            const locales = this.effectiveLocale.split(',');
 	            const index = locales.indexOf(this.currentLocale);
 	            const locale = locales[index + 1] || locales[0];
 	            return this.langs[locale].translations.label;
@@ -922,7 +1260,9 @@
 	            };
 	            return {
 	                model: this.format || format[this.type],
-	                input: this.inputFormat || this.lang.inputFormat || this.type,
+	                input: this.inputFormat ||
+	                    this.lang.inputFormat ||
+	                    (this.calendarAdapter ? format[this.type] : this.type),
 	                display: this.displayFormat ||
 	                    this.lang.displayFormat ||
 	                    displayFormat[this.type],
@@ -990,6 +1330,12 @@
 	                this.showDatePicker = val;
 	            },
 	        },
+	        calendar: {
+	            handler: function (val) {
+	                if (!this.locale)
+	                    this.currentLocale = this.defaultLocaleForCalendar(val);
+	            },
+	        },
 	        showDatePicker: {
 	            handler: function (val) {
 	                if (val)
@@ -1003,12 +1349,12 @@
 	        },
 	        from: {
 	            handler: function (val) {
-	                this.fromDate.fromJalali(val);
+	                this.fromDate = this.parseCalendarDate(val);
 	            },
 	        },
 	        to: {
 	            handler: function (val) {
-	                this.toDate.fromJalali(val);
+	                this.toDate = this.normalizeEndDate(this.parseCalendarDate(val), Core.getLastUnit(this.to, this.type));
 	            },
 	        },
 	        mode: {
@@ -1019,8 +1365,12 @@
 	        },
 	        locale: {
 	            handler: function (val, oldVal) {
-	                const index = oldVal.split(',').indexOf(this.currentLocale);
-	                this.currentLocale = val.split(',')[index];
+	                const next = val || this.defaultLocaleForCalendar(this.calendar);
+	                const previous = oldVal || this.effectiveLocale;
+	                const index = previous.split(',').indexOf(this.currentLocale);
+	                this.currentLocale = next.split(',')[index] || next.split(',')[0];
+	                if (!this.langs[this.currentLocale])
+	                    this.currentLocale = 'en';
 	            },
 	        },
 	        localeConfig: {
@@ -1047,17 +1397,13 @@
 	    mounted() {
 	        Core.setColor(this.color, this.$refs.root);
 	        Core.setStyles(this.styles, this.$refs.root);
-	        const calendar = this.lang.calendar;
-	        this.fromDate = this.core
-	            .clone()
-	            .parse(this.defaultDate.from)
-	            .calendar(calendar);
-	        this.toDate = this.core
-	            .clone()
-	            .parse(this.defaultDate.to)
-	            .endOf(Core.getLastUnit(this.to, this.type))
-	            .calendar(calendar);
-	        this.core.calendar(calendar);
+	        const calendar = this.activeCalendar;
+	        const internalCalendar = this.calendarAdapter
+	            ? 'gregorian'
+	            : calendar;
+	        this.fromDate = this.parseCalendarDate(this.defaultDate.from);
+	        this.toDate = this.normalizeEndDate(this.parseCalendarDate(this.defaultDate.to), Core.getLastUnit(this.to, this.type)).calendar(internalCalendar);
+	        this.core.calendar(internalCalendar);
 	        const val = this.$attrs.modelValue;
 	        if (val) {
 	            this.setDate(val);
@@ -1082,6 +1428,249 @@
 	        this.showDatePicker = this.show;
 	    },
 	    methods: {
+	        defaultLocaleForCalendar(calendar) {
+	            switch (calendar) {
+	                case 'jalali': return 'fa';
+	                case 'hijri': return 'ar';
+	                case 'hebrew': return 'he';
+	                case 'buddhist': return 'th';
+	                case 'chinese': return 'zh';
+	                case 'gregorian': return 'en';
+	                default: return 'fa';
+	            }
+	        },
+	        isHebrewLeapYear(year) {
+	            return ((7 * year + 1) % 19) < 7;
+	        },
+	        monthNamesForYear(year) {
+	            if (this.activeCalendar === 'jalali') {
+	                return this.lang.months;
+	            }
+	            const fallback = {
+	                hijri: this.currentLocale === 'ar'
+	                    ? ['محرم', 'صفر', 'ربيع الأول', 'ربيع الثاني', 'جمادى الأولى', 'جمادى الثانية', 'رجب', 'شعبان', 'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة']
+	                    : ['Muharram', 'Safar', 'Rabi al-awwal', 'Rabi al-thani', 'Jumada al-awwal', 'Jumada al-thani', 'Rajab', 'Sha’ban', 'Ramadan', 'Shawwal', 'Dhu al-Qadah', 'Dhu al-Hijjah'],
+	                hebrew: this.isHebrewLeapYear(year || 5785)
+	                    ? (this.currentLocale === 'he' ? ['תשרי', 'חשוון', 'כסלו', 'טבת', 'שבט', 'אדר א׳', 'אדר', 'ניסן', 'אייר', 'סיוון', 'תמוז', 'אב', 'אלול'] : ['Tishri', 'Cheshvan', 'Kislev', 'Tevet', 'Shevat', 'Adar I', 'Adar', 'Nisan', 'Iyar', 'Sivan', 'Tammuz', 'Av', 'Elul'])
+	                    : (this.currentLocale === 'he' ? ['תשרי', 'חשוון', 'כסלו', 'טבת', 'שבט', 'אדר', 'ניסן', 'אייר', 'סיוון', 'תמוז', 'אב', 'אלול'] : ['Tishri', 'Cheshvan', 'Kislev', 'Tevet', 'Shevat', 'Adar', 'Nisan', 'Iyar', 'Sivan', 'Tammuz', 'Av', 'Elul']),
+	            };
+	            if (this.activeCalendar === 'hijri')
+	                return fallback.hijri;
+	            if (this.activeCalendar === 'chinese') {
+	                if (this.currentLocale === 'zh')
+	                    return ['正月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '冬月', '腊月'];
+	                const prefix = this.currentLocale === 'fa' ? 'ماه' : this.currentLocale === 'ar' ? 'الشهر' : 'Month';
+	                return Array.from({ length: 12 }, (_, index) => `${prefix} ${index + 1}`);
+	            }
+	            const count = this.activeCalendar === 'hebrew' ? fallback.hebrew.length : 12;
+	            const names = [];
+	            const calendarName = this.activeCalendar === 'buddhist' ? 'buddhist' : this.activeCalendar === 'hebrew' ? 'hebrew' : 'gregory';
+	            const locale = `${this.currentLocale}-u-ca-${calendarName}-nu-latn`;
+	            const formatter = new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' });
+	            for (let index = 1; index <= count; index++) {
+	                try {
+	                    const date = this.calendarAdapter
+	                        ? this.calendarAdapter.fromParts({ year: year || 1, month: index, day: 1 })
+	                        : new Date(Date.UTC((year || 1970) - (this.activeCalendar === 'buddhist' ? 543 : 0), index - 1, 1));
+	                    names.push(formatter.format(date));
+	                }
+	                catch {
+	                    break;
+	                }
+	            }
+	            return names.length ? names : (fallback.hebrew || this.lang.months);
+	        },
+	        usesCalendarAdapter() {
+	            return this.activeCalendar !== 'jalali';
+	        },
+	        getCalendarParts(date) {
+	            const value = date;
+	            if (this.calendarAdapter) {
+	                return this.calendarAdapter.getParts(new Date(this.getDateTimestamp(value)));
+	            }
+	            const native = value
+	                .clone()
+	                .calendar(this.activeCalendar === 'gregorian' ? 'gregorian' : 'jalali');
+	            return {
+	                year: native.year(),
+	                month: native.month(),
+	                day: native.date(),
+	                hour: native.hour(),
+	                minute: native.minute(),
+	                second: native.second(),
+	                millisecond: native.millisecond(),
+	            };
+	        },
+	        getDateTimestamp(date) {
+	            const value = date;
+	            const timestamp = Number(value.valueOf());
+	            if (Number.isFinite(timestamp))
+	                return timestamp;
+	            const native = value.toDate();
+	            return Number.isFinite(Number(native))
+	                ? Number(native)
+	                : Date.parse(String(native));
+	        },
+	        getDayTimestamp(date) {
+	            return Math.floor(this.getDateTimestamp(date) / 86_400_000) * 86_400_000;
+	        },
+	        normalizeEndDate(date, unit) {
+	            return vue.markRaw(new PersianDate_min()
+	                .fromGregorian(this.getDateTimestamp(date))
+	                .endOf(unit));
+	        },
+	        fromCalendarParts(parts) {
+	            if (this.calendarAdapter) {
+	                return vue.markRaw(new PersianDate_min().fromGregorian(this.calendarAdapter.fromParts(parts).getTime()));
+	            }
+	            const values = [
+	                parts.year,
+	                parts.month,
+	                parts.day,
+	                parts.hour || 0,
+	                parts.minute || 0,
+	                parts.second || 0,
+	                parts.millisecond || 0,
+	            ];
+	            return vue.markRaw(this.activeCalendar === 'gregorian'
+	                ? this.core.clone().fromGregorian(values)
+	                : this.core.clone().fromJalali(values));
+	        },
+	        displayYear(date) {
+	            return this.getCalendarParts(date).year;
+	        },
+	        displayMonth(date) {
+	            return this.getCalendarParts(date).month;
+	        },
+	        displayDay(date) {
+	            return this.getCalendarParts(date).day;
+	        },
+	        calendarMonthDate(date, amount) {
+	            const value = date;
+	            if (!this.calendarAdapter)
+	                return vue.markRaw(value.clone().addMonth(amount));
+	            return vue.markRaw(new PersianDate_min().fromGregorian(this.calendarAdapter
+	                .addMonths(new Date(this.getDateTimestamp(value)), amount)
+	                .getTime()));
+	        },
+	        calendarDayDate(date, day) {
+	            const value = date;
+	            if (!this.calendarAdapter)
+	                return vue.markRaw(value.clone().date(day));
+	            return this.fromCalendarParts({
+	                ...this.getCalendarParts(date),
+	                day,
+	            });
+	        },
+	        calendarDaysInMonth(year, month) {
+	            if (this.calendarAdapter) {
+	                return this.calendarAdapter.daysInMonth(year, month);
+	            }
+	            return this.core.getDaysInMonth(year, month);
+	        },
+	        calendarWeekdayOffset(date) {
+	            const weekday = new Date(this.getDateTimestamp(date)).getDay();
+	            return (weekday - this.calendarWeekStart + 7) % 7;
+	        },
+	        isToday(date) {
+	            return (this.getDayTimestamp(date) === this.getDayTimestamp(this.core));
+	        },
+	        isSameCalendarDate(first, second) {
+	            const a = this.getCalendarParts(first);
+	            const b = this.getCalendarParts(second);
+	            return a.year === b.year && a.month === b.month && a.day === b.day;
+	        },
+	        isBetweenSelectedDates(date) {
+	            if (this.selectedDates.length !== 2)
+	                return false;
+	            const value = this.getDayTimestamp(date);
+	            const start = this.getDayTimestamp(this.selectedDates[0]);
+	            const end = this.getDayTimestamp(this.selectedDates[1]);
+	            return value > Math.min(start, end) && value < Math.max(start, end);
+	        },
+	        formatDateValue(date, format) {
+	            const value = date;
+	            if (!this.calendarAdapter)
+	                return value.toString(format);
+	            const parts = this.getCalendarParts(date);
+	            const pad = (value, size = 2) => String(value).padStart(size, '0');
+	            const monthName = this.monthNamesForYear(parts.year)[parts.month - 1] ||
+	                `Month ${parts.month}`;
+	            return format
+	                .replace('?MMMM', monthName)
+	                .replace('MMMM', monthName)
+	                .replace('YYYY', String(parts.year))
+	                .replace('YY', String(parts.year).slice(-2))
+	                .replace('MM', pad(parts.month))
+	                .replace('M', String(parts.month))
+	                .replace('DD', pad(parts.day))
+	                .replace('D', String(parts.day))
+	                .replace('HH', pad(parts.hour || 0))
+	                .replace('H', String(parts.hour || 0))
+	                .replace('mm', pad(parts.minute || 0))
+	                .replace('m', String(parts.minute || 0))
+	                .replace('ss', pad(parts.second || 0))
+	                .replace('s', String(parts.second || 0));
+	        },
+	        formatModelValue(date) {
+	            const target = this.modelCalendar === 'active'
+	                ? this.activeCalendar
+	                : this.modelCalendar;
+	            if (!target || target === this.activeCalendar) {
+	                return this.formatDateValue(date, this.formats.model);
+	            }
+	            const value = date;
+	            const timestamp = this.getDateTimestamp(value);
+	            if (target === 'jalali' || target === 'gregorian') {
+	                return new PersianDate_min()
+	                    .fromGregorian(timestamp)
+	                    .calendar(target)
+	                    .toString(this.formats.model);
+	            }
+	            const adapter = createCalendarAdapter(target, {
+	                hijriProvider: this.hijriProvider,
+	            });
+	            const parts = adapter.getParts(new Date(timestamp));
+	            const pad = (part, size = 2) => String(part).padStart(size, '0');
+	            return this.formats.model
+	                .replace('YYYY', String(parts.year))
+	                .replace('YY', String(parts.year).slice(-2))
+	                .replace('MM', pad(parts.month))
+	                .replace('M', String(parts.month))
+	                .replace('DD', pad(parts.day))
+	                .replace('D', String(parts.day))
+	                .replace('HH', pad(parts.hour || 0))
+	                .replace('H', String(parts.hour || 0))
+	                .replace('mm', pad(parts.minute || 0))
+	                .replace('m', String(parts.minute || 0))
+	                .replace('ss', pad(parts.second || 0))
+	                .replace('s', String(parts.second || 0));
+	        },
+	        parseCalendarParts(value) {
+	            const values = value.split(/[-/ .,\\:]/).filter(Boolean).map(Number);
+	            return {
+	                year: values[0],
+	                month: values[1] || 1,
+	                day: values[2] || 1,
+	                hour: values[3] || 0,
+	                minute: values[4] || 0,
+	                second: values[5] || 0,
+	            };
+	        },
+	        parseCalendarDate(value) {
+	            if (this.calendarAdapter) {
+	                return this.fromCalendarParts(this.parseCalendarParts(value));
+	            }
+	            const date = this.core.clone();
+	            const sourceCalendar = this.calendar === 'gregorian' ? 'gregorian' : 'jalali';
+	            if (!/[-/ ]/.test(value)) {
+	                return date.calendar(sourceCalendar).parse(value).calendar(this.activeCalendar);
+	            }
+	            const parsed = sourceCalendar === 'gregorian'
+	                ? date.fromGregorian(value)
+	                : date.fromJalali(value);
+	            return parsed.calendar(this.activeCalendar);
+	        },
 	        showPart(part) {
 	            if (part == 'year') {
 	                this.showMonthSelect = false;
@@ -1104,20 +1693,31 @@
 	        changeSelectedMonth(month) {
 	            const clone = this.onDisplay.clone();
 	            if (month == 'add') {
-	                this.onDisplay.addMonth();
+	                this.onDisplay = this.calendarMonthDate(this.onDisplay, 1);
 	            }
 	            else if (month == 'sub') {
-	                this.onDisplay.subMonth();
+	                this.onDisplay = this.calendarMonthDate(this.onDisplay, -1);
 	            }
-	            else
-	                this.onDisplay.month(month);
+	            else {
+	                const parts = this.getCalendarParts(this.onDisplay);
+	                this.onDisplay = this.fromCalendarParts({
+	                    ...parts,
+	                    month,
+	                    day: Math.min(parts.day, this.calendarDaysInMonth(parts.year, month)),
+	                });
+	            }
 	            if (this.checkDate(this.onDisplay, 'month'))
 	                this.showMonthSelect = false;
 	            else
 	                this.onDisplay = clone;
 	        },
 	        changeSelectedYear(year) {
-	            this.onDisplay.year(year);
+	            const parts = this.getCalendarParts(this.onDisplay);
+	            this.onDisplay = this.fromCalendarParts({
+	                ...parts,
+	                year,
+	                day: Math.min(parts.day, this.calendarDaysInMonth(year, parts.month)),
+	            });
 	            if (!this.checkDate(this.onDisplay, 'date'))
 	                this.onDisplay = this.nearestDate(this.onDisplay);
 	            this.showYearSelect = false;
@@ -1229,9 +1829,7 @@
 	        },
 	        setModel(date) {
 	            if (date === undefined) {
-	                date = this.selectedDates.map((el) => {
-	                    return el.toString(this.formats.model);
-	                });
+	                date = this.selectedDates.map((el) => this.formatModelValue(el));
 	                if (this.mode == 'single')
 	                    date = date[0];
 	            }
@@ -1263,6 +1861,20 @@
 	                });
 	        },
 	        checkDate(date, part) {
+	            if (this.calendarAdapter) {
+	                const current = Core.isPersianDate(date)
+	                    ? date
+	                    : this.parseCalendarDate(date);
+	                const currentTime = this.getDateTimestamp(current);
+	                const fromTime = this.getDateTimestamp(this.fromDate);
+	                const toTime = this.getDateTimestamp(this.toDate);
+	                if (part === 'year' || part === 'month' || part === 'date') {
+	                    const currentDay = this.getDayTimestamp(current);
+	                    return (currentDay <= this.getDayTimestamp(this.toDate) &&
+	                        currentDay >= this.getDayTimestamp(this.fromDate));
+	                }
+	                return currentTime >= fromTime && currentTime <= toTime;
+	            }
 	            let from, to;
 	            if (!Core.isPersianDate(date))
 	                date = this.core.clone().parse(date);
@@ -1293,12 +1905,23 @@
 	            date = Core.isPersianDate(date)
 	                ? date.clone()
 	                : this.core.clone().parse(date);
+	            if (this.calendarAdapter && Core.isString(disable)) {
+	                const disabled = this.parseCalendarDate(disable);
+	                if (this.type === 'time') {
+	                    return (date.hour() === disabled.hour() &&
+	                        date.minute() === disabled.minute());
+	                }
+	                return date.clone().startOf('date').isSame(disabled.clone().startOf('date'));
+	            }
 	            if (Core.isString(disable)) {
 	                if (this.type == 'time')
 	                    disable = date.toString() + ' ' + disable;
 	                return date.calendar('jalali').isSame(disable);
 	            }
 	            else if (disable instanceof RegExp) {
+	                if (this.calendarAdapter) {
+	                    return disable.test(this.formatDateValue(date, this.formats.input));
+	                }
 	                const format = {
 	                    date: 'jYYYY/jM/jD',
 	                    datetime: 'jYYYY/jM/jD H:m',
@@ -1312,11 +1935,17 @@
 	            else if (Array.isArray(disable)) {
 	                return disable.some((val) => {
 	                    if (Core.isString(val)) {
+	                        if (this.calendarAdapter) {
+	                            return this.isSameCalendarDate(date, this.parseCalendarDate(val));
+	                        }
 	                        if (this.type == 'time')
 	                            val = date.toString() + ' ' + val;
 	                        return date.calendar('jalali').isSame(val);
 	                    }
 	                    else if (val instanceof RegExp) {
+	                        if (this.calendarAdapter) {
+	                            return val.test(this.formatDateValue(date, this.formats.input));
+	                        }
 	                        const format = {
 	                            date: 'jYYYY/jM/jD',
 	                            datetime: 'jYYYY/jM/jD H:m',
@@ -1494,7 +2123,7 @@
 	        },
 	        submitDate(close = true) {
 	            const displayDate = this.selectedDates.map((el) => {
-	                return el.toString(this.formats.input);
+	                return this.formatDateValue(el, this.formats.input);
 	            });
 	            if (this.dualInput)
 	                this.displayValue = displayDate;
@@ -1538,16 +2167,19 @@
 	            });
 	        },
 	        changeLocale() {
-	            const locales = this.locale.split(',');
+	            const locales = this.effectiveLocale.split(',');
 	            const index = locales.indexOf(this.currentLocale);
 	            this.currentLocale = locales[index + 1] || locales[0];
-	            const calendar = this.lang.calendar;
-	            this.core.calendar(calendar);
-	            this.fromDate.calendar(calendar);
-	            this.toDate.calendar(calendar);
-	            this.onDisplay.calendar(calendar);
+	            const calendar = this.activeCalendar;
+	            const internalCalendar = this.calendarAdapter
+	                ? 'gregorian'
+	                : calendar;
+	            this.core.calendar(internalCalendar);
+	            this.fromDate.calendar(internalCalendar);
+	            this.toDate.calendar(internalCalendar);
+	            this.onDisplay.calendar(internalCalendar);
 	            for (const date of this.selectedDates) {
-	                date.calendar(calendar);
+	                date.calendar(internalCalendar);
 	            }
 	            this.submitDate(false);
 	        },
@@ -1638,16 +2270,12 @@
 	                dates = [dates];
 	            this.selectedDates = [];
 	            dates.some((d, index) => {
-	                const date = this.core
-	                    .clone()
-	                    .fromGregorian((this.type == 'time'
-	                    ? this.core.toString('YYYY-MM-DD') + ' '
-	                    : '') + d);
-	                if (Core.isPersianDate(date)) {
-	                    this.selectedDates.push(date.clone());
-	                    this.selectedTimes.push(date.clone());
+	                const date = this.parseCalendarDate((this.type == 'time' ? this.core.toString('YYYY-MM-DD') + ' ' : '') + d);
+	                if (date) {
+	                    this.selectedDates.push(vue.markRaw(date.clone()));
+	                    this.selectedTimes.push(vue.markRaw(date.clone()));
 	                    if (index == 0)
-	                        this.onDisplay = date.clone();
+	                        this.onDisplay = vue.markRaw(date.clone());
 	                }
 	                else {
 	                    this.selectedDates = this.selectedTimes = [];
@@ -1735,6 +2363,7 @@
 	      { 'pdp-range': _ctx.mode === 'range' },
 	      { 'pdp-modal': _ctx.modal },
 	      { 'pdp-dual': _ctx.dualInput },
+	      { 'pdp-open': _ctx.showDatePicker },
 	      _ctx.lang.dir.input,
 	    ])
 	  }, [
@@ -1832,7 +2461,7 @@
 	                      (vue.openBlock(true), vue.createElementBlock(vue.Fragment, null, vue.renderList(_ctx.years, (year, index) => {
 	                        return (vue.openBlock(), vue.createElementBlock("li", {
 	                          key: index,
-	                          class: vue.normalizeClass({ selected: _ctx.onDisplay.year() == year }),
+	                          class: vue.normalizeClass({ selected: _ctx.displayYear(_ctx.onDisplay) == year }),
 	                          onClick: $event => (_ctx.changeSelectedYear(year))
 	                        }, vue.toDisplayString(year), 11 /* TEXT, CLASS, PROPS */, _hoisted_11))
 	                      }), 128 /* KEYED_FRAGMENT */))
@@ -1843,7 +2472,7 @@
 	                : vue.createCommentVNode("v-if", true),
 	              (_ctx.type.includes('date'))
 	                ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_12, [
-	                    (_ctx.locale.includes(','))
+	                    (_ctx.effectiveLocale.includes(','))
 	                      ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_13, [
 	                          vue.createElementVNode("div", null, vue.toDisplayString(_ctx.lang.translations.text), 1 /* TEXT */),
 	                          vue.createElementVNode("button", {
@@ -1860,7 +2489,7 @@
 	                        class: vue.normalizeClass([
 	                  'pdp-arrow',
 	                  {
-	                    disabled: !_ctx.checkDate(_ctx.onDisplay.clone().subMonth(), 'month'),
+	                    disabled: !_ctx.checkDate(_ctx.calendarMonthDate(_ctx.onDisplay, -1), 'month'),
 	                  },
 	                ]),
 	                        title: _ctx.lang.translations.prevMonth,
@@ -1883,13 +2512,13 @@
 	                              type: "button",
 	                              tabindex: "-1",
 	                              onClick: _cache[4] || (_cache[4] = $event => (_ctx.showPart('month')))
-	                            }, vue.toDisplayString(_ctx.months[_ctx.onDisplay.clone().addMonth(i).month()].label), 1 /* TEXT */),
+	                            }, vue.toDisplayString(_ctx.months[_ctx.displayMonth(_ctx.calendarMonthDate(_ctx.onDisplay, i))].label), 1 /* TEXT */),
 	                            vue.createElementVNode("button", {
 	                              class: "pdp-year",
 	                              type: "button",
 	                              tabindex: "-1",
 	                              onClick: _cache[5] || (_cache[5] = $event => (_ctx.showPart('year')))
-	                            }, vue.toDisplayString(_ctx.onDisplay.clone().addMonth(i).year()), 1 /* TEXT */)
+	                            }, vue.toDisplayString(_ctx.displayYear(_ctx.calendarMonthDate(_ctx.onDisplay, i))), 1 /* TEXT */)
 	                          ]))
 	                        }), 128 /* KEYED_FRAGMENT */))
 	                      ]),
@@ -1899,7 +2528,7 @@
 	                        class: vue.normalizeClass([
 	                  'pdp-arrow',
 	                  {
-	                    disabled: !_ctx.checkDate(_ctx.onDisplay.clone().addMonth(), 'month'),
+	                    disabled: !_ctx.checkDate(_ctx.calendarMonthDate(_ctx.onDisplay, 1), 'month'),
 	                  },
 	                ]),
 	                        title: _ctx.lang.translations.nextMonth,
@@ -1927,7 +2556,7 @@
 	                          "data-column": i
 	                        }, [
 	                          vue.createElementVNode("div", _hoisted_21, [
-	                            (vue.openBlock(true), vue.createElementBlock(vue.Fragment, null, vue.renderList(_ctx.lang.weekdays, (weekday, index) => {
+	                            (vue.openBlock(true), vue.createElementBlock(vue.Fragment, null, vue.renderList(_ctx.orderedWeekdays, (weekday, index) => {
 	                              return (vue.openBlock(), vue.createElementBlock("div", {
 	                                key: index,
 	                                class: "pdp-weekday"
@@ -1944,6 +2573,7 @@
 	                        'pdp-day',
 	                        { empty: day.empty },
 	                        { friday: day.friday },
+	                        { weekend: day.weekend },
 	                        { today: day.today },
 	                        { 'start-range': day.startRange },
 	                        { 'end-range': day.endRange },
@@ -2065,10 +2695,10 @@
 	                vue.createElementVNode("div", null, [
 	                  vue.renderSlot(_ctx.$slots, "footer"),
 	                  (_ctx.selectedDates[0])
-	                    ? (vue.openBlock(), vue.createElementBlock("small", _hoisted_33, vue.toDisplayString(_ctx.selectedDates[0].toString(_ctx.formats.display)), 1 /* TEXT */))
+	                    ? (vue.openBlock(), vue.createElementBlock("small", _hoisted_33, vue.toDisplayString(_ctx.formatDateValue(_ctx.selectedDates[0], _ctx.formats.display)), 1 /* TEXT */))
 	                    : vue.createCommentVNode("v-if", true),
 	                  (_ctx.selectedDates.length == 2)
-	                    ? (vue.openBlock(), vue.createElementBlock("small", _hoisted_34, " - " + vue.toDisplayString(_ctx.selectedDates[1].toString(_ctx.formats.display)), 1 /* TEXT */))
+	                    ? (vue.openBlock(), vue.createElementBlock("small", _hoisted_34, " - " + vue.toDisplayString(_ctx.formatDateValue(_ctx.selectedDates[1], _ctx.formats.display)), 1 /* TEXT */))
 	                    : vue.createCommentVNode("v-if", true)
 	                ]),
 	                vue.createElementVNode("div", null, [
@@ -2147,7 +2777,7 @@
 	  }
 	}
 
-	var css_248z = ".pdp {\n  --primary-color: #26baee;\n  --secondary-color: #9fe8fa;\n  --in-range-background: #c9f1fb;\n  --radius: 0.25rem;\n  --text-color: #495057;\n  --hover-color: #000;\n  --background: #fff;\n  --border-color: #ced4da;\n  --z-index: 1000;\n  --disabled-opacity: 0.3;\n  --icon-background: #e9ecef;\n  --overlay-color: transparent;\n  --main-box-shadow: 1px 1px 8px 1px rgba(116, 116, 116, 0.5);\n  --day-dimensions: 2.08rem;\n  --time-scale: 1;\n}\n@keyframes start {\nfrom {\n    transform: inherit scale(0.5);\n    opacity: 0;\n}\nto {\n    transform: inherit scale(1);\n    opacity: 1;\n}\n}\n@keyframes startModal {\nfrom {\n    transform: translate(-50%, -50%) scale(0.5);\n    opacity: 0;\n}\nto {\n    transform: translate(-50%, -50%) scale(1);\n    opacity: 1;\n}\n}\n@keyframes tada {\n0% {\n    transform: scale(1);\n}\n10%, 20% {\n    transform: scale(0.9) rotate(-3deg);\n}\n30%, 50%, 70%, 90% {\n    transform: scale(1.1) rotate(3deg);\n}\n40%, 60%, 80% {\n    transform: scale(1.1) rotate(-3deg);\n}\n100% {\n    transform: scale(1) rotate(0);\n}\n}\n@media (max-width: 700px) {\n.pdp-picker {\n    flex-direction: column-reverse;\n}\n.pdp-shortcut {\n    flex-direction: row !important;\n    flex-wrap: wrap;\n    justify-content: space-evenly;\n    padding: 0 !important;\n    border: none !important;\n}\n}\n.pdp {\n  position: relative;\n}\n.pdp:not(.pdp-range) .pdp-day.start-range {\n  border-radius: 0.25rem !important;\n  border-radius: var(--radius) !important;\n}\n.pdp.pdp-range .pdp-picker.rtl .pdp-day.start-range {\n  border-radius: 0 0.25rem 0.25rem 0 !important;\n  border-radius: 0 var(--radius) var(--radius) 0 !important;\n}\n.pdp.pdp-range .pdp-picker.rtl .pdp-day.end-range {\n  border-radius: 0.25rem 0 0 0.25rem !important;\n  border-radius: var(--radius) 0 0 var(--radius) !important;\n}\n.pdp.pdp-range .pdp-picker.rtl .pdp-day.end-range.start-range {\n  border-radius: 0.25rem !important;\n  border-radius: var(--radius) !important;\n}\n.pdp.pdp-range .pdp-picker.ltr .pdp-day.start-range {\n  border-radius: 0.25rem 0 0 0.25rem !important;\n  border-radius: var(--radius) 0 0 var(--radius) !important;\n}\n.pdp.pdp-range .pdp-picker.ltr .pdp-day.end-range {\n  border-radius: 0 0.25rem 0.25rem 0 !important;\n  border-radius: 0 var(--radius) var(--radius) 0 !important;\n}\n.pdp.pdp-range .pdp-picker.ltr .pdp-day.end-range.start-range {\n  border-radius: 0.25rem !important;\n  border-radius: var(--radius) !important;\n}\n.pdp.rtl {\n  direction: rtl;\n  text-align: right;\n}\n.pdp.rtl .pdp-group :first-child:not(.pdp-inside),\n.pdp.rtl .pdp-group .pdp-inside:first-child + input {\n  border-top-right-radius: 0.25rem;\n  border-top-right-radius: var(--radius);\n  border-bottom-right-radius: 0.25rem;\n  border-bottom-right-radius: var(--radius);\n  margin-left: -1px;\n}\n.pdp.rtl .pdp-group input:last-of-type {\n  border-top-left-radius: 0.25rem;\n  border-top-left-radius: var(--radius);\n  border-bottom-left-radius: 0.25rem;\n  border-bottom-left-radius: var(--radius);\n}\n.pdp.rtl .pdp-group .pdp-icon.pdp-inside:nth-of-type(2) {\n  right: 50%;\n}\n.pdp.rtl .pdp-group .pdp-icon.pdp-inside + input {\n  padding-right: 3rem;\n}\n.pdp.rtl.pdp-dual .pdp-clear:nth-of-type(1) {\n  left: calc(50% + 0.5rem) !important;\n}\n.pdp.rtl .pdp-picker::after {\n  right: 1.2rem;\n}\n.pdp.ltr {\n  direction: ltr;\n  text-align: left;\n}\n.pdp.ltr .pdp-group :first-child:not(.pdp-inside),\n.pdp.ltr .pdp-group .pdp-inside:first-child + input {\n  border-top-left-radius: 0.25rem;\n  border-top-left-radius: var(--radius);\n  border-bottom-left-radius: 0.25rem;\n  border-bottom-left-radius: var(--radius);\n  margin-right: -1px;\n}\n.pdp.ltr .pdp-group input:last-of-type {\n  border-top-right-radius: 0.25rem;\n  border-top-right-radius: var(--radius);\n  border-bottom-right-radius: 0.25rem;\n  border-bottom-right-radius: var(--radius);\n  font-family: sans-serif;\n}\n.pdp.ltr .pdp-group .pdp-clear {\n  left: unset;\n  right: 0.5rem;\n}\n.pdp.ltr .pdp-group .pdp-icon.pdp-inside:nth-of-type(2) {\n  left: 50%;\n}\n.pdp.ltr .pdp-group .pdp-icon.pdp-inside + input {\n  padding-left: 3rem;\n}\n.pdp.ltr.pdp-dual .pdp-clear:nth-of-type(1) {\n  right: calc(50% + 0.5rem) !important;\n}\n.pdp.ltr .pdp-picker::after {\n  left: 1.2rem;\n}\n.pdp.pdp-dual .pdp-picker {\n  left: 50%;\n  transform: translateX(-50%);\n}\n.pdp.pdp-dual .pdp-picker::after {\n  right: unset;\n  left: 50%;\n  transform: translateX(-50%);\n}\n.pdp.pdp-modal .pdp-overlay {\n  background: rgba(0, 0, 0, 0.5) !important;\n}\n.pdp.pdp-modal .pdp-picker {\n  position: fixed;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  animation: startModal 0.1s;\n}\n.pdp.pdp-modal .pdp-picker::after {\n  all: unset !important;\n}\n.pdp * {\n  box-sizing: border-box;\n}\n.pdp svg {\n  vertical-align: middle;\n}\n.pdp input,\n.pdp button {\n  font-family: inherit;\n}\n.pdp .pdp-label {\n  display: inline-block;\n  margin-bottom: 0.5rem;\n}\n.pdp .pdp-group {\n  position: relative;\n  display: flex;\n  align-items: stretch;\n  width: 100%;\n}\n.pdp .pdp-group .pdp-input {\n  display: block;\n  height: calc(1.5em + 0.75rem + 2px);\n  padding: 0.375rem 0.75rem;\n  font-size: 1rem;\n  font-weight: 400;\n  line-height: 1.5;\n  background-clip: padding-box;\n  border: 1px solid #ced4da;\n  border: 1px solid var(--border-color);\n  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;\n  position: relative;\n  flex: 1 1 auto;\n  width: 100%;\n}\n.pdp .pdp-group .pdp-input.pdp-focus {\n  outline: none;\n  border-bottom: 2px solid #26baee;\n  border-bottom: 2px solid var(--primary-color);\n}\n.pdp .pdp-group .pdp-icon {\n  padding: 0.375rem 0.75rem;\n  line-height: 1.5;\n  font-size: 1rem;\n  color: #495057;\n  color: var(--text-color);\n  background: #e9ecef;\n  background: var(--icon-background);\n  border: 1px solid #ced4da;\n  border: 1px solid var(--border-color);\n  max-height: calc(1.5em + 0.75rem + 2px);\n}\n.pdp .pdp-group .pdp-icon:nth-of-type(2) {\n  margin-left: -1px;\n  margin-right: -1px;\n}\n.pdp .pdp-group .pdp-icon.pdp-inside {\n  background: transparent;\n  border: none;\n  position: absolute;\n  z-index: 1;\n}\n.pdp .pdp-group .pdp-clear {\n  border: none;\n  background-color: transparent;\n  position: absolute;\n  left: 0.5rem;\n  top: 0;\n  bottom: 0;\n  z-index: 1;\n  cursor: pointer;\n  padding: 0 0.5rem;\n}\n.pdp .pdp-overlay {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  left: 0;\n  z-index: 1000;\n  z-index: var(--z-index);\n  background: transparent;\n  background: var(--overlay-color);\n}\n.pdp .pdp-picker {\n  display: flex;\n  position: absolute;\n  color: #495057;\n  color: var(--text-color);\n  background: #fff;\n  background: var(--background);\n  box-shadow: 1px 1px 8px 1px rgba(116, 116, 116, 0.5);\n  box-shadow: var(--main-box-shadow);\n  z-index: 1001;\n  z-index: calc(var(--z-index) + 1);\n  border-radius: 0.25rem;\n  border-radius: var(--radius);\n  transition: all 1s ease;\n  margin-top: 0.5rem;\n  padding: 0.3rem 0.6rem;\n  animation: start 0.1s;\n}\n.pdp .pdp-picker.ltr {\n  direction: ltr;\n}\n.pdp .pdp-picker.ltr .pdp-header .bottom {\n  flex-direction: row-reverse;\n}\n.pdp .pdp-picker.ltr .pdp-header .bottom > div {\n  display: flex;\n  flex-direction: row-reverse;\n}\n.pdp .pdp-picker.ltr .pdp-select-year,\n.pdp .pdp-picker.ltr .pdp-days,\n.pdp .pdp-picker.ltr .pdp-header .pdp-year,\n.pdp .pdp-picker.ltr .pdp-footer small,\n.pdp .pdp-picker.ltr .pdp-time {\n  font-family: sans-serif !important;\n}\n.pdp .pdp-picker.ltr .pdp-shortcut {\n  border-right: unset;\n  border-left: 1px solid #ced4da;\n  border-left: 1px solid var(--border-color);\n}\n.pdp .pdp-picker.rtl {\n  direction: rtl;\n}\n.pdp .pdp-picker.pdp-top {\n  bottom: calc(1.5em + 0.75rem + 2px);\n  margin-top: unset;\n  margin-bottom: 0.5rem;\n}\n.pdp .pdp-picker.pdp-top::after {\n  bottom: unset;\n  top: 100%;\n  transform: rotate(180deg);\n}\n.pdp .pdp-picker.pdp-left {\n  left: 0;\n  right: unset;\n}\n.pdp .pdp-picker.pdp-left::after {\n  right: unset;\n  left: 1.2rem;\n}\n.pdp .pdp-picker.pdp-right {\n  left: unset;\n  right: 0;\n}\n.pdp .pdp-picker.pdp-right::after {\n  left: unset;\n  right: 1.2rem;\n}\n.pdp .pdp-picker:after {\n  content: \"\";\n  position: absolute;\n  bottom: 100%;\n  /* left: 50%; transform: translateX(-50%); */\n  /* left: 1.2rem; */\n  border: solid transparent;\n  border-bottom-color: #fff;\n  border-bottom-color: var(--background);\n  border-width: 0.4rem;\n}\n.pdp .pdp-picker ::selection {\n  all: unset;\n}\n.pdp .pdp-picker .pdp-auto, .pdp .pdp-picker .pdp-auto > div {\n  background: inherit;\n}\n.pdp .pdp-picker .pdp-select-year,\n.pdp .pdp-picker .pdp-select-month {\n  display: flex;\n  flex-wrap: wrap;\n  justify-content: center;\n  align-items: center;\n  font-size: 0.8rem;\n  background: inherit;\n  list-style: none;\n  position: absolute;\n  left: 0;\n  right: 0;\n  top: 3.5rem;\n  bottom: 3.5rem;\n  padding: 0;\n  margin: 0;\n  z-index: 1;\n  animation: start 0.1s;\n  overflow: auto;\n}\n.pdp .pdp-picker .pdp-select-year li,\n.pdp .pdp-picker .pdp-select-month li {\n  width: 5rem;\n  height: 4rem;\n  padding: 0.2rem;\n  cursor: pointer;\n  margin: 0.15rem;\n  display: inline-flex;\n  justify-content: center;\n  align-items: center;\n  flex: 30% 0;\n}\n.pdp .pdp-picker .pdp-select-year li:not(.disabled):hover,\n.pdp .pdp-picker .pdp-select-month li:not(.disabled):hover {\n  border-radius: 0.25rem;\n  border-radius: var(--radius);\n  border: 2px solid #26baee;\n  border: 2px solid var(--primary-color);\n}\n.pdp .pdp-picker .pdp-select-year li.disabled,\n.pdp .pdp-picker .pdp-select-month li.disabled {\n  text-shadow: unset;\n  box-shadow: unset;\n  cursor: default !important;\n  opacity: 0.3;\n  opacity: var(--disabled-opacity);\n}\n.pdp .pdp-picker .pdp-select-year li.selected,\n.pdp .pdp-picker .pdp-select-month li.selected {\n  border: 2px solid #26baee;\n  border: 2px solid var(--primary-color);\n  border-radius: 0.25rem;\n  border-radius: var(--radius);\n  background: #26baee !important;\n  background: var(--primary-color) !important;\n  color: #fff;\n  color: var(--background);\n}\n.pdp .pdp-picker .pdp-select-year::-webkit-scrollbar,\n.pdp .pdp-picker .pdp-select-month::-webkit-scrollbar {\n  -webkit-appearance: none;\n}\n.pdp .pdp-picker .pdp-select-year::-webkit-scrollbar:vertical,\n.pdp .pdp-picker .pdp-select-month::-webkit-scrollbar:vertical {\n  width: 0.4rem;\n}\n.pdp .pdp-picker .pdp-select-year::-webkit-scrollbar-thumb,\n.pdp .pdp-picker .pdp-select-month::-webkit-scrollbar-thumb {\n  border-radius: 0.25rem;\n  border-radius: var(--radius);\n  border: 0.1rem solid white; /* should match background, can't be transparent */\n  background: #ced4da;\n  background: var(--border-color);\n}\n.pdp .pdp-picker .pdp-header > div:first-child {\n  border-bottom: 1px solid #ced4da;\n  border-bottom: 1px solid var(--border-color);\n  margin-bottom: 0.5rem;\n}\n.pdp .pdp-picker .pdp-header .top {\n  padding: 0.75rem 0.3rem 1rem 0.3rem;\n  display: flex;\n  justify-content: space-between;\n  font-size: 0.9rem;\n  direction: rtl;\n}\n.pdp .pdp-picker .pdp-header .top button {\n  border: 0;\n  background: inherit;\n  cursor: pointer;\n  color: #26baee;\n  color: var(--primary-color);\n  padding: 0 0.5rem;\n}\n.pdp .pdp-picker .pdp-header .bottom {\n  padding: 0.3rem;\n  display: flex;\n  align-items: center;\n  height: 3rem;\n  direction: rtl;\n}\n.pdp .pdp-picker .pdp-header .bottom > div {\n  display: flex;\n  flex-grow: 1;\n  justify-content: space-around;\n}\n.pdp .pdp-picker .pdp-header .bottom > div .pdp-month,\n.pdp .pdp-picker .pdp-header .bottom > div .pdp-year {\n  color: #26baee;\n  color: var(--primary-color);\n  font-size: 1rem;\n}\n.pdp .pdp-picker .pdp-header .bottom button {\n  border: 0;\n  background: inherit;\n  cursor: pointer;\n}\n.pdp .pdp-picker .pdp-header .bottom button:focus {\n  outline: 0;\n}\n.pdp .pdp-picker .pdp-header .bottom .pdp-arrow.disabled {\n  opacity: 0.3;\n  opacity: var(--disabled-opacity);\n}\n.pdp .pdp-picker .pdp-header .bottom .pdp-arrow:not(.disabled):hover {\n  opacity: 0.3;\n  opacity: var(--disabled-opacity);\n}\n.pdp .pdp-picker .pdp-main {\n  position: relative;\n}\n.pdp .pdp-picker .pdp-main .pdp-date {\n  display: flex;\n  justify-content: center;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column {\n  margin: 0 1rem;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-week {\n  background: inherit;\n  margin-bottom: 0.3rem;\n  display: flex;\n  justify-content: space-around;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-week .pdp-weekday {\n  width: 2.08rem;\n  width: var(--day-dimensions);\n  height: 2.08rem;\n  height: var(--day-dimensions);\n  line-height: 2.08rem;\n  line-height: var(--day-dimensions);\n  font-size: 0.8rem;\n  text-align: center;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days {\n  background: inherit;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day {\n  display: inline-flex;\n  justify-content: center;\n  align-items: center;\n  margin: 0.1rem 0;\n  font-size: 0.8rem;\n  width: 2.08rem;\n  width: var(--day-dimensions);\n  height: 2.08rem;\n  height: var(--day-dimensions);\n  border-radius: 0.25rem;\n  border-radius: var(--radius);\n  padding: 0;\n  cursor: pointer;\n  transition-property: background-color, box-shadow;\n  transition-duration: 0.1s;\n  contain: content;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.friday {\n  color: #26baee;\n  color: var(--primary-color);\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.empty {\n  visibility: hidden;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.start-range, .pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.end-range {\n  background: #26baee;\n  background: var(--primary-color);\n  color: #fff;\n  color: var(--background);\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.disabled {\n  box-shadow: unset;\n  text-shadow: unset;\n  cursor: default !important;\n  border-color: transparent;\n  opacity: 0.3;\n  opacity: var(--disabled-opacity);\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.hover {\n  background: #9fe8fa !important;\n  background: var(--secondary-color) !important;\n  color: #000;\n  color: var(--hover-color);\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.in-range {\n  background: #c9f1fb;\n  background: var(--in-range-background);\n  color: #000;\n  color: var(--hover-color);\n  border-radius: 0 !important;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day:not(.disabled):hover, .pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.today {\n  border: 2px solid #26baee;\n  border: 2px solid var(--primary-color);\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.tada {\n  animation: tada 1s;\n  background: #9fe8fa;\n  background: var(--secondary-color);\n  box-shadow: inset 0 4px 9px rgba(0, 0, 0, 0.24);\n  color: #000;\n  position: relative;\n  z-index: 1;\n}\n.pdp .pdp-picker .pdp-main .pdp-time {\n  background: inherit;\n}\n.pdp .pdp-picker .pdp-main .pdp-time:not(.inline) {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  left: 0;\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-column {\n  display: flex;\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-column div {\n  width: 16.6rem;\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-moment {\n  margin-bottom: 1rem;\n  font-size: 2rem;\n  font-size: calc(2rem * var(--time-scale));\n  display: flex;\n  justify-content: space-around;\n  height: 100%;\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-moment.column-direction {\n  flex-direction: column;\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-moment > div {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  direction: ltr;\n  width: 100%;\n  padding: 1rem 0;\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-moment > div.disabled {\n  opacity: 0.3;\n  opacity: var(--disabled-opacity);\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-moment > div div {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  padding: 0 0.8rem;\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-moment > div div button {\n  border: none;\n  background: none;\n  cursor: pointer;\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-moment > div div button svg {\n  width: 8px;\n  width: calc(8px * var(--time-scale));\n}\n.pdp .pdp-picker .pdp-footer {\n  text-align: center;\n  min-height: 3rem;\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  border-top: 1px solid #ced4da;\n  border-top: 1px solid var(--border-color);\n  padding: 0.3rem;\n}\n.pdp .pdp-picker .pdp-footer .pdp-today,\n.pdp .pdp-picker .pdp-footer .pdp-submit {\n  font-size: 0.8rem;\n  padding: 0.25rem 0.5rem;\n  margin: 0 0.3rem;\n  line-height: 1.5;\n  color: #fff;\n  color: var(--background);\n  text-decoration: none;\n  border: none;\n  border-radius: 0.25rem;\n  border-radius: var(--radius);\n  background: #26baee;\n  background: var(--primary-color);\n  cursor: pointer;\n}\n.pdp .pdp-picker .pdp-footer .pdp-today:hover,\n.pdp .pdp-picker .pdp-footer .pdp-submit:hover {\n  filter: brightness(0.9);\n}\n.pdp .pdp-picker .pdp-footer > div {\n  display: flex;\n}\n.pdp .pdp-picker .pdp-shortcut {\n  margin: 0;\n  padding: 0.5rem;\n  list-style: none;\n  display: flex;\n  flex-direction: column;\n  align-items: stretch;\n  border-right: 1px solid #ced4da;\n  border-right: 1px solid var(--border-color);\n}\n.pdp .pdp-picker .pdp-shortcut li {\n  margin: 0;\n  padding: 0.5rem 1rem;\n  text-align: center;\n  cursor: pointer;\n  border-radius: 0.25rem;\n  border-radius: var(--radius);\n  margin: 0.25rem 0;\n  color: #000;\n  color: var(--hover-color);\n  font-weight: 500;\n}\n.pdp .pdp-picker .pdp-shortcut li:hover {\n  background: #c9f1fb;\n  background: var(--in-range-background);\n}\n.pdp .pdp-picker .pdp-shortcut li.selected {\n  background: #26baee;\n  background: var(--primary-color);\n  color: #fff;\n  color: var(--background);\n}\n.pdp .pdp-pointer {\n  cursor: pointer;\n}\n.pdp .pdp-auto {\n  margin: auto;\n  position: relative;\n}";
+	var css_248z = ".pdp {\n  --primary-color: #26baee;\n  --secondary-color: #9fe8fa;\n  --in-range-background: #c9f1fb;\n  --radius: 0.25rem;\n  --text-color: #495057;\n  --hover-color: #000;\n  --background: #fff;\n  --border-color: #ced4da;\n  --z-index: 1000;\n  --disabled-opacity: 0.3;\n  --icon-background: #e9ecef;\n  --overlay-color: transparent;\n  --main-box-shadow: 1px 1px 8px 1px rgba(116, 116, 116, 0.5);\n  --day-dimensions: 2.08rem;\n  --time-scale: 1;\n}\n@keyframes start {\nfrom {\n    transform: inherit scale(0.5);\n    opacity: 0;\n}\nto {\n    transform: inherit scale(1);\n    opacity: 1;\n}\n}\n@keyframes startModal {\nfrom {\n    transform: translate(-50%, -50%) scale(0.5);\n    opacity: 0;\n}\nto {\n    transform: translate(-50%, -50%) scale(1);\n    opacity: 1;\n}\n}\n@keyframes tada {\n0% {\n    transform: scale(1);\n}\n10%, 20% {\n    transform: scale(0.9) rotate(-3deg);\n}\n30%, 50%, 70%, 90% {\n    transform: scale(1.1) rotate(3deg);\n}\n40%, 60%, 80% {\n    transform: scale(1.1) rotate(-3deg);\n}\n100% {\n    transform: scale(1) rotate(0);\n}\n}\n@media (max-width: 700px) {\n.pdp-picker {\n    flex-direction: column-reverse;\n}\n.pdp-shortcut {\n    flex-direction: row !important;\n    flex-wrap: wrap;\n    justify-content: space-evenly;\n    padding: 0 !important;\n    border: none !important;\n}\n}\n.pdp {\n  position: relative;\n}\n.pdp.pdp-open {\n  z-index: 10000;\n}\n.pdp.pdp-open .pdp-overlay {\n  z-index: 10000 !important;\n}\n.pdp.pdp-open .pdp-picker {\n  z-index: 10001 !important;\n}\n.pdp:not(.pdp-range) .pdp-day.start-range {\n  border-radius: 0.25rem !important;\n  border-radius: var(--radius) !important;\n}\n.pdp.pdp-range .pdp-picker.rtl .pdp-day.start-range {\n  border-radius: 0 0.25rem 0.25rem 0 !important;\n  border-radius: 0 var(--radius) var(--radius) 0 !important;\n}\n.pdp.pdp-range .pdp-picker.rtl .pdp-day.end-range {\n  border-radius: 0.25rem 0 0 0.25rem !important;\n  border-radius: var(--radius) 0 0 var(--radius) !important;\n}\n.pdp.pdp-range .pdp-picker.rtl .pdp-day.end-range.start-range {\n  border-radius: 0.25rem !important;\n  border-radius: var(--radius) !important;\n}\n.pdp.pdp-range .pdp-picker.ltr .pdp-day.start-range {\n  border-radius: 0.25rem 0 0 0.25rem !important;\n  border-radius: var(--radius) 0 0 var(--radius) !important;\n}\n.pdp.pdp-range .pdp-picker.ltr .pdp-day.end-range {\n  border-radius: 0 0.25rem 0.25rem 0 !important;\n  border-radius: 0 var(--radius) var(--radius) 0 !important;\n}\n.pdp.pdp-range .pdp-picker.ltr .pdp-day.end-range.start-range {\n  border-radius: 0.25rem !important;\n  border-radius: var(--radius) !important;\n}\n.pdp.rtl {\n  direction: rtl;\n  text-align: right;\n}\n.pdp.rtl .pdp-group :first-child:not(.pdp-inside),\n.pdp.rtl .pdp-group .pdp-inside:first-child + input {\n  border-top-right-radius: 0.25rem;\n  border-top-right-radius: var(--radius);\n  border-bottom-right-radius: 0.25rem;\n  border-bottom-right-radius: var(--radius);\n  margin-left: -1px;\n}\n.pdp.rtl .pdp-group input:last-of-type {\n  border-top-left-radius: 0.25rem;\n  border-top-left-radius: var(--radius);\n  border-bottom-left-radius: 0.25rem;\n  border-bottom-left-radius: var(--radius);\n}\n.pdp.rtl .pdp-group .pdp-icon.pdp-inside:nth-of-type(2) {\n  right: 50%;\n}\n.pdp.rtl .pdp-group .pdp-icon.pdp-inside + input {\n  padding-right: 3rem;\n}\n.pdp.rtl.pdp-dual .pdp-clear:nth-of-type(1) {\n  left: calc(50% + 0.5rem) !important;\n}\n.pdp.rtl .pdp-picker::after {\n  right: 1.2rem;\n}\n.pdp.ltr {\n  direction: ltr;\n  text-align: left;\n}\n.pdp.ltr .pdp-group :first-child:not(.pdp-inside),\n.pdp.ltr .pdp-group .pdp-inside:first-child + input {\n  border-top-left-radius: 0.25rem;\n  border-top-left-radius: var(--radius);\n  border-bottom-left-radius: 0.25rem;\n  border-bottom-left-radius: var(--radius);\n  margin-right: -1px;\n}\n.pdp.ltr .pdp-group input:last-of-type {\n  border-top-right-radius: 0.25rem;\n  border-top-right-radius: var(--radius);\n  border-bottom-right-radius: 0.25rem;\n  border-bottom-right-radius: var(--radius);\n  font-family: sans-serif;\n}\n.pdp.ltr .pdp-group .pdp-clear {\n  left: unset;\n  right: 0.5rem;\n}\n.pdp.ltr .pdp-group .pdp-icon.pdp-inside:nth-of-type(2) {\n  left: 50%;\n}\n.pdp.ltr .pdp-group .pdp-icon.pdp-inside + input {\n  padding-left: 3rem;\n}\n.pdp.ltr.pdp-dual .pdp-clear:nth-of-type(1) {\n  right: calc(50% + 0.5rem) !important;\n}\n.pdp.ltr .pdp-picker::after {\n  left: 1.2rem;\n}\n.pdp.pdp-dual .pdp-picker {\n  left: 50%;\n  transform: translateX(-50%);\n}\n.pdp.pdp-dual .pdp-picker::after {\n  right: unset;\n  left: 50%;\n  transform: translateX(-50%);\n}\n.pdp.pdp-modal .pdp-overlay {\n  background: rgba(0, 0, 0, 0.5) !important;\n}\n.pdp.pdp-modal .pdp-picker {\n  position: fixed;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  animation: startModal 0.1s;\n}\n.pdp.pdp-modal .pdp-picker::after {\n  all: unset !important;\n}\n.pdp * {\n  box-sizing: border-box;\n}\n.pdp svg {\n  vertical-align: middle;\n}\n.pdp input,\n.pdp button {\n  font-family: inherit;\n}\n.pdp .pdp-label {\n  display: inline-block;\n  margin-bottom: 0.5rem;\n}\n.pdp .pdp-group {\n  position: relative;\n  display: flex;\n  align-items: stretch;\n  width: 100%;\n}\n.pdp .pdp-group .pdp-input {\n  display: block;\n  height: calc(1.5em + 0.75rem + 2px);\n  padding: 0.375rem 0.75rem;\n  font-size: 1rem;\n  font-weight: 400;\n  line-height: 1.5;\n  background-clip: padding-box;\n  border: 1px solid #ced4da;\n  border: 1px solid var(--border-color);\n  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;\n  position: relative;\n  flex: 1 1 auto;\n  width: 100%;\n}\n.pdp .pdp-group .pdp-input.pdp-focus {\n  outline: none;\n  border-bottom: 2px solid #26baee;\n  border-bottom: 2px solid var(--primary-color);\n}\n.pdp .pdp-group .pdp-icon {\n  padding: 0.375rem 0.75rem;\n  line-height: 1.5;\n  font-size: 1rem;\n  color: #495057;\n  color: var(--text-color);\n  background: #e9ecef;\n  background: var(--icon-background);\n  border: 1px solid #ced4da;\n  border: 1px solid var(--border-color);\n  max-height: calc(1.5em + 0.75rem + 2px);\n}\n.pdp .pdp-group .pdp-icon:nth-of-type(2) {\n  margin-left: -1px;\n  margin-right: -1px;\n}\n.pdp .pdp-group .pdp-icon.pdp-inside {\n  background: transparent;\n  border: none;\n  position: absolute;\n  z-index: 1;\n}\n.pdp .pdp-group .pdp-clear {\n  border: none;\n  background-color: transparent;\n  position: absolute;\n  left: 0.5rem;\n  top: 0;\n  bottom: 0;\n  z-index: 1;\n  cursor: pointer;\n  padding: 0 0.5rem;\n}\n.pdp .pdp-overlay {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  left: 0;\n  z-index: 1000;\n  z-index: var(--z-index);\n  background: transparent;\n  background: var(--overlay-color);\n}\n.pdp .pdp-picker {\n  display: flex;\n  position: absolute;\n  color: #495057;\n  color: var(--text-color);\n  background: #fff;\n  background: var(--background);\n  box-shadow: 1px 1px 8px 1px rgba(116, 116, 116, 0.5);\n  box-shadow: var(--main-box-shadow);\n  z-index: 10001;\n  z-index: calc(var(--z-index) + 1);\n  border-radius: 0.25rem;\n  border-radius: var(--radius);\n  transition: all 1s ease;\n  margin-top: 0.5rem;\n  padding: 0.3rem 0.6rem;\n  animation: start 0.1s;\n}\n.pdp .pdp-picker.ltr {\n  direction: ltr;\n}\n.pdp .pdp-picker.ltr .pdp-header .bottom {\n  flex-direction: row-reverse;\n}\n.pdp .pdp-picker.ltr .pdp-header .bottom > div {\n  display: flex;\n  flex-direction: row-reverse;\n}\n.pdp .pdp-picker.ltr .pdp-select-year,\n.pdp .pdp-picker.ltr .pdp-days,\n.pdp .pdp-picker.ltr .pdp-header .pdp-year,\n.pdp .pdp-picker.ltr .pdp-footer small,\n.pdp .pdp-picker.ltr .pdp-time {\n  font-family: sans-serif !important;\n}\n.pdp .pdp-picker.ltr .pdp-shortcut {\n  border-right: unset;\n  border-left: 1px solid #ced4da;\n  border-left: 1px solid var(--border-color);\n}\n.pdp .pdp-picker.rtl {\n  direction: rtl;\n}\n.pdp .pdp-picker.pdp-top {\n  bottom: calc(1.5em + 0.75rem + 2px);\n  margin-top: unset;\n  margin-bottom: 0.5rem;\n}\n.pdp .pdp-picker.pdp-top::after {\n  bottom: unset;\n  top: 100%;\n  transform: rotate(180deg);\n}\n.pdp .pdp-picker.pdp-left {\n  left: 0;\n  right: unset;\n}\n.pdp .pdp-picker.pdp-left::after {\n  right: unset;\n  left: 1.2rem;\n}\n.pdp .pdp-picker.pdp-right {\n  left: unset;\n  right: 0;\n}\n.pdp .pdp-picker.pdp-right::after {\n  left: unset;\n  right: 1.2rem;\n}\n.pdp .pdp-picker:after {\n  content: \"\";\n  position: absolute;\n  bottom: 100%;\n  /* left: 50%; transform: translateX(-50%); */\n  /* left: 1.2rem; */\n  border: solid transparent;\n  border-bottom-color: #fff;\n  border-bottom-color: var(--background);\n  border-width: 0.4rem;\n}\n.pdp .pdp-picker ::selection {\n  all: unset;\n}\n.pdp .pdp-picker .pdp-auto, .pdp .pdp-picker .pdp-auto > div {\n  background: inherit;\n}\n.pdp .pdp-picker .pdp-select-year,\n.pdp .pdp-picker .pdp-select-month {\n  display: flex;\n  flex-wrap: wrap;\n  justify-content: center;\n  align-items: center;\n  font-size: 0.8rem;\n  background: inherit;\n  list-style: none;\n  position: absolute;\n  left: 0;\n  right: 0;\n  top: 3.5rem;\n  bottom: 3.5rem;\n  padding: 0;\n  margin: 0;\n  z-index: 1;\n  animation: start 0.1s;\n  overflow: auto;\n}\n.pdp .pdp-picker .pdp-select-year li,\n.pdp .pdp-picker .pdp-select-month li {\n  width: 5rem;\n  height: 4rem;\n  padding: 0.2rem;\n  cursor: pointer;\n  margin: 0.15rem;\n  display: inline-flex;\n  justify-content: center;\n  align-items: center;\n  flex: 30% 0;\n}\n.pdp .pdp-picker .pdp-select-year li:not(.disabled):hover,\n.pdp .pdp-picker .pdp-select-month li:not(.disabled):hover {\n  border-radius: 0.25rem;\n  border-radius: var(--radius);\n  border: 2px solid #26baee;\n  border: 2px solid var(--primary-color);\n}\n.pdp .pdp-picker .pdp-select-year li.disabled,\n.pdp .pdp-picker .pdp-select-month li.disabled {\n  text-shadow: unset;\n  box-shadow: unset;\n  cursor: default !important;\n  opacity: 0.3;\n  opacity: var(--disabled-opacity);\n}\n.pdp .pdp-picker .pdp-select-year li.selected,\n.pdp .pdp-picker .pdp-select-month li.selected {\n  border: 2px solid #26baee;\n  border: 2px solid var(--primary-color);\n  border-radius: 0.25rem;\n  border-radius: var(--radius);\n  background: #26baee !important;\n  background: var(--primary-color) !important;\n  color: #fff;\n  color: var(--background);\n}\n.pdp .pdp-picker .pdp-select-year::-webkit-scrollbar,\n.pdp .pdp-picker .pdp-select-month::-webkit-scrollbar {\n  -webkit-appearance: none;\n}\n.pdp .pdp-picker .pdp-select-year::-webkit-scrollbar:vertical,\n.pdp .pdp-picker .pdp-select-month::-webkit-scrollbar:vertical {\n  width: 0.4rem;\n}\n.pdp .pdp-picker .pdp-select-year::-webkit-scrollbar-thumb,\n.pdp .pdp-picker .pdp-select-month::-webkit-scrollbar-thumb {\n  border-radius: 0.25rem;\n  border-radius: var(--radius);\n  border: 0.1rem solid white; /* should match background, can't be transparent */\n  background: #ced4da;\n  background: var(--border-color);\n}\n.pdp .pdp-picker .pdp-header > div:first-child {\n  border-bottom: 1px solid #ced4da;\n  border-bottom: 1px solid var(--border-color);\n  margin-bottom: 0.5rem;\n}\n.pdp .pdp-picker .pdp-header .top {\n  padding: 0.75rem 0.3rem 1rem 0.3rem;\n  display: flex;\n  justify-content: space-between;\n  font-size: 0.9rem;\n  direction: rtl;\n}\n.pdp .pdp-picker .pdp-header .top button {\n  border: 0;\n  background: inherit;\n  cursor: pointer;\n  color: #26baee;\n  color: var(--primary-color);\n  padding: 0 0.5rem;\n}\n.pdp .pdp-picker .pdp-header .bottom {\n  padding: 0.3rem;\n  display: flex;\n  align-items: center;\n  height: 3rem;\n  direction: rtl;\n}\n.pdp .pdp-picker .pdp-header .bottom > div {\n  display: flex;\n  flex-grow: 1;\n  justify-content: space-around;\n}\n.pdp .pdp-picker .pdp-header .bottom > div .pdp-month,\n.pdp .pdp-picker .pdp-header .bottom > div .pdp-year {\n  color: #26baee;\n  color: var(--primary-color);\n  font-size: 1rem;\n}\n.pdp .pdp-picker .pdp-header .bottom button {\n  border: 0;\n  background: inherit;\n  cursor: pointer;\n}\n.pdp .pdp-picker .pdp-header .bottom button:focus {\n  outline: 0;\n}\n.pdp .pdp-picker .pdp-header .bottom .pdp-arrow.disabled {\n  opacity: 0.3;\n  opacity: var(--disabled-opacity);\n}\n.pdp .pdp-picker .pdp-header .bottom .pdp-arrow:not(.disabled):hover {\n  opacity: 0.3;\n  opacity: var(--disabled-opacity);\n}\n.pdp .pdp-picker .pdp-main {\n  position: relative;\n}\n.pdp .pdp-picker .pdp-main .pdp-date {\n  display: flex;\n  justify-content: center;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column {\n  margin: 0 1rem;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-week {\n  background: inherit;\n  margin-bottom: 0.3rem;\n  display: flex;\n  justify-content: space-around;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-week .pdp-weekday {\n  width: 2.08rem;\n  width: var(--day-dimensions);\n  height: 2.08rem;\n  height: var(--day-dimensions);\n  line-height: 2.08rem;\n  line-height: var(--day-dimensions);\n  font-size: 0.8rem;\n  text-align: center;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days {\n  background: inherit;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day {\n  display: inline-flex;\n  justify-content: center;\n  align-items: center;\n  margin: 0.1rem 0;\n  font-size: 0.8rem;\n  width: 2.08rem;\n  width: var(--day-dimensions);\n  height: 2.08rem;\n  height: var(--day-dimensions);\n  border-radius: 0.25rem;\n  border-radius: var(--radius);\n  padding: 0;\n  cursor: pointer;\n  transition-property: background-color, box-shadow;\n  transition-duration: 0.1s;\n  contain: content;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.friday {\n  color: #26baee;\n  color: var(--primary-color);\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.weekend {\n  color: #26baee;\n  color: var(--primary-color);\n  font-weight: 700;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.empty {\n  visibility: hidden;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.start-range, .pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.end-range {\n  background: #26baee;\n  background: var(--primary-color);\n  color: #fff;\n  color: var(--background);\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.disabled {\n  box-shadow: unset;\n  text-shadow: unset;\n  cursor: default !important;\n  border-color: transparent;\n  opacity: 0.3;\n  opacity: var(--disabled-opacity);\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.hover {\n  background: #9fe8fa !important;\n  background: var(--secondary-color) !important;\n  color: #000;\n  color: var(--hover-color);\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.in-range {\n  background: #c9f1fb;\n  background: var(--in-range-background);\n  color: #000;\n  color: var(--hover-color);\n  border-radius: 0 !important;\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day:not(.disabled):hover, .pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.today {\n  border: 2px solid #26baee;\n  border: 2px solid var(--primary-color);\n}\n.pdp .pdp-picker .pdp-main .pdp-date .pdp-column .pdp-days .pdp-day.tada {\n  animation: tada 1s;\n  background: #9fe8fa;\n  background: var(--secondary-color);\n  box-shadow: inset 0 4px 9px rgba(0, 0, 0, 0.24);\n  color: #000;\n  position: relative;\n  z-index: 1;\n}\n.pdp .pdp-picker .pdp-main .pdp-time {\n  background: inherit;\n}\n.pdp .pdp-picker .pdp-main .pdp-time:not(.inline) {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  left: 0;\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-column {\n  display: flex;\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-column div {\n  width: 16.6rem;\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-moment {\n  margin-bottom: 1rem;\n  font-size: 2rem;\n  font-size: calc(2rem * var(--time-scale));\n  display: flex;\n  justify-content: space-around;\n  height: 100%;\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-moment.column-direction {\n  flex-direction: column;\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-moment > div {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  direction: ltr;\n  width: 100%;\n  padding: 1rem 0;\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-moment > div.disabled {\n  opacity: 0.3;\n  opacity: var(--disabled-opacity);\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-moment > div div {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  padding: 0 0.8rem;\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-moment > div div button {\n  border: none;\n  background: none;\n  cursor: pointer;\n}\n.pdp .pdp-picker .pdp-main .pdp-time .pdp-moment > div div button svg {\n  width: 8px;\n  width: calc(8px * var(--time-scale));\n}\n.pdp .pdp-picker .pdp-footer {\n  text-align: center;\n  min-height: 3rem;\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  border-top: 1px solid #ced4da;\n  border-top: 1px solid var(--border-color);\n  padding: 0.3rem;\n}\n.pdp .pdp-picker .pdp-footer .pdp-today,\n.pdp .pdp-picker .pdp-footer .pdp-submit {\n  font-size: 0.8rem;\n  padding: 0.25rem 0.5rem;\n  margin: 0 0.3rem;\n  line-height: 1.5;\n  color: #fff;\n  color: var(--background);\n  text-decoration: none;\n  border: none;\n  border-radius: 0.25rem;\n  border-radius: var(--radius);\n  background: #26baee;\n  background: var(--primary-color);\n  cursor: pointer;\n}\n.pdp .pdp-picker .pdp-footer .pdp-today:hover,\n.pdp .pdp-picker .pdp-footer .pdp-submit:hover {\n  filter: brightness(0.9);\n}\n.pdp .pdp-picker .pdp-footer > div {\n  display: flex;\n}\n.pdp .pdp-picker .pdp-shortcut {\n  margin: 0;\n  padding: 0.5rem;\n  list-style: none;\n  display: flex;\n  flex-direction: column;\n  align-items: stretch;\n  border-right: 1px solid #ced4da;\n  border-right: 1px solid var(--border-color);\n}\n.pdp .pdp-picker .pdp-shortcut li {\n  margin: 0;\n  padding: 0.5rem 1rem;\n  text-align: center;\n  cursor: pointer;\n  border-radius: 0.25rem;\n  border-radius: var(--radius);\n  margin: 0.25rem 0;\n  color: #000;\n  color: var(--hover-color);\n  font-weight: 500;\n}\n.pdp .pdp-picker .pdp-shortcut li:hover {\n  background: #c9f1fb;\n  background: var(--in-range-background);\n}\n.pdp .pdp-picker .pdp-shortcut li.selected {\n  background: #26baee;\n  background: var(--primary-color);\n  color: #fff;\n  color: var(--background);\n}\n.pdp .pdp-pointer {\n  cursor: pointer;\n}\n.pdp .pdp-auto {\n  margin: auto;\n  position: relative;\n}";
 	styleInject(css_248z);
 
 	script.render = render;

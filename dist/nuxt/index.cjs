@@ -5,7 +5,7 @@ const kit = require('@nuxt/kit');
 var _documentCurrentScript = typeof document !== 'undefined' ? document.currentScript : null;
 const index = kit.defineNuxtModule({
   meta: {
-    name: "@alireza-ab/vue3-persian-datepicker",
+    name: "@h-sanadgol/vue3-multi-calendar-datepicker",
     configKey: "datepicker",
     compatibility: {
       nuxt: "^3.0.0 || ^4.0.0"

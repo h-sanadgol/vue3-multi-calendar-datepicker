@@ -2,7 +2,7 @@ import { defineNuxtModule, createResolver, addImportsDir, addComponentsDir } fro
 
 const index = defineNuxtModule({
   meta: {
-    name: "@alireza-ab/vue3-persian-datepicker",
+    name: "@h-sanadgol/vue3-multi-calendar-datepicker",
     configKey: "datepicker",
     compatibility: {
       nuxt: "^3.0.0 || ^4.0.0"

@@ -97,6 +97,21 @@
 .pdp {
   position: relative;
 
+  // A picker may live inside a card, transformed panel, or another stacking
+  // context. Raise the owning datepicker while it is open so the popup and
+  // its overlay stay above neighbouring demo/application content.
+  &.pdp-open {
+    z-index: 10000;
+
+    .pdp-overlay {
+      z-index: 10000 !important;
+    }
+
+    .pdp-picker {
+      z-index: 10001 !important;
+    }
+  }
+
   &:not(.pdp-range) .pdp-day.start-range {
     border-radius: variable.$radius !important;
     border-radius: var(--radius) !important;
@@ -364,7 +379,7 @@
     background: var(--background);
     box-shadow: variable.$main-box-shadow;
     box-shadow: var(--main-box-shadow);
-    z-index: variable.$z-index + 1;
+    z-index: 10001;
     z-index: calc(var(--z-index) + 1);
     border-radius: variable.$radius;
     border-radius: var(--radius);
@@ -628,6 +643,12 @@
               &.friday {
                 color: variable.$primary-color;
                 color: var(--primary-color);
+              }
+
+              &.weekend {
+                color: variable.$primary-color;
+                color: var(--primary-color);
+                font-weight: 700;
               }
 
               &.empty {

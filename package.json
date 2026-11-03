@@ -1,7 +1,7 @@
 {
-  "name": "@h-sanadgol/vue3-persian-datepicker",
-  "description": "A datepicker component for select date (vue 3). This is a fork of @alireza-ab/vue3-persian-datepicker.",
-  "version": "1.1.0",
+  "name": "@h-sanadgol/vue3-multi-calendar-datepicker",
+  "description": "A simple multi-calendar datepicker component for Vue 3 and Nuxt 3.",
+  "version": "2.0.0",
   "private": false,
   "files": [
     "dist/*",
@@ -31,13 +31,13 @@
     "cz": "cz",
     "build": "rimraf dist && pnpm build:nuxt && pnpm build:lib"
   },
-  "homepage": "https://h-sanadgol.github.io/vue3-persian-datepicker",
+  "homepage": "https://h-sanadgol.github.io/vue3-multi-calendar-datepicker",
   "bugs": {
-    "url": "https://github.com/h-sanadgol/vue3-persian-datepicker/issues"
+    "url": "https://github.com/h-sanadgol/vue3-multi-calendar-datepicker/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/h-sanadgol/vue3-persian-datepicker.git"
+    "url": "https://github.com/h-sanadgol/vue3-multi-calendar-datepicker.git"
   },
   "author": "Alireza Alibeiki <alibeikialireza@gmail.com> (original author)",
   "contributors": [
@@ -54,6 +54,14 @@
     "persian",
     "jalali",
     "shamsi",
+    "gregorian",
+    "hijri",
+    "ummalqura",
+    "hebrew",
+    "buddhist",
+    "chinese",
+    "multi-calendar",
+    "universal datepicker",
     "datepicker",
     "persian datepicker",
     "jalali datepicker",
@@ -89,6 +97,7 @@
     "globals": "^16.4.0",
     "prettier": "^3.6.2",
     "rimraf": "^6.1.0",
+    "rollup": "4.52.3",
     "rollup-plugin-alias": "^2.2.0",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",

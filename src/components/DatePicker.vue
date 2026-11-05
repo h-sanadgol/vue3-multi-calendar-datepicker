@@ -38,12 +38,18 @@
             type="text"
             autocomplete="off"
             v-bind="attrs[input]"
-            :placeholder="inputMaskConfig().placeholder || attrs[input].placeholder"
+            :placeholder="
+              inputMaskConfig().placeholder || attrs[input].placeholder
+            "
             @focus="showPicker('input', index)"
             @input="inputMask && sanitizeInput(index, $event)"
-            @blur="inputMask && sanitizeInput(index, $event); commitInput(index)"
+            @blur="
+              inputMask && sanitizeInput(index, $event);
+              commitInput(index);
+            "
             @keydown="selectWithArrow"
-          /> </slot><button
+          /> </slot
+        ><button
           v-if="clearable"
           :key="`clear-${input}`"
           class="pdp-clear"
@@ -230,9 +236,7 @@
                   :key="n"
                   :class="[
                     {
-                      disabled:
-                        selectedTimes[i] &&
-                        isSelectedTimeDisabled(i),
+                      disabled: selectedTimes[i] && isSelectedTimeDisabled(i),
                     }, // FIXME: go to method
                   ]"
                 >
@@ -776,10 +780,9 @@
         pickerPlace: {} as PickerPlace,
         documentWidth: isClient ? window.innerWidth : Infinity,
         langs: Core.langs,
-        currentLocale:
-          (this.locale || this.defaultLocaleForCalendar(this.calendar)).split(
-            ',',
-          )[0],
+        currentLocale: (
+          this.locale || this.defaultLocaleForCalendar(this.calendar)
+        ).split(',')[0],
         interval: null as ReturnType<typeof setInterval> | null,
         resizeHandler: null as (() => void) | null,
         submitedValue: [] as PersianDate[],
@@ -1382,7 +1385,10 @@
         const configuredMonths = (
           this.localeConfig as Record<string, { months?: unknown }> | undefined
         )?.[this.currentLocale]?.months;
-        if (Array.isArray(configuredMonths) && configuredMonths.length >= count) {
+        if (
+          Array.isArray(configuredMonths) &&
+          configuredMonths.length >= count
+        ) {
           return configuredMonths as string[];
         }
         const names: string[] = [];
@@ -1568,10 +1574,7 @@
         const end = this.getDayTimestamp(this.selectedDates[1]);
         return value > Math.min(start, end) && value < Math.max(start, end);
       },
-      formatDateValue(
-        date: CalendarDateLike,
-        format: string,
-      ): string {
+      formatDateValue(date: CalendarDateLike, format: string): string {
         const value = date as PersianDate;
         if (!this.calendarAdapter) return value.toString(format);
         const parts = this.getCalendarParts(date);
@@ -1642,9 +1645,7 @@
           .replace(/__LEAP__/g, leapSuffix);
       },
       parseCalendarParts(value: string): CalendarParts {
-        const values = value
-          .split(/[-/ .,\\:]/)
-          .filter(Boolean)
+        const values = value.split(/[-/ .,\\:]/).filter(Boolean);
         const monthToken = values[1] || '1';
         const leapMonth =
           this.activeCalendar === 'chinese' && /bis$/i.test(monthToken);
@@ -1779,9 +1780,7 @@
               if (cursor.getTime() <= lower) break;
               if (
                 this.isInDisable(
-                  this.fromCalendarParts(
-                    this.calendarAdapter.getParts(cursor),
-                  ),
+                  this.fromCalendarParts(this.calendarAdapter.getParts(cursor)),
                 )
               )
                 return true;
@@ -2019,7 +2018,9 @@
       },
       isSelectedTimeDisabled(index: number): boolean {
         const time = this.selectedTimeValue(index);
-        return !!time && (!this.checkDate(time, 'time') || this.isInDisable(time));
+        return (
+          !!time && (!this.checkDate(time, 'time') || this.isInDisable(time))
+        );
       },
       isSameDisabledValue(date: PersianDate, value: string): boolean {
         const disabled = this.parseDisabledValue(
@@ -2058,11 +2059,7 @@
         return date.isSame(disabled);
       },
       parseDisabledValue(value: string): PersianDate {
-        if (
-          !this.calendarAdapter &&
-          !this.calendar &&
-          value.includes('/')
-        ) {
+        if (!this.calendarAdapter && !this.calendar && value.includes('/')) {
           return this.core.clone().calendar('jalali').parse(value);
         }
         return this.parseCalendarDate(value);
@@ -2077,9 +2074,7 @@
         if (this.calendarAdapter)
           return this.formatDateValue(date, this.formats.input);
         return date.toString(
-          jalaliDisableFormats[
-            this.type as keyof typeof jalaliDisableFormats
-          ],
+          jalaliDisableFormats[this.type as keyof typeof jalaliDisableFormats],
         );
       },
       inputSlotProps(index: number): {
@@ -2108,8 +2103,7 @@
           onInput: (event: Event) => {
             const target = event.target as HTMLInputElement;
             this.displayValue[index] = target.value;
-            if (this.inputMask)
-              this.sanitizeInput(index, event);
+            if (this.inputMask) this.sanitizeInput(index, event);
           },
           onBlur: () => {
             if (this.inputMask) this.sanitizeInput(index);
@@ -2166,7 +2160,10 @@
           if (focusedDay) {
             let column = Number(this.getColumn(focusedDay));
             focusedDay.classList.remove('hover');
-            const focusedMonth = this.calendarMonthDate(this.onDisplay!, column);
+            const focusedMonth = this.calendarMonthDate(
+              this.onDisplay!,
+              column,
+            );
             const focusedDate = this.calendarDayDate(
               focusedMonth,
               Number(focusedDay.innerText),
@@ -2352,10 +2349,8 @@
         return Array.from(value)
           .map((character) => {
             const code = character.codePointAt(0) || 0;
-            if (code >= 0x06f0 && code <= 0x06f9)
-              return String(code - 0x06f0);
-            if (code >= 0x0660 && code <= 0x0669)
-              return String(code - 0x0660);
+            if (code >= 0x06f0 && code <= 0x06f9) return String(code - 0x06f0);
+            if (code >= 0x0660 && code <= 0x0669) return String(code - 0x0660);
             return character;
           })
           .join('');

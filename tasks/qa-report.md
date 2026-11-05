@@ -4,17 +4,17 @@
 
 ## نتایج قابل تکرار
 
-| بررسی | نتیجه |
-| --- | --- |
-| `pnpm lint` | موفق |
-| `pnpm exec vue-tsc --noEmit --skipLibCheck` | موفق |
-| `pnpm build:lib` | موفق؛ فقط warning مربوط به `eval` داخل `@alireza-ab/persian-date` باقی است |
-| `pnpm build` | موفق؛ خروجی Nuxt و ESM/UMD ساخته شد |
-| `pnpm audit` | ۰ critical، ۶۲ high، ۳۱ moderate، ۸ low؛ هیچ finding production-facing نیست و موارد باقی‌مانده در زنجیره dev/test هستند |
-| Cypress component test | `calendar-adapters.cy.ts`: موفق؛ ۱۳ تست پاس، ۰ شکست |
-| Full Cypress component suite (آخرین اجرا) | موفق؛ ۱۳ spec، ۲۲۵ تست، ۲۲۵ موفق، ۰ شکست |
-| Manual local demo | موفق؛ Jalali/Gregorian/Chinese، حالت datetime/range و تغییر خروجی `v-model` بررسی شد |
-| Package dry-run | موفق؛ package `@h-sanadgol/vue3-multi-calendar-datepicker@2.0.2` با `pnpm pack --dry-run` بررسی شد؛ publish انجام نشد |
+| بررسی                                       | نتیجه                                                                                                                   |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `pnpm lint`                                 | موفق                                                                                                                    |
+| `pnpm exec vue-tsc --noEmit --skipLibCheck` | موفق                                                                                                                    |
+| `pnpm build:lib`                            | موفق؛ فقط warning مربوط به `eval` داخل `@alireza-ab/persian-date` باقی است                                              |
+| `pnpm build`                                | موفق؛ خروجی Nuxt و ESM/UMD ساخته شد                                                                                     |
+| `pnpm audit`                                | ۰ critical، ۶۲ high، ۳۱ moderate، ۸ low؛ هیچ finding production-facing نیست و موارد باقی‌مانده در زنجیره dev/test هستند |
+| Cypress component test                      | `calendar-adapters.cy.ts`: موفق؛ ۱۳ تست پاس، ۰ شکست                                                                     |
+| Full Cypress component suite (آخرین اجرا)   | موفق؛ ۱۳ spec، ۲۲۵ تست، ۲۲۵ موفق، ۰ شکست                                                                                |
+| Manual local demo                           | موفق؛ Jalali/Gregorian/Chinese، حالت datetime/range و تغییر خروجی `v-model` بررسی شد                                    |
+| Package dry-run                             | موفق؛ package `@h-sanadgol/vue3-multi-calendar-datepicker@2.0.2` با `pnpm pack --dry-run` بررسی شد؛ publish انجام نشد   |
 
 ## مرز اعتماد
 

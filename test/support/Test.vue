@@ -99,11 +99,7 @@
           @keydown="inputSlot.onKeydown"
         />
       </template>
-      <template
-        v-for="[name, slot] in forwardedSlots"
-        :key="name"
-        #[name]
-      >
+      <template v-for="[name, slot] in forwardedSlots" :key="name" #[name]>
         <div v-html="slot"></div>
       </template>
     </DatePicker>

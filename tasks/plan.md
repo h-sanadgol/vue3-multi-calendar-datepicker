@@ -196,13 +196,13 @@
 
 ## ریسک‌ها و راهکارها
 
-| ریسک | اثر | راهکار |
-| --- | --- | --- |
-| تغییر همزمان input و model باعث loop شود | بالا | source-of-truth مشخص، guard بر اساس مقدار normalized و تست loop |
-| mask ورودی ناقص را زود invalid کند | متوسط | state سه‌گانه‌ی incomplete/valid/invalid و commit نهایی |
-| استقلال adapterها باعث شکستن API فعلی شود | بالا | migration مرحله‌ای و حفظ facade سازگار برای Jalali |
-| اختلاف فرمت تقویم‌ها و نام ماه‌ها | بالا | formatter متعلق به adapter و تست snapshot/round-trip |
-| پیچیدگی scoped slot در range/dual input | متوسط | قرارداد slot واحد با index/inputName و تست هر دو مسیر |
+| ریسک                                      | اثر   | راهکار                                                          |
+| ----------------------------------------- | ----- | --------------------------------------------------------------- |
+| تغییر همزمان input و model باعث loop شود  | بالا  | source-of-truth مشخص، guard بر اساس مقدار normalized و تست loop |
+| mask ورودی ناقص را زود invalid کند        | متوسط | state سه‌گانه‌ی incomplete/valid/invalid و commit نهایی         |
+| استقلال adapterها باعث شکستن API فعلی شود | بالا  | migration مرحله‌ای و حفظ facade سازگار برای Jalali              |
+| اختلاف فرمت تقویم‌ها و نام ماه‌ها         | بالا  | formatter متعلق به adapter و تست snapshot/round-trip            |
+| پیچیدگی scoped slot در range/dual input   | متوسط | قرارداد slot واحد با index/inputName و تست هر دو مسیر           |
 
 ## معیار پایان
 

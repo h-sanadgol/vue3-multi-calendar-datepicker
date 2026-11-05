@@ -102,10 +102,7 @@ describe('slots', () => {
     });
 
     it('provides a synchronized custom input field', () => {
-      cy.get('[data-custom-input]')
-        .clear()
-        .type('2025-04-15')
-        .blur();
+      cy.get('[data-custom-input]').clear().type('2025-04-15').blur();
       cy.get('.show').should('contain.text', '2025-04-15');
       cy.get('[data-custom-input]').focus();
       cy.get('.pdp').should('have.class', 'pdp-open');

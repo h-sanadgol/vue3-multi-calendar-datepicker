@@ -234,10 +234,10 @@ Use `week-starts-on="auto"` to use the calendar's default. If `weekend-days` is 
 | `mode`          | `'single' \| 'range'`                   | `'range'`      | Single value or range selection                                             |
 | `locale`        | `String`                                | Calendar-aware | UI language, with comma-separated fallback locales supported                |
 | `hijriProvider` | `'ummalqura' \| 'tabular'`              | `'ummalqura'`  | Hijri calculation method                                                    |
-| `format`        | `String`                                | Type-based     | `v-model` serialization format; independent from the input field format    |
-| `inputFormat`   | `String`                                | Type-based     | Input field display and parsing format                                     |
-| `displayFormat` | `String`                                | Type-based     | Footer display format; does not change `v-model` or input serialization    |
-| `inputMask`     | `String \| Object`                      | Calendar-based | Input character mask; supports `calendar-default` and per-type overrides  |
+| `format`        | `String`                                | Type-based     | `v-model` serialization format; independent from the input field format     |
+| `inputFormat`   | `String`                                | Type-based     | Input field display and parsing format                                      |
+| `displayFormat` | `String`                                | Type-based     | Footer display format; does not change `v-model` or input serialization     |
+| `inputMask`     | `String \| Object`                      | Calendar-based | Input character mask; supports `calendar-default` and per-type overrides    |
 | `from`          | `String`                                | `'1300'`       | Minimum selectable date/time                                                |
 | `to`            | `String`                                | `'1499'`       | Maximum selectable date/time                                                |
 | `column`        | `Number \| Record<number, number>`      | `{ 576: 1 }`   | Number of visible calendar columns by breakpoint                            |

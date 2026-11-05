@@ -106,12 +106,7 @@ function sameDate(left: CalendarParts, right: CalendarParts): boolean {
 }
 
 function compareDateParts(left: CalendarParts, right: CalendarParts): number {
-  const leftValues = [
-    left.year,
-    left.month,
-    left.leapMonth ? 1 : 0,
-    left.day,
-  ];
+  const leftValues = [left.year, left.month, left.leapMonth ? 1 : 0, left.day];
   const rightValues = [
     right.year,
     right.month,
@@ -215,9 +210,13 @@ function findGregorianDate(
   let upper = end;
   while (lower <= upper) {
     const middle =
-      lower + Math.floor((upper - lower) / (2 * dayMilliseconds)) * dayMilliseconds;
+      lower +
+      Math.floor((upper - lower) / (2 * dayMilliseconds)) * dayMilliseconds;
     const candidate = new Date(middle);
-    const comparison = compareDateParts(formatParts(formatter, candidate), wanted);
+    const comparison = compareDateParts(
+      formatParts(formatter, candidate),
+      wanted,
+    );
     if (comparison === 0) return candidate;
     if (comparison < 0) lower = middle + dayMilliseconds;
     else upper = middle - dayMilliseconds;

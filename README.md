@@ -169,6 +169,27 @@ In range mode, `v-model` is an array containing the start and end values.
 </template>
 ```
 
+## Manual input and live synchronization
+
+The input is editable by default. When a complete valid value is entered and
+the field loses focus (or `Enter` is pressed), the component updates
+`v-model`, the selected day, and the visible calendar month together. This
+also works with the non-Jalali adapters; the adapter calendar remains the
+source of truth for parsing, validation, and navigation.
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="hijri"
+  locale="en"
+  input-format="YYYY-MM-DD"
+  @submit="onSubmit"
+/>
+```
+
+Invalid characters are filtered according to the active mask. Invalid dates
+are not committed, so the previous valid selection remains in place.
+
 ## Calendar vs. Locale
 
 `calendar` controls the calendar system used for parsing, displaying, and navigating dates. `locale` controls the language and localized labels. They are independent:
@@ -281,6 +302,29 @@ default is used. Object configuration can override the pattern per picker type:
 
 `allowedDigits` can be `latin`, `locale`, or `both`. The `format` prop controls
 the serialized `v-model`; `inputFormat` controls the input representation.
+The `displayFormat` prop controls only the human-readable footer label inside
+the open picker. These three contracts are independent:
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="gregorian"
+  format="YYYY-MM-DD"
+  input-format="DD.MM.YYYY"
+  display-format="D MMMM YYYY"
+/>
+```
+
+When `inputMask` is omitted, the component uses a calendar-aware default:
+`jYYYY/jMM/jDD` for Jalali and `YYYY-MM-DD` for the other date calendars.
+Datetime and time inputs add the corresponding `HH:mm` portion. Use
+`input-mask="calendar-default"` to make that choice explicit, or provide an
+object with `date`, `datetime`, and `time` entries to customize each type.
+
+The Interactive playground includes live fields for `inputFormat`, `inputMask`,
+and `displayFormat`. Type directly into the preview input, then blur the field
+to verify that both the selected day and the visible month follow the entered
+value.
 
 ### Custom input field
 

@@ -126,7 +126,43 @@ describe('calendar prop', () => {
     it('syncs a complete manually entered date on blur', () => {
       cy.get('.pdp-input').clear().type('2025-04-15').blur();
       cy.get('.show').should('contain.text', '2025-04-15');
+      cy.get('.pdp-input').focus();
+      cy.get('.pdp-day.start-range').should('contain.text', '15');
     });
+  });
+
+  it('renders a calendar-native display label without unsupported tokens', () => {
+    cy.changeProps(
+      {
+        calendar: 'hebrew',
+        locale: 'en',
+        from: '5780',
+        to: '5790',
+        model: '5785-07-06',
+      },
+      null,
+      true,
+    );
+
+    cy.get('.pdp-input').focus();
+    cy.get('.pdp-footer').should('not.contain.text', '?');
+  });
+
+  it('moves the visible calendar to a manually entered adapter date', () => {
+    cy.changeProps(
+      {
+        calendar: 'hijri',
+        locale: 'en',
+        from: '1440',
+        to: '1450',
+        model: '1446-10-06',
+      },
+      null,
+      true,
+    );
+
+    cy.get('.pdp-input').clear().type('1446-10-07').blur().focus();
+    cy.get('.pdp-day.start-range').should('have.attr', 'value', '7');
   });
 
   context('input mask', () => {

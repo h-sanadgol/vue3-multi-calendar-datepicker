@@ -117,6 +117,8 @@
       copied: 'کپی شد',
       timeSamples: 'نمونه‌های زمان و بازه',
       api: 'با propهای calendar، mode و hijri-provider رفتار کامپوننت را کنترل کنید.',
+      liveHint:
+        'تاریخ را دستی وارد کنید؛ پس از blur، مقدار تقویم و ماه نمایشی همگام می‌شوند.',
     },
     en: {
       eyebrow: 'Vue 3 · Universal datepicker',
@@ -144,6 +146,8 @@
       copied: 'Copied',
       timeSamples: 'Time and range examples',
       api: 'Control the component with calendar, mode, and hijri-provider props.',
+      liveHint:
+        'Type a date manually; on blur, the model and visible calendar stay in sync.',
     },
     ar: {
       eyebrow: 'Vue 3 · منتقي تواريخ شامل',
@@ -170,6 +174,8 @@
       copied: 'تم النسخ',
       timeSamples: 'أمثلة الوقت والنطاق',
       api: 'تحكم في المكوّن عبر calendar و mode و hijri-provider.',
+      liveHint:
+        'أدخل التاريخ يدوياً؛ بعد مغادرة الحقل يتزامن النموذج والشهر المعروض.',
     },
   } as const;
   const language = ref<Language>('en');
@@ -193,6 +199,9 @@
   const advancedWeekendDays = ref<number[]>([]);
   const advancedLocale = ref('');
   const advancedValue = ref('2025-04-04');
+  const advancedInputFormat = ref('');
+  const advancedInputMask = ref('');
+  const advancedDisplayFormat = ref('');
   const advancedColumns = ref(1);
   const advancedClearable = ref(true);
   const advancedAutoSubmit = ref(true);
@@ -271,6 +280,15 @@
       `  :hour-step="${advancedHourStep.value}"`,
       advancedClearable.value ? '  clearable' : '  :clearable="false"',
       advancedAutoSubmit.value ? '  auto-submit' : '  :auto-submit="false"',
+      advancedInputFormat.value
+        ? `  input-format="${advancedInputFormat.value}"`
+        : '',
+      advancedInputMask.value
+        ? `  input-mask="${advancedInputMask.value}"`
+        : '',
+      advancedDisplayFormat.value
+        ? `  display-format="${advancedDisplayFormat.value}"`
+        : '',
       advancedIconInside.value ? '  icon-inside' : '',
       advancedDualInput.value ? '  dual-input' : '',
       advancedFrom.value ? `  from="${advancedFrom.value}"` : '',
@@ -356,6 +374,9 @@
     advancedWeekendDays.value = [];
     advancedLocale.value = '';
     advancedValue.value = '2025-04-04';
+      advancedInputFormat.value = '';
+      advancedInputMask.value = '';
+      advancedDisplayFormat.value = '';
     advancedColumns.value = 1;
     advancedClearable.value = true;
     advancedAutoSubmit.value = true;
@@ -507,6 +528,18 @@
                   v-model="advancedTo"
                   :placeholder="selectedCalendar.to" /></label
               ><label
+                >Input format<input
+                  v-model="advancedInputFormat"
+                  placeholder="YYYY-MM-DD" /></label
+              ><label
+                >Input mask<input
+                  v-model="advancedInputMask"
+                  placeholder="calendar-default" /></label
+              ><label
+                >Display format<input
+                  v-model="advancedDisplayFormat"
+                  placeholder="?D ?MMMM" /></label
+              ><label
                 >Months shown<select v-model.number="advancedColumns">
                   <option :value="1">1 month</option>
                   <option :value="2">2 months</option>
@@ -592,12 +625,15 @@
           </div>
           <div class="picker-wrap" :dir="selectedCalendar.direction">
             <DatePicker
-              :key="`${activeCalendar}-${hijriProvider}-${mode}-${pickerType}-${language}`"
+              :key="`${activeCalendar}-${hijriProvider}-${mode}-${pickerType}-${language}-${advancedInputFormat}-${advancedInputMask}-${advancedDisplayFormat}`"
               v-model="mainValue"
               :calendar="activeCalendar"
               :format="
                 activeCalendar === 'jalali' ? 'jYYYY/jMM/jDD' : undefined
               "
+              :input-format="advancedInputFormat || undefined"
+              :input-mask="advancedInputMask || undefined"
+              :display-format="advancedDisplayFormat || undefined"
               :hijri-provider="hijriProvider"
               :mode="mode"
               :type="pickerType"
@@ -624,6 +660,7 @@
             <span>{{ t.value }}</span
             ><code>{{ mainValue || '—' }}</code>
           </div>
+          <p class="playground-hint">{{ t.liveHint }}</p>
           <div class="generated-code">
             <h4>HTML</h4>
             <pre><code>{{ mainCodeHtml }}</code></pre>
@@ -1077,6 +1114,12 @@
     color: var(--accent-dark);
     font-size: 0.78rem;
     direction: ltr;
+  }
+  .playground-hint {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.6;
   }
   .generated-code {
     margin-top: 16px;

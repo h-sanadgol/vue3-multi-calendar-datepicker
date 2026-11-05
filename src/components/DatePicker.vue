@@ -38,9 +38,7 @@
             type="text"
             autocomplete="off"
             v-bind="attrs[input]"
-            :placeholder="
-              inputMaskConfig().placeholder || attrs[input].placeholder
-            "
+            :placeholder="inputMaskConfig().placeholder || attrs[input].placeholder"
             @focus="showPicker('input', index)"
             @input="sanitizeInput(index, $event)"
             @blur="
@@ -1589,6 +1587,7 @@
         const paddedMonth = `${pad(parts.month)}${leapPlaceholder}`;
         const shortMonth = `${parts.month}${leapPlaceholder}`;
         return format
+          .replace('?D', String(parts.day))
           .replace('?MMMM', monthName)
           .replace('MMMM', monthName)
           .replace('YYYY', String(parts.year))
@@ -2285,12 +2284,17 @@
             : this.core.clone().parse(normalizedValue);
         }
 
-        if (!onDisplay.isValid() || this.selectDate(onDisplay, 'time') !== 0)
+        const part = this.type === 'time' ? 'time' : 'date';
+        if (!onDisplay.isValid() || this.selectDate(onDisplay, part) !== 0)
           return;
 
-        const diff = onDisplay.diff(this.onDisplay as PersianDate, 'month');
-        if (diff < 0 || diff >= this.columnCount)
+        if (this.mode === 'single' && this.type.includes('date')) {
           this.onDisplay = onDisplay.clone();
+        } else {
+          const diff = onDisplay.diff(this.onDisplay as PersianDate, 'month');
+          if (diff < 0 || diff >= this.columnCount)
+            this.onDisplay = onDisplay.clone();
+        }
         this.displayValue[index] = '';
       },
       inputMaskPattern(): string {

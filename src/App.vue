@@ -374,9 +374,9 @@
     advancedWeekendDays.value = [];
     advancedLocale.value = '';
     advancedValue.value = '2025-04-04';
-      advancedInputFormat.value = '';
-      advancedInputMask.value = '';
-      advancedDisplayFormat.value = '';
+    advancedInputFormat.value = '';
+    advancedInputMask.value = '';
+    advancedDisplayFormat.value = '';
     advancedColumns.value = 1;
     advancedClearable.value = true;
     advancedAutoSubmit.value = true;

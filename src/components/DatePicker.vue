@@ -38,7 +38,9 @@
             type="text"
             autocomplete="off"
             v-bind="attrs[input]"
-            :placeholder="inputMaskConfig().placeholder || attrs[input].placeholder"
+            :placeholder="
+              inputMaskConfig().placeholder || attrs[input].placeholder
+            "
             @focus="showPicker('input', index)"
             @input="sanitizeInput(index, $event)"
             @blur="

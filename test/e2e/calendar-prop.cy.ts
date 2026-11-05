@@ -138,6 +138,7 @@ describe('calendar prop', () => {
         locale: 'en',
         from: '5780',
         to: '5790',
+        mode: 'single',
         model: '5785-07-06',
       },
       null,

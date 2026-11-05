@@ -2288,8 +2288,7 @@
 
         const part = this.type === 'time' ? 'time' : 'date';
         const selectionResult = this.selectDate(onDisplay, part);
-        if (!onDisplay.isValid() || selectionResult < 0)
-          return;
+        if (!onDisplay.isValid() || selectionResult < 0) return;
 
         if (this.mode === 'single' && this.type.includes('date')) {
           this.onDisplay = onDisplay.clone();

@@ -212,7 +212,7 @@ describe('calendar prop', () => {
     });
 
     it('filters invalid characters with the calendar default mask', () => {
-      cy.get('.pdp-input').clear().type('2025a-04x-15').blur();
+      cy.get('.pdp-input').clear().type('2025a-04x-15');
       cy.get('.pdp-input').should('have.value', '2025-04-15');
     });
   });

@@ -42,9 +42,9 @@
               inputMaskConfig().placeholder || attrs[input].placeholder
             "
             @focus="showPicker('input', index)"
-            @input="inputMask && sanitizeInput(index, $event)"
+            @input="sanitizeInput(index, $event)"
             @blur="
-              inputMask && sanitizeInput(index, $event);
+              sanitizeInput(index, $event);
               commitInput(index);
             "
             @keydown="selectWithArrow"
@@ -2103,10 +2103,10 @@
           onInput: (event: Event) => {
             const target = event.target as HTMLInputElement;
             this.displayValue[index] = target.value;
-            if (this.inputMask) this.sanitizeInput(index, event);
+            this.sanitizeInput(index, event);
           },
           onBlur: () => {
-            if (this.inputMask) this.sanitizeInput(index);
+            this.sanitizeInput(index);
             this.commitInput(index);
           },
           onKeydown: (event: KeyboardEvent) => this.selectWithArrow(event),

@@ -1837,7 +1837,7 @@
             return -2;
           }
         }
-        if (this.type == 'date') {
+        if (this.type == 'date' && !this.calendarAdapter) {
           date.startOf('date');
         }
         if (this.mode == 'single') {

@@ -1,6 +1,11 @@
 .DS_Store
 node_modules
 
+# Local package/test/build artifacts
+.pnpm-store/
+output/
+tmp/
+
 # local env files
 .env.local
 .env.*.local

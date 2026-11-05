@@ -207,6 +207,8 @@ By default, `modelValue` is serialized using the active calendar. Set `model-cal
 
 Supported values are `active`, `jalali`, `gregorian`, `hijri`, `hebrew`, `buddhist`, and `chinese`.
 
+For Chinese leap months, the model value preserves the leap marker with the `bis` suffix, for example `2023-02bis-01`.
+
 ## Week Configuration
 
 Weekday values use JavaScript numbering: Sunday is `0` and Saturday is `6`.
@@ -232,9 +234,10 @@ Use `week-starts-on="auto"` to use the calendar's default. If `weekend-days` is 
 | `mode`          | `'single' \| 'range'`                   | `'range'`      | Single value or range selection                                             |
 | `locale`        | `String`                                | Calendar-aware | UI language, with comma-separated fallback locales supported                |
 | `hijriProvider` | `'ummalqura' \| 'tabular'`              | `'ummalqura'`  | Hijri calculation method                                                    |
-| `format`        | `String`                                | Type-based     | Model value format                                                          |
-| `inputFormat`   | `String`                                | Type-based     | Input parsing format                                                        |
-| `displayFormat` | `String`                                | Type-based     | Footer display format                                                       |
+| `format`        | `String`                                | Type-based     | `v-model` serialization format; independent from the input field format    |
+| `inputFormat`   | `String`                                | Type-based     | Input field display and parsing format                                     |
+| `displayFormat` | `String`                                | Type-based     | Footer display format; does not change `v-model` or input serialization    |
+| `inputMask`     | `String \| Object`                      | Calendar-based | Input character mask; supports `calendar-default` and per-type overrides  |
 | `from`          | `String`                                | `'1300'`       | Minimum selectable date/time                                                |
 | `to`            | `String`                                | `'1499'`       | Maximum selectable date/time                                                |
 | `column`        | `Number \| Record<number, number>`      | `{ 576: 1 }`   | Number of visible calendar columns by breakpoint                            |
@@ -256,6 +259,52 @@ Use `week-starts-on="auto"` to use the calendar's default. If `weekend-days` is 
 | `styles`        | `Object`                                | —              | Custom component styles                                                     |
 | `color`         | `String`                                | —              | Preset color: `blue`, `red`, `pink`, `orange`, `green`, `purple`, or `gray` |
 
+### Input mask
+
+`inputMask` accepts a format string or an object. When omitted, a calendar-aware
+default is used. Object configuration can override the pattern per picker type:
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="gregorian"
+  :input-mask="{
+    date: {
+      pattern: 'YYYY/MM/DD',
+      placeholder: 'YYYY/MM/DD',
+      allowedDigits: 'both',
+      strict: true,
+    },
+  }"
+/>
+```
+
+`allowedDigits` can be `latin`, `locale`, or `both`. The `format` prop controls
+the serialized `v-model`; `inputFormat` controls the input representation.
+
+### Custom input field
+
+Use the `input` scoped slot to replace the native field while keeping the
+picker's canonical value and handlers:
+
+```vue
+<DatePicker v-model="date" calendar="gregorian">
+  <template #input="{ value, inputAttrs, open, onInput, onBlur, onKeydown }">
+    <input
+      v-bind="inputAttrs"
+      :value="value"
+      @focus="open"
+      @input="onInput"
+      @blur="onBlur"
+      @keydown="onKeydown"
+    />
+  </template>
+</DatePicker>
+```
+
+The slot also exposes `clear`, which can be connected to a custom clear
+button. The default input remains available when the slot is omitted.
+
 ## Events
 
 | Event               | Payload                | Description                             |
@@ -268,6 +317,8 @@ Use `week-starts-on="auto"` to use the calendar's default. If `weekend-days` is 
 | `clear`             | —                      | Emitted when the value is cleared       |
 
 ## Nuxt 3
+
+The base Vue package does not install Nuxt tooling. The `/nuxt` entry declares `@nuxt/kit` as an optional peer because Nuxt projects provide it; install `@nuxt/kit` explicitly only when your Nuxt setup does not already include it.
 
 Add the module to `nuxt.config.ts`:
 

@@ -35,22 +35,22 @@ function parseHebrewMonth(value: string | undefined, year: number): number {
   const names = isHebrewLeapYear(year)
     ? [
         'Tishri',
-        'Cheshvan',
+        'Heshvan',
         'Kislev',
         'Tevet',
         'Shevat',
         'Adar I',
-        'Adar',
+        'Adar II',
         'Nisan',
         'Iyar',
         'Sivan',
-        'Tammuz',
+        'Tamuz',
         'Av',
         'Elul',
       ]
     : [
         'Tishri',
-        'Cheshvan',
+        'Heshvan',
         'Kislev',
         'Tevet',
         'Shevat',
@@ -58,7 +58,7 @@ function parseHebrewMonth(value: string | undefined, year: number): number {
         'Nisan',
         'Iyar',
         'Sivan',
-        'Tammuz',
+        'Tamuz',
         'Av',
         'Elul',
       ];
@@ -68,12 +68,61 @@ function parseHebrewMonth(value: string | undefined, year: number): number {
   return index >= 0 ? index + 1 : parsePart(value);
 }
 
+function parseChineseMonth(value: string | undefined): {
+  month: number;
+  leapMonth: boolean;
+} {
+  const month = (value || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const names = [
+    'first month',
+    'second month',
+    'third month',
+    'fourth month',
+    'fifth month',
+    'sixth month',
+    'seventh month',
+    'eighth month',
+    'ninth month',
+    'tenth month',
+    'eleventh month',
+    'twelfth month',
+  ];
+  const leapMonth = month.endsWith('bis');
+  const normalized = leapMonth ? month.slice(0, -3).trim() : month;
+  const index = names.indexOf(normalized);
+  return {
+    month: index >= 0 ? index + 1 : parsePart(value),
+    leapMonth,
+  };
+}
+
 function sameDate(left: CalendarParts, right: CalendarParts): boolean {
   return (
     left.year === right.year &&
     left.month === right.month &&
-    left.day === right.day
+    left.day === right.day &&
+    Boolean(left.leapMonth) === Boolean(right.leapMonth)
   );
+}
+
+function compareDateParts(left: CalendarParts, right: CalendarParts): number {
+  const leftValues = [
+    left.year,
+    left.month,
+    left.leapMonth ? 1 : 0,
+    left.day,
+  ];
+  const rightValues = [
+    right.year,
+    right.month,
+    right.leapMonth ? 1 : 0,
+    right.day,
+  ];
+  for (let index = 0; index < leftValues.length; index++) {
+    if (leftValues[index] !== rightValues[index])
+      return leftValues[index] < rightValues[index] ? -1 : 1;
+  }
+  return 0;
 }
 
 function formatParts(
@@ -84,14 +133,18 @@ function formatParts(
     formatter.formatToParts(date).map(({ type, value }) => [type, value]),
   );
   const year = parsePart(values.year || values.relatedYear);
+  const calendar = formatter.resolvedOptions().calendar;
+  const chineseMonth =
+    calendar === 'chinese' ? parseChineseMonth(values.month) : undefined;
 
   return {
     year,
     month:
-      formatter.resolvedOptions().calendar === 'hebrew'
+      calendar === 'hebrew'
         ? parseHebrewMonth(values.month, year)
-        : parsePart(values.month),
+        : chineseMonth?.month || parsePart(values.month),
     day: parsePart(values.day),
+    ...(chineseMonth?.leapMonth ? { leapMonth: true } : {}),
     hour: date.getUTCHours(),
     minute: date.getUTCMinutes(),
     second: date.getUTCSeconds(),
@@ -103,7 +156,7 @@ function createFormatter(calendar: IntlCalendar): Intl.DateTimeFormat {
   const formatter = new Intl.DateTimeFormat(`en-u-ca-${calendar}-nu-latn`, {
     timeZone: 'UTC',
     year: 'numeric',
-    month: 'numeric',
+    month: calendar === 'chinese' ? 'long' : 'numeric',
     day: 'numeric',
   });
 
@@ -147,11 +200,27 @@ function findGregorianDate(
   const start = estimate.getTime() - searchWindow * dayMilliseconds;
   const end = estimate.getTime() + searchWindow * dayMilliseconds;
 
-  for (let time = start; time <= end; time += dayMilliseconds) {
-    const candidate = new Date(time);
-    if (sameDate(formatParts(formatter, candidate), wanted)) {
-      return candidate;
-    }
+  const startParts = formatParts(formatter, new Date(start));
+  const endParts = formatParts(formatter, new Date(end));
+  if (
+    compareDateParts(startParts, wanted) > 0 ||
+    compareDateParts(endParts, wanted) < 0
+  ) {
+    throw new RangeError(
+      `Unable to convert ${wanted.year}/${wanted.month}/${wanted.day} from ${calendar}`,
+    );
+  }
+
+  let lower = start;
+  let upper = end;
+  while (lower <= upper) {
+    const middle =
+      lower + Math.floor((upper - lower) / (2 * dayMilliseconds)) * dayMilliseconds;
+    const candidate = new Date(middle);
+    const comparison = compareDateParts(formatParts(formatter, candidate), wanted);
+    if (comparison === 0) return candidate;
+    if (comparison < 0) lower = middle + dayMilliseconds;
+    else upper = middle - dayMilliseconds;
   }
 
   throw new RangeError(
@@ -190,9 +259,21 @@ export function createIntlAdapter(
     },
     addMonths(date, amount) {
       const current = formatParts(formatter, date);
-      const targetMonth = current.month + amount;
-      const targetYear = current.year + Math.floor((targetMonth - 1) / 12);
-      const normalizedMonth = ((((targetMonth - 1) % 12) + 12) % 12) + 1;
+      let targetYear = current.year;
+      let normalizedMonth = current.month;
+      const monthCount = (year: number) =>
+        id === 'hebrew' && isHebrewLeapYear(year) ? 13 : 12;
+      const direction = amount < 0 ? -1 : 1;
+      for (let step = 0; step < Math.abs(amount); step++) {
+        normalizedMonth += direction;
+        if (normalizedMonth > monthCount(targetYear)) {
+          normalizedMonth = 1;
+          targetYear += 1;
+        } else if (normalizedMonth < 1) {
+          targetYear -= 1;
+          normalizedMonth = monthCount(targetYear);
+        }
+      }
       const targetDay = Math.min(
         current.day,
         (() => {

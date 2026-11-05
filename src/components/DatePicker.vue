@@ -31,14 +31,19 @@
             <PDPIcon :icon="type" width="23" height="23"></PDPIcon>
           </slot>
         </div>
-        <input
-          ref="inputs"
-          v-model="displayValue[index]"
-          type="text"
-          autocomplete="off"
-          v-bind="attrs[input]"
-          @focus="showPicker('input', index)"
-          @keydown="selectWithArrow" /><button
+        <slot name="input" v-bind="inputSlotProps(index)">
+          <input
+            ref="inputs"
+            v-model="displayValue[index]"
+            type="text"
+            autocomplete="off"
+            v-bind="attrs[input]"
+            :placeholder="inputMaskConfig().placeholder || attrs[input].placeholder"
+            @focus="showPicker('input', index)"
+            @input="inputMask && sanitizeInput(index, $event)"
+            @blur="inputMask && sanitizeInput(index, $event); commitInput(index)"
+            @keydown="selectWithArrow"
+          /> </slot><button
           v-if="clearable"
           :key="`clear-${input}`"
           class="pdp-clear"
@@ -53,7 +58,7 @@
       v-if="attrs.alt.name"
       :name="attrs.alt.name"
       :format="formats.alt"
-      :dates="submitedValue"
+      :dates="altDates"
     />
     <div v-if="showDatePicker">
       <div class="pdp-overlay" @click="showDatePicker = false"></div>
@@ -81,7 +86,7 @@
               <li
                 v-for="(year, index) in years"
                 :key="index"
-                :class="{ selected: displayYear(onDisplay) == year }"
+                :class="{ selected: displayYear(displayDate) == year }"
                 @click="changeSelectedYear(year)"
               >
                 {{ year }}
@@ -103,7 +108,7 @@
                   'pdp-arrow',
                   {
                     disabled: !checkDate(
-                      calendarMonthDate(onDisplay, -1),
+                      calendarMonthDate(displayDate, -1),
                       'month',
                     ),
                   },
@@ -129,7 +134,7 @@
                     @click="showPart('month')"
                   >
                     {{
-                      months[displayMonth(calendarMonthDate(onDisplay, i))]
+                      months[displayMonth(calendarMonthDate(displayDate, i))]
                         .label
                     }}</button
                   ><button
@@ -138,7 +143,7 @@
                     tabindex="-1"
                     @click="showPart('year')"
                   >
-                    {{ displayYear(calendarMonthDate(onDisplay, i)) }}
+                    {{ displayYear(calendarMonthDate(displayDate, i)) }}
                   </button>
                 </div>
               </div>
@@ -149,7 +154,7 @@
                   'pdp-arrow',
                   {
                     disabled: !checkDate(
-                      calendarMonthDate(onDisplay, 1),
+                      calendarMonthDate(displayDate, 1),
                       'month',
                     ),
                   },
@@ -202,7 +207,7 @@
                         { 'in-range': day.inRange },
                       ]"
                       :value="day.val"
-                      @click="selectDate(day.raw, 'date')"
+                      @click="day.raw && selectDate(day.raw, 'date')"
                     >
                       {{ day.val }}
                     </div>
@@ -227,8 +232,7 @@
                     {
                       disabled:
                         selectedTimes[i] &&
-                        (!checkDate(selectedTimes[i], 'time') ||
-                          isInDisable(selectedTimes[i])),
+                        isSelectedTimeDisabled(i),
                     }, // FIXME: go to method
                   ]"
                 >
@@ -393,6 +397,8 @@
     DefaultDate,
     Calendar,
     Units,
+    InputMask,
+    InputMaskConfig,
   } from './utils/modules/types';
   // ************************ Components ************************
   import PDPArrow from './utils/components/PDPArrow.vue';
@@ -405,6 +411,12 @@
   // compatible with Vue's inferred template proxy type. The helpers cast at
   // the runtime boundary after accepting the template's date-like object.
   type CalendarDateLike = object;
+  type AltDateLike = { toString: (format?: string) => string };
+  const jalaliDisableFormats = {
+    date: 'jYYYY/jM/jD',
+    datetime: 'jYYYY/jM/jD H:m',
+    time: 'H:m',
+  } as const;
 
   export { PersianDate };
   export default defineComponent({
@@ -435,6 +447,14 @@
        */
       inputFormat: {
         type: String,
+      },
+
+      /**
+       * input mask configuration. A string is a pattern or
+       * "calendar-default"; an object can customize each picker type.
+       */
+      inputMask: {
+        type: [String, Object] as PropType<InputMask>,
       },
 
       /**
@@ -757,8 +777,11 @@
         documentWidth: isClient ? window.innerWidth : Infinity,
         langs: Core.langs,
         currentLocale:
-          this.locale || this.defaultLocaleForCalendar(this.calendar),
+          (this.locale || this.defaultLocaleForCalendar(this.calendar)).split(
+            ',',
+          )[0],
         interval: null as ReturnType<typeof setInterval> | null,
+        resizeHandler: null as (() => void) | null,
         submitedValue: [] as PersianDate[],
       };
     },
@@ -860,6 +883,12 @@
         }
         return attrs;
       },
+      altDates(): AltDateLike[] {
+        return this.submitedValue as unknown as AltDateLike[];
+      },
+      displayDate(): PersianDate {
+        return (this.onDisplay || this.core) as unknown as PersianDate;
+      },
       years(): number[] {
         let start: number = this.displayYear(this.fromDate!);
         const end: number = this.displayYear(this.toDate!);
@@ -928,10 +957,10 @@
                 const dayDate = this.calendarDayDate(monthDate, showDay);
                 month[week][day] = {
                   friday: this.calendarWeekendDays.includes(
-                    new Date(this.getDateTimestamp(dayDate)).getDay(),
+                    new Date(this.getDateTimestamp(dayDate)).getUTCDay(),
                   ),
                   weekend: this.calendarWeekendDays.includes(
-                    new Date(this.getDateTimestamp(dayDate)).getDay(),
+                    new Date(this.getDateTimestamp(dayDate)).getUTCDay(),
                   ),
                   raw: dayDate,
                   startRange:
@@ -1176,13 +1205,28 @@
           this.onDisplay = this.nearestDate(today).startOf('date');
         }
       }
-      window.addEventListener('resize', () => {
+      this.resizeHandler = () => {
         this.documentWidth = window.innerWidth;
-      });
+      };
+      window.addEventListener('resize', this.resizeHandler);
       if (this.type != 'date') {
         this.onDisplay!.time(this.core as PersianDate);
       }
       this.showDatePicker = this.show;
+    },
+    beforeUnmount() {
+      if (this.resizeHandler) {
+        window.removeEventListener('resize', this.resizeHandler);
+        this.resizeHandler = null;
+      }
+      document.removeEventListener('scroll', this.locate);
+      if (this.$refs.pdpMain) {
+        (this.$refs.pdpMain as HTMLElement).removeEventListener(
+          'mouseover',
+          this.selectInRangeDate,
+        );
+      }
+      this.stopChangeTime();
     },
     methods: {
       defaultLocaleForCalendar(calendar?: Calendar): string {
@@ -1266,7 +1310,7 @@
                   'Tevet',
                   'Shevat',
                   'Adar I',
-                  'Adar',
+                  'Adar II',
                   'Nisan',
                   'Iyar',
                   'Sivan',
@@ -1335,6 +1379,12 @@
 
         const count =
           this.activeCalendar === 'hebrew' ? fallback.hebrew.length : 12;
+        const configuredMonths = (
+          this.localeConfig as Record<string, { months?: unknown }> | undefined
+        )?.[this.currentLocale]?.months;
+        if (Array.isArray(configuredMonths) && configuredMonths.length >= count) {
+          return configuredMonths as string[];
+        }
         const names: string[] = [];
         const calendarName =
           this.activeCalendar === 'buddhist'
@@ -1471,6 +1521,20 @@
           day,
         });
       },
+      calendarAddDays(date: PersianDate, amount: number): PersianDate {
+        if (!this.calendarAdapter) return markRaw(date.clone().addDay(amount));
+        return markRaw(
+          new PersianDate().fromGregorian(
+            this.calendarAdapter
+              .addDays(new Date(this.getDateTimestamp(date)), amount)
+              .getTime(),
+          ),
+        );
+      },
+      calendarMonthKey(date: CalendarDateLike): string {
+        const parts = this.getCalendarParts(date);
+        return `${parts.year}-${parts.month}-${parts.leapMonth ? 'leap' : 'normal'}`;
+      },
       calendarDaysInMonth(year: number, month: number): number {
         if (this.calendarAdapter) {
           return this.calendarAdapter.daysInMonth(year, month);
@@ -1478,7 +1542,7 @@
         return this.core.getDaysInMonth(year, month);
       },
       calendarWeekdayOffset(date: CalendarDateLike): number {
-        const weekday = new Date(this.getDateTimestamp(date)).getDay();
+        const weekday = new Date(this.getDateTimestamp(date)).getUTCDay();
         return (weekday - this.calendarWeekStart + 7) % 7;
       },
       isToday(date: CalendarDateLike): boolean {
@@ -1490,7 +1554,12 @@
       ): boolean {
         const a = this.getCalendarParts(first);
         const b = this.getCalendarParts(second);
-        return a.year === b.year && a.month === b.month && a.day === b.day;
+        return (
+          a.year === b.year &&
+          a.month === b.month &&
+          a.day === b.day &&
+          Boolean(a.leapMonth) === Boolean(b.leapMonth)
+        );
       },
       isBetweenSelectedDates(date: CalendarDateLike): boolean {
         if (this.selectedDates.length !== 2) return false;
@@ -1499,22 +1568,30 @@
         const end = this.getDayTimestamp(this.selectedDates[1]);
         return value > Math.min(start, end) && value < Math.max(start, end);
       },
-      formatDateValue(date: CalendarDateLike, format: string): string {
+      formatDateValue(
+        date: CalendarDateLike,
+        format: string,
+      ): string {
         const value = date as PersianDate;
         if (!this.calendarAdapter) return value.toString(format);
         const parts = this.getCalendarParts(date);
         const pad = (value: number, size = 2) =>
           String(value).padStart(size, '0');
+        const leapSuffix =
+          this.activeCalendar === 'chinese' && parts.leapMonth ? 'bis' : '';
+        const leapPlaceholder = leapSuffix ? '__LEAP__' : '';
         const monthName =
           this.monthNamesForYear(parts.year)[parts.month - 1] ||
           `Month ${parts.month}`;
+        const paddedMonth = `${pad(parts.month)}${leapPlaceholder}`;
+        const shortMonth = `${parts.month}${leapPlaceholder}`;
         return format
           .replace('?MMMM', monthName)
           .replace('MMMM', monthName)
           .replace('YYYY', String(parts.year))
           .replace('YY', String(parts.year).slice(-2))
-          .replace('MM', pad(parts.month))
-          .replace('M', String(parts.month))
+          .replace('MM', paddedMonth)
+          .replace('M', shortMonth)
           .replace('DD', pad(parts.day))
           .replace('D', String(parts.day))
           .replace('HH', pad(parts.hour || 0))
@@ -1522,7 +1599,8 @@
           .replace('mm', pad(parts.minute || 0))
           .replace('m', String(parts.minute || 0))
           .replace('ss', pad(parts.second || 0))
-          .replace('s', String(parts.second || 0));
+          .replace('s', String(parts.second || 0))
+          .replace(/__LEAP__/g, leapSuffix);
       },
       formatModelValue(date: CalendarDateLike): string {
         const target =
@@ -1546,11 +1624,13 @@
         const parts = adapter.getParts(new Date(timestamp));
         const pad = (part: number, size = 2) =>
           String(part).padStart(size, '0');
+        const leapSuffix = target === 'chinese' && parts.leapMonth ? 'bis' : '';
+        const leapPlaceholder = leapSuffix ? '__LEAP__' : '';
         return this.formats.model
           .replace('YYYY', String(parts.year))
           .replace('YY', String(parts.year).slice(-2))
-          .replace('MM', pad(parts.month))
-          .replace('M', String(parts.month))
+          .replace('MM', `${pad(parts.month)}${leapPlaceholder}`)
+          .replace('M', `${parts.month}${leapPlaceholder}`)
           .replace('DD', pad(parts.day))
           .replace('D', String(parts.day))
           .replace('HH', pad(parts.hour || 0))
@@ -1558,20 +1638,25 @@
           .replace('mm', pad(parts.minute || 0))
           .replace('m', String(parts.minute || 0))
           .replace('ss', pad(parts.second || 0))
-          .replace('s', String(parts.second || 0));
+          .replace('s', String(parts.second || 0))
+          .replace(/__LEAP__/g, leapSuffix);
       },
       parseCalendarParts(value: string): CalendarParts {
         const values = value
           .split(/[-/ .,\\:]/)
           .filter(Boolean)
-          .map(Number);
+        const monthToken = values[1] || '1';
+        const leapMonth =
+          this.activeCalendar === 'chinese' && /bis$/i.test(monthToken);
+        const month = Number.parseInt(monthToken.replace(/bis$/i, ''), 10);
         return {
-          year: values[0],
-          month: values[1] || 1,
-          day: values[2] || 1,
-          hour: values[3] || 0,
-          minute: values[4] || 0,
-          second: values[5] || 0,
+          year: Number(values[0]),
+          month: month || 1,
+          day: Number(values[2]) || 1,
+          hour: Number(values[3]) || 0,
+          minute: Number(values[4]) || 0,
+          second: Number(values[5]) || 0,
+          ...(leapMonth ? { leapMonth: true } : {}),
         };
       },
       parseCalendarDate(value: string): PersianDate {
@@ -1580,7 +1665,10 @@
         }
         const date = this.core.clone();
         const sourceCalendar: 'jalali' | 'gregorian' =
-          this.calendar === 'gregorian' ? 'gregorian' : 'jalali';
+          this.calendar === 'gregorian' ||
+          (value.includes('-') && !value.includes('/'))
+            ? 'gregorian'
+            : 'jalali';
         if (!/[-/ ]/.test(value)) {
           return date
             .calendar(sourceCalendar)
@@ -1653,6 +1741,55 @@
       },
       isDisableBetween(first: PersianDate, second: PersianDate): boolean {
         if (!this.disable) return false;
+        if (this.calendarAdapter) {
+          const firstTimestamp = this.getDateTimestamp(first);
+          const secondTimestamp = this.getDateTimestamp(second);
+          const lower = Math.min(firstTimestamp, secondTimestamp);
+          const upper = Math.max(firstTimestamp, secondTimestamp);
+          const timestampFor = (date: PersianDate): number =>
+            this.type === 'date'
+              ? this.getDayTimestamp(date)
+              : this.getDateTimestamp(date);
+          const disabledValues: string[] =
+            typeof this.disable === 'string'
+              ? [this.disable]
+              : Array.isArray(this.disable)
+                ? this.disable.filter(
+                    (value): value is string => typeof value === 'string',
+                  )
+                : [];
+
+          if (
+            disabledValues.some((value) => {
+              const disabled =
+                this.type === 'time'
+                  ? second.clone().time(value)
+                  : this.parseCalendarDate(value);
+              const timestamp = timestampFor(disabled);
+              return timestamp > lower && timestamp < upper;
+            })
+          ) {
+            return true;
+          }
+
+          if (this.type !== 'time') {
+            let cursor = new Date(upper);
+            while (true) {
+              cursor = this.calendarAdapter.addDays(cursor, -1);
+              if (cursor.getTime() <= lower) break;
+              if (
+                this.isInDisable(
+                  this.fromCalendarParts(
+                    this.calendarAdapter.getParts(cursor),
+                  ),
+                )
+              )
+                return true;
+            }
+          }
+          return false;
+        }
+
         if (this.type != 'datetime' && Core.isString(this.disable)) {
           const date =
             this.type == 'time'
@@ -1784,11 +1921,12 @@
         }
         if (this.type.includes('date'))
           this.$nextTick(() => {
-            document.querySelector('.pdp-day.today')!.classList.add('tada');
+            const root = this.$refs.root as HTMLElement;
+            const today = root?.querySelector('.pdp-day.today');
+            if (!today) return;
+            today.classList.add('tada');
             setTimeout(() => {
-              document
-                .querySelector('.pdp-day.today')!
-                .classList.remove('tada');
+              today.classList.remove('tada');
             }, 1000);
           });
       },
@@ -1836,72 +1974,156 @@
         }
         return (date as PersianDate).isBetween(from, to, '[]');
       },
-      isInDisable(date: PersianDate, disable?: Disable): boolean {
+      isInDisable(date: CalendarDateLike, disable?: Disable): boolean {
         if (!this.disable) return false;
         disable = disable || this.disable;
-        date = Core.isPersianDate(date)
-          ? date.clone()
-          : this.core.clone().parse(date);
-        if (this.calendarAdapter && Core.isString(disable)) {
-          const disabled = this.parseCalendarDate(disable as string);
-          if (this.type === 'time') {
-            return (
-              date.hour() === disabled.hour() &&
-              date.minute() === disabled.minute()
-            );
-          }
-          return date
-            .clone()
-            .startOf('date')
-            .isSame(disabled.clone().startOf('date'));
-        }
+        const candidate = date as PersianDate;
+        const normalizedDate = Core.isPersianDate(candidate)
+          ? candidate.clone()
+          : this.core.clone().parse(candidate);
         if (Core.isString(disable)) {
-          if (this.type == 'time') disable = date.toString() + ' ' + disable;
-          return date.calendar('jalali').isSame(disable as string);
+          return this.isSameDisabledValue(normalizedDate, disable as string);
         } else if (disable instanceof RegExp) {
-          if (this.calendarAdapter) {
-            return disable.test(this.formatDateValue(date, this.formats.input));
-          }
-          const format = {
-            date: 'jYYYY/jM/jD',
-            datetime: 'jYYYY/jM/jD H:m',
-            time: 'H:m',
-          };
-          return disable.test(date.toString(format[this.type]));
+          return this.testDisableRegex(
+            disable,
+            this.formatDisableValue(normalizedDate),
+          );
         } else if (Core.isFunction(disable)) {
-          return (disable as (date: PersianDate) => boolean)(date);
+          return (disable as (date: PersianDate) => boolean)(normalizedDate);
         } else if (Array.isArray(disable)) {
           return disable.some((val) => {
             if (Core.isString(val)) {
-              if (this.calendarAdapter) {
-                return this.isSameCalendarDate(
-                  date,
-                  this.parseCalendarDate(val as string),
-                );
-              }
-              if (this.type == 'time') val = date.toString() + ' ' + val;
-              return date.calendar('jalali').isSame(val as string);
+              return this.isSameDisabledValue(normalizedDate, val as string);
             } else if (val instanceof RegExp) {
-              if (this.calendarAdapter) {
-                return val.test(this.formatDateValue(date, this.formats.input));
-              }
-              const format = {
-                date: 'jYYYY/jM/jD',
-                datetime: 'jYYYY/jM/jD H:m',
-                time: 'H:m',
-              };
-              return val.test(date.toString(format[this.type]));
+              return this.testDisableRegex(
+                val,
+                this.formatDisableValue(normalizedDate),
+              );
             }
           });
         } else {
           return false;
         }
       },
-      showPicker(el: 'icon' | 'input', index: 0 | 1): void {
+      selectedTimeValue(index: number): PersianDate | undefined {
+        const time = this.selectedTimes[index];
+        if (!time) return undefined;
+        const date = this.selectedDates[index];
+        if (!date) return time as PersianDate;
+        return date
+          .clone()
+          .hour(time.hour())
+          .minute(time.minute())
+          .second(time.second())
+          .millisecond(time.millisecond());
+      },
+      isSelectedTimeDisabled(index: number): boolean {
+        const time = this.selectedTimeValue(index);
+        return !!time && (!this.checkDate(time, 'time') || this.isInDisable(time));
+      },
+      isSameDisabledValue(date: PersianDate, value: string): boolean {
+        const disabled = this.parseDisabledValue(
+          this.type === 'time' && !/[\s/-]/.test(value)
+            ? `${date.toString('YYYY-MM-DD')} ${value}`
+            : value,
+        );
+        if (!this.calendarAdapter && !this.calendar && value.includes('/')) {
+          const candidate = date.clone().calendar('jalali');
+          const target = disabled.clone().calendar('jalali');
+          const sameDate =
+            candidate.year() === target.year() &&
+            candidate.month() === target.month() &&
+            candidate.date() === target.date();
+          if (this.type === 'date' || !/\s/.test(value)) return sameDate;
+          if (this.type === 'datetime') {
+            return (
+              sameDate &&
+              candidate.hour() === target.hour() &&
+              candidate.minute() === target.minute()
+            );
+          }
+        }
+        if (this.type === 'time') {
+          return (
+            date.hour() === disabled.hour() &&
+            date.minute() === disabled.minute()
+          );
+        }
+        if (this.type === 'date' || !/[\s:]/.test(value)) {
+          return date
+            .clone()
+            .startOf('date')
+            .isSame(disabled.clone().startOf('date'));
+        }
+        return date.isSame(disabled);
+      },
+      parseDisabledValue(value: string): PersianDate {
+        if (
+          !this.calendarAdapter &&
+          !this.calendar &&
+          value.includes('/')
+        ) {
+          return this.core.clone().calendar('jalali').parse(value);
+        }
+        return this.parseCalendarDate(value);
+      },
+      testDisableRegex(regex: RegExp, value: string): boolean {
+        regex.lastIndex = 0;
+        const result = regex.test(value);
+        regex.lastIndex = 0;
+        return result;
+      },
+      formatDisableValue(date: PersianDate): string {
+        if (this.calendarAdapter)
+          return this.formatDateValue(date, this.formats.input);
+        return date.toString(
+          jalaliDisableFormats[
+            this.type as keyof typeof jalaliDisableFormats
+          ],
+        );
+      },
+      inputSlotProps(index: number): {
+        value: string;
+        inputAttrs: Obj;
+        open: () => void;
+        clear: () => void;
+        onInput: (event: Event) => void;
+        onBlur: () => void;
+        onKeydown: (event: KeyboardEvent) => void;
+      } {
+        const input = this.inputs[index];
+        return {
+          value: this.displayValue[index] || '',
+          inputAttrs: {
+            ...this.attrs[input],
+            ref: 'inputs',
+            type: 'text',
+            autocomplete: 'off',
+            placeholder:
+              this.inputMaskConfig().placeholder ||
+              this.attrs[input].placeholder,
+          },
+          open: () => this.showPicker('input', index),
+          clear: () => this.clear(input),
+          onInput: (event: Event) => {
+            const target = event.target as HTMLInputElement;
+            this.displayValue[index] = target.value;
+            if (this.inputMask)
+              this.sanitizeInput(index, event);
+          },
+          onBlur: () => {
+            if (this.inputMask) this.sanitizeInput(index);
+            this.commitInput(index);
+          },
+          onKeydown: (event: KeyboardEvent) => this.selectWithArrow(event),
+        };
+      },
+      showPicker(el: 'icon' | 'input', index: number): void {
         if (this.clickOn == 'all' || this.clickOn == el) {
-          const inputName = this.inputs[index];
+          const inputName = this.inputs[index as 0 | 1];
           if (this.dualInput) this.inputName = inputName;
-          (this.$refs.inputs as HTMLElement[])[index].focus();
+          const inputs = this.$refs.inputs as HTMLElement[] | undefined;
+          inputs?.[index]?.focus();
           this.showDatePicker = true;
           if (!this.modal) {
             this.$nextTick(() => {
@@ -1931,46 +2153,71 @@
           )
             numberOfDay = -numberOfDay;
 
-          // eslint-disable-next-line no-undef
-          let focusedDay: HTMLElement | NodeListOf<HTMLElement> =
-            document.querySelectorAll('.pdp .pdp-day.hover');
-          if (!focusedDay.length) {
-            focusedDay = document.querySelectorAll(
+          const root = this.$refs.root as HTMLElement;
+          let focusedDays = root.querySelectorAll('.pdp .pdp-day.hover');
+          if (!focusedDays.length) {
+            focusedDays = root.querySelectorAll(
               '.pdp .pdp-day.start-range,.pdp .pdp-day.end-range',
             );
           }
-          focusedDay = focusedDay[focusedDay.length - 1];
+          let focusedDay = focusedDays[focusedDays.length - 1] as
+            | HTMLElement
+            | undefined;
           if (focusedDay) {
-            let column = this.getColumn(focusedDay);
+            let column = Number(this.getColumn(focusedDay));
             focusedDay.classList.remove('hover');
-            const firstColumnMonth = this.onDisplay!.toString();
-            const focusedMonth = this.onDisplay!.clone().addMonth(column);
-            let nextElementValue: PersianDate | number = focusedMonth
-              .date(focusedDay.innerText)
-              .addDay(numberOfDay);
-            if (!this.checkDate(nextElementValue, 'date'))
+            const focusedMonth = this.calendarMonthDate(this.onDisplay!, column);
+            const focusedDate = this.calendarDayDate(
+              focusedMonth,
+              Number(focusedDay.innerText),
+            );
+            const nextDate = this.calendarAddDays(focusedDate, numberOfDay);
+            if (!this.checkDate(nextDate, 'date'))
               return focusedDay.classList.add('hover');
-            nextElementValue = (nextElementValue as PersianDate).date();
-            column = focusedMonth.diff(firstColumnMonth, 'month');
+
+            const nextMonthKey = this.calendarMonthKey(nextDate);
+            column = -1;
+            for (let i = 0; i < this.columnCount; i++) {
+              if (
+                this.calendarMonthKey(
+                  this.calendarMonthDate(this.onDisplay!, i),
+                ) === nextMonthKey
+              ) {
+                column = i;
+                break;
+              }
+            }
             if (column < 0) {
-              this.onDisplay!.subMonth(this.columnCount);
-              column = this.columnCount - 1;
-            } else if (column >= this.columnCount) {
-              this.onDisplay!.addMonth(this.columnCount);
-              column = 0;
+              const firstMonth = this.calendarMonthDate(this.onDisplay!, 0);
+              if (
+                this.getDateTimestamp(nextDate) <
+                this.getDateTimestamp(firstMonth)
+              ) {
+                this.onDisplay = this.calendarMonthDate(
+                  this.onDisplay!,
+                  -this.columnCount,
+                );
+                column = this.columnCount - 1;
+              } else {
+                this.onDisplay = this.calendarMonthDate(
+                  this.onDisplay!,
+                  this.columnCount,
+                );
+                column = 0;
+              }
             }
             await this.$nextTick();
-            focusedDay = document.querySelector(
-              `.pdp .pdp-main .pdp-column[data-column='${column}'] .pdp-day[value='${nextElementValue}']`,
+            focusedDay = root.querySelector(
+              `.pdp .pdp-main .pdp-column[data-column='${column}'] .pdp-day[value='${this.displayDay(nextDate)}']`,
             ) as HTMLElement;
-            focusedDay.classList.add('hover');
+            if (focusedDay) focusedDay.classList.add('hover');
           } else {
-            focusedDay = document.querySelector(
+            focusedDay = root.querySelector(
               '.pdp .pdp-day:not(.empty):not(.disabled)',
             ) as HTMLElement;
             if (focusedDay) focusedDay.classList.add('hover');
             else {
-              focusedDay = document.querySelector(
+              focusedDay = root.querySelector(
                 `.pdp .pdp-main .pdp-column[data-column="0"] .pdp-day[value="${this.fromDate!.date()}"]`,
               ) as HTMLElement;
               focusedDay.classList.add('hover');
@@ -1982,47 +2229,176 @@
         } else if (e.key == 'Enter') {
           // 13 is key code of Enter key
           e.preventDefault();
-          const focusedDay = document.querySelector(
+          const focusedDay = (this.$refs.root as HTMLElement).querySelector(
             '.pdp .pdp-day.hover',
           ) as HTMLElement;
           if (focusedDay) {
             this.selectDate(
-              this.onDisplay!.clone()
-                .addMonth(this.getColumn(focusedDay) || 0)
-                .date(focusedDay.innerText),
+              this.calendarDayDate(
+                this.calendarMonthDate(
+                  this.onDisplay!,
+                  Number(this.getColumn(focusedDay) || 0),
+                ),
+                Number(focusedDay.innerText),
+              ),
               'date',
             );
           } else {
-            let onDisplay;
-            this.displayValue.forEach((value, index) => {
-              if (!value) return false;
-              if (this.type == 'time') {
-                const time = value.split(/[/ -.,:\\]/);
-                if (this.checkDate(this.core.clone(), 'time'))
-                  onDisplay = this.core.clone();
-                else onDisplay = this.fromDate!.clone();
-                onDisplay.time(time as [string]);
-              } else {
-                onDisplay = this.core.clone().parse(value);
-              }
-              if (this.selectDate(onDisplay, 'time') === 0) {
-                const diff = onDisplay.diff(
-                  this.onDisplay as PersianDate,
-                  'month',
-                );
-                if (diff < 0 || diff >= this.columnCount)
-                  this.onDisplay = onDisplay.clone();
-                this.displayValue[index] = '';
-              }
+            this.displayValue.forEach((_, index) => {
+              this.commitInput(index);
             });
           }
         }
+      },
+      commitInput(index: number): void {
+        const inputs = this.$refs.inputs as HTMLInputElement[];
+        const input = inputs?.[index];
+        const rawValue = input?.value ?? this.displayValue[index];
+        const submittedValue = this.dualInput
+          ? this.selectedDates[index]
+            ? this.formatDateValue(
+                this.selectedDates[index],
+                this.formats.input,
+              )
+            : ''
+          : this.selectedDates
+              .map((date) => this.formatDateValue(date, this.formats.input))
+              .join(' - ');
+        if (rawValue === submittedValue) return;
+        const value = this.inputMask
+          ? rawValue
+          : this.sanitizeInputValue(rawValue);
+        if (!value) return;
+        if (value !== rawValue) {
+          if (input) input.value = value;
+          this.displayValue[index] = value;
+        }
+        const normalizedValue = this.normalizeInputDigits(value);
+
+        let onDisplay: PersianDate;
+        if (this.type === 'time') {
+          const time = normalizedValue.split(/[/ -.,:\\]/);
+          onDisplay = this.checkDate(this.core.clone(), 'time')
+            ? this.core.clone()
+            : this.fromDate!.clone();
+          onDisplay.time(time as [string]);
+        } else {
+          onDisplay = this.calendarAdapter
+            ? this.parseCalendarDate(normalizedValue)
+            : this.core.clone().parse(normalizedValue);
+        }
+
+        if (!onDisplay.isValid() || this.selectDate(onDisplay, 'time') !== 0)
+          return;
+
+        const diff = onDisplay.diff(this.onDisplay as PersianDate, 'month');
+        if (diff < 0 || diff >= this.columnCount)
+          this.onDisplay = onDisplay.clone();
+        this.displayValue[index] = '';
+      },
+      inputMaskPattern(): string {
+        const config = this.inputMaskConfig();
+        let value: string | undefined = config.pattern;
+        if (!value || value === 'calendar-default')
+          value = this.defaultInputMaskPattern();
+        if (value === 'date' || value === 'datetime' || value === 'time') {
+          if (!this.calendarAdapter) {
+            return value === 'date'
+              ? 'jYYYY/jMM/jDD'
+              : value === 'datetime'
+                ? 'jYYYY/jMM/jDD HH:mm'
+                : 'HH:mm';
+          }
+          return value === 'date'
+            ? 'YYYY-MM-DD'
+            : value === 'datetime'
+              ? 'YYYY-MM-DD HH:mm'
+              : 'HH:mm';
+        }
+        return value;
+      },
+      defaultInputMaskPattern(): string {
+        const datePattern =
+          this.activeCalendar === 'jalali' ? 'jYYYY/jMM/jDD' : 'YYYY-MM-DD';
+        return this.type === 'date'
+          ? datePattern
+          : this.type === 'datetime'
+            ? `${datePattern} HH:mm`
+            : 'HH:mm';
+      },
+      inputMaskConfig(): InputMaskConfig {
+        const mask = this.inputMask;
+        if (!mask) {
+          return {
+            pattern: this.defaultInputMaskPattern(),
+            allowedDigits:
+              this.activeCalendar === 'jalali' || this.lang.dir.input === 'rtl'
+                ? 'both'
+                : 'latin',
+            strict: true,
+          };
+        }
+        if (typeof mask === 'string') return { pattern: mask };
+        if ('pattern' in mask || 'allowedDigits' in mask || 'strict' in mask)
+          return mask as InputMaskConfig;
+        const value = (
+          mask as Partial<
+            Record<'date' | 'time' | 'datetime', string | InputMaskConfig>
+          >
+        )[this.type];
+        return typeof value === 'string' ? { pattern: value } : value || {};
+      },
+      normalizeInputDigits(value: string): string {
+        return Array.from(value)
+          .map((character) => {
+            const code = character.codePointAt(0) || 0;
+            if (code >= 0x06f0 && code <= 0x06f9)
+              return String(code - 0x06f0);
+            if (code >= 0x0660 && code <= 0x0669)
+              return String(code - 0x0660);
+            return character;
+          })
+          .join('');
+      },
+      sanitizeInput(index: number, event?: Event): void {
+        const input = event?.target as HTMLInputElement | undefined;
+        const value = input?.value ?? this.displayValue[index];
+        if (!value) return;
+        const sanitized = this.sanitizeInputValue(value);
+        if (sanitized !== value) {
+          if (input) input.value = sanitized;
+          this.displayValue[index] = sanitized;
+        }
+      },
+      sanitizeInputValue(value: string): string {
+        const pattern = this.inputMaskPattern();
+        const allowedDigits = this.inputMaskConfig().allowedDigits || 'latin';
+        const literals = pattern
+          .replace(/j?(YYYY|YY|MMMM|MMM|MM|M|DD|D|HH|H|mm|m|ss|s)/g, '')
+          .split('');
+        const allowsLetters = /MMMM|MMM/.test(pattern);
+        return Array.from(value)
+          .filter((character) => {
+            const isLatinDigit = /[0-9]/.test(character);
+            const isLocaleDigit = /[۰-۹٠-٩]/.test(character);
+            if (
+              (allowedDigits === 'latin' && isLatinDigit) ||
+              (allowedDigits === 'locale' && isLocaleDigit) ||
+              (allowedDigits === 'both' && (isLatinDigit || isLocaleDigit))
+            )
+              return true;
+            if (literals.includes(character) || /\s/.test(character))
+              return true;
+            return allowsLetters && /\p{L}/u.test(character);
+          })
+          .join('');
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       selectInRangeDate(e: any): void {
         const target = e.target;
         if (!target.classList.contains('pdp-day')) return;
-        document.querySelectorAll(`.pdp .pdp-day`).forEach((el) => {
+        const root = this.$refs.root as HTMLElement;
+        root.querySelectorAll(`.pdp .pdp-day`).forEach((el) => {
           el.classList.remove('in-range');
         });
 
@@ -2033,7 +2409,7 @@
           .date(target.innerText);
         const selectedDate = this.selectedDates[0].clone().startOf('date');
         const number = hoveredDate.isAfter(selectedDate) ? 1 : -1;
-        const selectedDateDOM = document.querySelector(
+        const selectedDateDOM = root.querySelector(
           '.pdp-day.start-range,.pdp-day.end-range',
         ) as HTMLElement;
         if (selectedDateDOM) {
@@ -2067,7 +2443,7 @@
             this.checkDate(selectedDate, 'date') &&
             !this.isInDisable(selectedDate)
           ) {
-            document
+            root
               .querySelector(
                 `.pdp-column[data-column='${column}'] .pdp-day[value='${selectedDate.date()}']`,
               )!
@@ -2105,13 +2481,15 @@
           : this.toDate!.clone();
       },
       locate(): void {
+        const inputs = this.$refs.inputs as HTMLElement[] | undefined;
+        if (!inputs?.[0]) return;
         this.pickerPlace = {
           top: false,
           left: false,
           right: false,
         };
         this.$nextTick(() => {
-          const input = (this.$refs.inputs as HTMLElement[])[0];
+          const input = inputs[0];
           const inputOffset =
             input.offsetHeight + input.getBoundingClientRect().top;
           const picker = this.$refs.pdpPicker as HTMLElement;
@@ -2141,6 +2519,9 @@
         this.onDisplay!.calendar(internalCalendar);
         for (const date of this.selectedDates) {
           date.calendar(internalCalendar);
+        }
+        for (const time of this.selectedTimes) {
+          time.calendar(internalCalendar);
         }
         this.submitDate(false);
       },
@@ -2203,7 +2584,16 @@
                 : this.selectedTimes[0]) as PersianDate,
             );
           }
-          if (!this.isInDisable(time as PersianDate)) {
+          const selectedTime = this.selectedDates[timeIndex]
+            ? (this.selectedDates[timeIndex] as PersianDate)
+                .clone()
+                .hour(time.hour())
+                .minute(time.minute())
+                .second(time.second())
+                .millisecond(time.millisecond())
+            : time;
+          this.selectedTimes[timeIndex] = (time as PersianDate).clone();
+          if (!this.isInDisable(selectedTime)) {
             if (this.type == 'time') {
               this.selectedDates[timeIndex] = time;
             } else if (this.selectedDates[timeIndex]) {
@@ -2212,8 +2602,8 @@
             this.$emit('select', time);
             if (
               this.autoSubmit &&
-              !this.selectedTimes.some((sTime) =>
-                this.isInDisable(sTime as PersianDate),
+              !this.selectedTimes.some((_, index) =>
+                this.isSelectedTimeDisabled(index),
               )
             )
               this.submitDate(false);

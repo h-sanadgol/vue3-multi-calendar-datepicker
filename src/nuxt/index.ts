@@ -9,6 +9,16 @@ export interface DatePickerNuxtOptions {
   PersianDate?: boolean;
 }
 
+type NuxtLike = {
+  options: {
+    vite: {
+      optimizeDeps?: {
+        include?: string[];
+      };
+    };
+  };
+};
+
 export default defineNuxtModule<DatePickerNuxtOptions>({
   meta: {
     name: '@h-sanadgol/vue3-multi-calendar-datepicker',
@@ -20,7 +30,7 @@ export default defineNuxtModule<DatePickerNuxtOptions>({
   defaults: {
     PersianDate: false,
   },
-  setup(options, nuxt) {
+  setup(options: DatePickerNuxtOptions, nuxt: NuxtLike) {
     const { include } = nuxt.options.vite.optimizeDeps!;
     nuxt.options.vite.optimizeDeps!.include = [
       ...(include || []),

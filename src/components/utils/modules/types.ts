@@ -75,6 +75,16 @@ export type Formats = {
   display: string;
   alt: string;
 };
+export type InputMaskConfig = {
+  pattern?: string;
+  placeholder?: string;
+  strict?: boolean;
+  allowedDigits?: 'latin' | 'locale' | 'both';
+};
+export type InputMask =
+  | string
+  | InputMaskConfig
+  | Partial<Record<'date' | 'time' | 'datetime', string | InputMaskConfig>>;
 export type Shortcuts = Obj<PersianDate[]>;
 export type Langs = {
   [locale: string]: {

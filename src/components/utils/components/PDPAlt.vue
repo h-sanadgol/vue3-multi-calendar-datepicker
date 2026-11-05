@@ -1,6 +1,8 @@
 <script lang="ts" setup>
   import type { PropType } from 'vue';
-  import type { PersianDate } from '../modules/core';
+  type DateLike = {
+    toString: (format?: string) => string;
+  };
 
   defineProps({
     name: {
@@ -12,7 +14,7 @@
       required: true,
     },
     dates: {
-      type: Array as PropType<PersianDate[]>,
+      type: Array as PropType<DateLike[]>,
       required: true,
     },
   });

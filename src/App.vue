@@ -5,6 +5,14 @@
 
   type Language = 'fa' | 'en' | 'ar';
   type PickerType = 'date' | 'time' | 'datetime';
+  type PickerColor =
+    | 'blue'
+    | 'red'
+    | 'pink'
+    | 'orange'
+    | 'green'
+    | 'purple'
+    | 'gray';
   type DemoCalendar = {
     id: CalendarId;
     title: Record<Language, string>;
@@ -178,7 +186,7 @@
   );
   const modalSample = ref<CodeSample | null>(null);
   const copied = ref(false);
-  const advancedColor = ref('blue');
+  const advancedColor = ref<PickerColor>('blue');
   const advancedFrom = ref('');
   const advancedTo = ref('');
   const advancedWeekStart = ref<'auto' | number>('auto');
@@ -194,8 +202,10 @@
   const advancedHourStep = ref(1);
   const advancedClickOn = ref<'all' | 'input' | 'icon' | 'none'>('all');
   const t = computed(() => ui[language.value]);
-  const selectedCalendar = computed(
-    () => calendars.find((calendar) => calendar.id === activeCalendar.value)!,
+  const selectedCalendar = computed<DemoCalendar>(
+    () =>
+      calendars.find((calendar) => calendar.id === activeCalendar.value) ||
+      calendars[0],
   );
   const pageDirection = computed(() =>
     language.value === 'en' ? 'ltr' : 'rtl',
@@ -315,10 +325,11 @@
       if (pickerType.value === 'time') {
         mainValue.value = undefined;
       } else if (!Array.isArray(mainValue.value)) {
-        mainValue.value = [mainValue.value, mainValue.value];
+        const value = mainValue.value ?? pickerSeedValue();
+        mainValue.value = [value, value];
       }
     } else if (Array.isArray(mainValue.value)) {
-      mainValue.value = mainValue.value[0] || pickerSeedValue();
+      mainValue.value = mainValue.value[0] ?? pickerSeedValue();
     }
   });
   function openCode(sample: CodeSample) {

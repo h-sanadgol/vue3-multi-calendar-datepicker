@@ -111,17 +111,39 @@ export const Core = {
     },
   } as Langs,
   mergeObject: function (original: Obj, changed: Obj | undefined): Obj {
-    const newObject = JSON.parse(JSON.stringify(original));
-    for (const key in changed) {
-      if (
-        original[key] &&
-        Object.prototype.toString.call(changed[key]) === '[object Object]'
-      )
+    const unsafeKeys = new Set(['__proto__', 'prototype', 'constructor']);
+    const isPlainObject = (value: unknown): value is Obj => {
+      if (Object.prototype.toString.call(value) !== '[object Object]') {
+        return false;
+      }
+      const prototype = Object.getPrototypeOf(value);
+      return prototype === Object.prototype || prototype === null;
+    };
+    const cloneValue = (value: unknown): unknown => {
+      if (Array.isArray(value)) return value.map(cloneValue);
+      if (!isPlainObject(value)) return value;
+
+      const clone: Obj = {};
+      for (const key of Object.keys(value)) {
+        if (!unsafeKeys.has(key)) clone[key] = cloneValue(value[key]);
+      }
+      return clone;
+    };
+
+    const newObject = cloneValue(original) as Obj;
+    if (!changed) return newObject;
+
+    for (const key of Object.keys(changed)) {
+      if (unsafeKeys.has(key)) continue;
+      const changedValue = changed[key];
+      if (isPlainObject(newObject[key]) && isPlainObject(changedValue)) {
         newObject[key] = this.mergeObject(
-          original[key] as Obj,
-          changed[key] as Obj,
+          newObject[key] as Obj,
+          changedValue as Obj,
         );
-      else newObject[key] = changed[key];
+      } else {
+        newObject[key] = cloneValue(changedValue);
+      }
     }
     return newObject;
   },

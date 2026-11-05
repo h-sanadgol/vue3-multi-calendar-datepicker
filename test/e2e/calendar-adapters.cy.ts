@@ -1,4 +1,5 @@
 import { createCalendarAdapter, type CalendarId } from '../../src/calendars';
+import { Core } from '../../src/components/utils/modules/core';
 import PersianDate from '@alireza-ab/persian-date';
 
 describe('calendar adapters', () => {
@@ -98,6 +99,24 @@ describe('calendar adapters', () => {
     });
   });
 
+  it('does not allow mergeObject to modify the result prototype', () => {
+    const changed = Object.create(null) as Record<string, unknown>;
+    Object.defineProperty(changed, '__proto__', {
+      value: { polluted: true },
+      enumerable: true,
+    });
+    Object.defineProperty(changed, 'constructor', {
+      value: { polluted: true },
+      enumerable: true,
+    });
+
+    const result = Core.mergeObject({ safe: true }, changed);
+
+    expect(Object.getPrototypeOf(result)).to.equal(Object.prototype);
+    expect((result as Record<string, unknown>).polluted).to.equal(undefined);
+    expect(result).to.deep.equal({ safe: true });
+  });
+
   it('round-trips Hebrew, Buddhist, and Chinese sample dates', () => {
     (['hebrew', 'buddhist', 'chinese'] as const).forEach((calendar) => {
       const adapter = createCalendarAdapter(calendar);
@@ -109,6 +128,35 @@ describe('calendar adapters', () => {
             : { year: 2025, month: 3, day: 7 };
       const parts = adapter.getParts(adapter.fromParts(sample));
       expect(parts).to.deep.include(sample);
+    });
+  });
+
+  it('preserves the Chinese leap-month marker', () => {
+    const adapter = createCalendarAdapter('chinese');
+    const leapMonth = adapter.getParts(new Date(Date.UTC(2023, 2, 22)));
+
+    expect(leapMonth).to.deep.include({
+      year: 2023,
+      month: 2,
+      day: 1,
+      leapMonth: true,
+    });
+    expect(adapter.getParts(adapter.fromParts(leapMonth))).to.deep.include(
+      leapMonth,
+    );
+  });
+
+  it('rolls Hebrew month 13 into month 1 of the next year', () => {
+    const adapter = createCalendarAdapter('hebrew');
+    const next = adapter.addMonths(
+      adapter.fromParts({ year: 5784, month: 13, day: 1 }),
+      1,
+    );
+
+    expect(adapter.getParts(next)).to.deep.include({
+      year: 5785,
+      month: 1,
+      day: 1,
     });
   });
 });

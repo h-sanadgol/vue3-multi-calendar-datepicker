@@ -2251,7 +2251,10 @@
       commitInput(index: number): void {
         const inputs = this.$refs.inputs as HTMLInputElement[];
         const input = inputs?.[index];
-        const rawValue = input?.value ?? this.displayValue[index];
+        // `displayValue` is updated by v-model before Enter/blur handlers run.
+        // Prefer it over the DOM value so a fast manual edit cannot be lost
+        // while Vue is still synchronizing the native input element.
+        const rawValue = this.displayValue[index] || input?.value || '';
         const submittedValue = this.dualInput
           ? this.selectedDates[index]
             ? this.formatDateValue(
@@ -2297,7 +2300,10 @@
           if (diff < 0 || diff >= this.columnCount)
             this.onDisplay = onDisplay.clone();
         }
-        this.displayValue[index] = '';
+        // `selectDate` returns 1 after autoSubmit has already formatted the
+        // completed value into the input. Only clear a pending range input;
+        // otherwise the committed manual value would be erased immediately.
+        if (selectionResult === 0) this.displayValue[index] = '';
       },
       inputMaskPattern(): string {
         const config = this.inputMaskConfig();

@@ -325,14 +325,14 @@ the open picker. These three contracts are independent:
 
 Formats use the Persian Date token convention:
 
-| Token | Meaning | Example |
-| --- | --- | --- |
+| Token            | Meaning                            | Example         |
+| ---------------- | ---------------------------------- | --------------- |
 | `YYYY` / `jYYYY` | four-digit Gregorian / Jalali year | `2025` / `1404` |
-| `YY` / `jYY` | two-digit Gregorian / Jalali year | `25` / `04` |
-| `MM` / `M` | month, padded / unpadded | `01` / `1` |
-| `DD` / `D` | day, padded / unpadded | `05` / `5` |
-| `HH` / `H` | hour, padded / unpadded | `08` / `8` |
-| `mm` / `m` | minute, padded / unpadded | `10` / `10` |
+| `YY` / `jYY`     | two-digit Gregorian / Jalali year  | `25` / `04`     |
+| `MM` / `M`       | month, padded / unpadded           | `01` / `1`      |
+| `DD` / `D`       | day, padded / unpadded             | `05` / `5`      |
+| `HH` / `H`       | hour, padded / unpadded            | `08` / `8`      |
+| `mm` / `m`       | minute, padded / unpadded          | `10` / `10`     |
 
 For example, use `jYY/jMM/jDD` for a short Jalali date and `YY-MM-DD` for a
 Gregorian date. `YY-mm-DD` is different: `mm` means minutes, so it is intended

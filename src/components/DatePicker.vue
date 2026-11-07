@@ -2351,7 +2351,8 @@
             strict: true,
           };
         }
-        if (typeof mask === 'string') return { pattern: mask, autoInsert: true };
+        if (typeof mask === 'string')
+          return { pattern: mask, autoInsert: true };
         if (
           'pattern' in mask ||
           'allowedDigits' in mask ||
@@ -2399,7 +2400,9 @@
         if (config.autoInsert === false) return value;
         const rangeParts = value.split(/\s+-\s+/);
         if (rangeParts.length > 1)
-          return rangeParts.map((part) => this.maskedInputValue(part)).join(' - ');
+          return rangeParts
+            .map((part) => this.maskedInputValue(part))
+            .join(' - ');
         const pattern = this.inputMaskPattern();
         const parts = this.maskTokens(pattern);
         const hasTextToken = parts.some(
@@ -2500,11 +2503,9 @@
         // Keep explicitly typed separators and variable-width fields (for
         // example `1399/6/1`) intact. Compact digit input is reformatted only
         // when it is compatible with the mask's automatic prefix.
-        return (
-          masked === sanitized ||
+        return masked === sanitized ||
           masked.startsWith(sanitized) ||
           !/\D/.test(sanitized)
-        )
           ? masked
           : sanitized;
       },

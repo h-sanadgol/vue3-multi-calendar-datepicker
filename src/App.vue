@@ -535,12 +535,13 @@
                     type="button"
                     class="format-info"
                     aria-label="Input format examples"
-                  >?</button
+                  >
+                    ?</button
                   ><span class="field-tooltip" role="tooltip"
                     >Jalali: <code>jYYYY/jMM/jDD</code> or
                     <code>jYY/jMM/jDD</code>. Gregorian and other calendars:
                     <code>YYYY-MM-DD</code>.</span
-                ></span
+                  ></span
                 ><input
                   v-model="advancedInputFormat"
                   placeholder="YYYY-MM-DD" /></label
@@ -550,12 +551,13 @@
                     type="button"
                     class="format-info"
                     aria-label="Input mask examples"
-                  >?</button
+                  >
+                    ?</button
                   ><span class="field-tooltip" role="tooltip"
                     >Controls the allowed shape and characters. Example:
                     <code>YYYY/MM/DD</code>. Keep it aligned with Input
                     format.</span
-                ></span
+                  ></span
                 ><input
                   v-model="advancedInputMask"
                   placeholder="calendar-default" /></label
@@ -565,12 +567,13 @@
                     type="button"
                     class="format-info"
                     aria-label="Display format examples"
-                  >?</button
+                  >
+                    ?</button
                   ><span class="field-tooltip" role="tooltip"
                     >Use <code>jYY/jMM/jDD</code> for a short Jalali date or
-                    <code>YY-MM-DD</code> for Gregorian. This changes the
-                    footer only.</span
-                ></span
+                    <code>YY-MM-DD</code> for Gregorian. This changes the footer
+                    only.</span
+                  ></span
                 ><input
                   v-model="advancedDisplayFormat"
                   placeholder="YY-MM-DD" /></label
@@ -605,8 +608,9 @@
                   v-model.number="advancedHourStep"
                   type="number"
                   min="1"
-                  max="24" /></label
-              ><fieldset class="advanced-group">
+                  max="24"
+              /></label>
+              <fieldset class="advanced-group">
                 <legend>Weekly holidays</legend>
                 <label class="check-option"
                   ><input
@@ -626,8 +630,9 @@
                     type="checkbox"
                     :value="6"
                   />Saturday</label
-              ></fieldset
-              ><fieldset class="advanced-group">
+                >
+              </fieldset>
+              <fieldset class="advanced-group">
                 <legend>Behavior</legend>
                 <label class="check-option"
                   ><input
@@ -648,7 +653,8 @@
                 ><label class="check-option"
                   ><input v-model="advancedDualInput" type="checkbox" />Dual
                   input</label
-              ></fieldset>
+                >
+              </fieldset>
             </div>
           </details>
           <div class="api-note">

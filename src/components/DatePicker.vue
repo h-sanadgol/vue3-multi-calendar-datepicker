@@ -2343,6 +2343,7 @@
         if (!mask) {
           return {
             pattern: this.defaultInputMaskPattern(),
+            autoInsert: true,
             allowedDigits:
               this.activeCalendar === 'jalali' || this.lang.dir.input === 'rtl'
                 ? 'both'
@@ -2350,8 +2351,13 @@
             strict: true,
           };
         }
-        if (typeof mask === 'string') return { pattern: mask };
-        if ('pattern' in mask || 'allowedDigits' in mask || 'strict' in mask)
+        if (typeof mask === 'string') return { pattern: mask, autoInsert: true };
+        if (
+          'pattern' in mask ||
+          'allowedDigits' in mask ||
+          'strict' in mask ||
+          'autoInsert' in mask
+        )
           return mask as InputMaskConfig;
         const value = (
           mask as Partial<
@@ -2370,24 +2376,105 @@
           })
           .join('');
       },
+      isInputDigit(character: string): boolean {
+        return /[0-9۰-۹٠-٩]/.test(character);
+      },
+      maskTokens(pattern: string): Array<{ token?: string; literal?: string }> {
+        const tokens: Array<{ token?: string; literal?: string }> = [];
+        const matcher = /j?(YYYY|YY|MMMM|MMM|MM|M|DD|D|HH|H|mm|m|ss|s)/g;
+        let lastIndex = 0;
+        let match: RegExpExecArray | null;
+        while ((match = matcher.exec(pattern))) {
+          if (match.index > lastIndex)
+            tokens.push({ literal: pattern.slice(lastIndex, match.index) });
+          tokens.push({ token: match[0] });
+          lastIndex = match.index + match[0].length;
+        }
+        if (lastIndex < pattern.length)
+          tokens.push({ literal: pattern.slice(lastIndex) });
+        return tokens;
+      },
+      maskedInputValue(value: string): string {
+        const config = this.inputMaskConfig();
+        if (config.autoInsert === false) return value;
+        const rangeParts = value.split(/\s+-\s+/);
+        if (rangeParts.length > 1)
+          return rangeParts.map((part) => this.maskedInputValue(part)).join(' - ');
+        const pattern = this.inputMaskPattern();
+        const parts = this.maskTokens(pattern);
+        const hasTextToken = parts.some(
+          (part) => part.token && /MMMM|MMM/.test(part.token),
+        );
+        if (hasTextToken) return value;
+        const digits = Array.from(value).filter((character) =>
+          this.isInputDigit(character),
+        );
+        let digitIndex = 0;
+        let result = '';
+        parts.forEach((part, index) => {
+          if (part.literal) {
+            return;
+          }
+          const token = part.token!.replace(/^j/, '');
+          const size = ['YYYY'].includes(token)
+            ? 4
+            : ['YY', 'MM', 'DD', 'HH', 'mm', 'ss'].includes(token)
+              ? 2
+              : 2;
+          const chunk = digits.slice(digitIndex, digitIndex + size).join('');
+          result += chunk;
+          digitIndex += chunk.length;
+          if (chunk.length < size) return;
+          const next = parts[index + 1];
+          if (next?.literal) result += next.literal;
+        });
+        return result;
+      },
+      maskedCursorPosition(value: string, digitCount: number): number {
+        if (!digitCount) return 0;
+        let seen = 0;
+        for (let index = 0; index < value.length; index++) {
+          if (!this.isInputDigit(value[index])) continue;
+          seen++;
+          if (seen === digitCount) {
+            let cursor = index + 1;
+            while (cursor < value.length && !this.isInputDigit(value[cursor]))
+              cursor++;
+            return cursor;
+          }
+        }
+        return value.length;
+      },
       sanitizeInput(index: number, event?: Event): void {
         const input = event?.target as HTMLInputElement | undefined;
         const value = input?.value ?? this.displayValue[index];
         if (!value) return;
+        const cursor = input?.selectionStart ?? value.length;
+        const digitsBeforeCursor = Array.from(value.slice(0, cursor)).filter(
+          (character) => this.isInputDigit(character),
+        ).length;
         const sanitized = this.sanitizeInputValue(value);
         if (sanitized !== value) {
           if (input) input.value = sanitized;
           this.displayValue[index] = sanitized;
+          if (input && input === document.activeElement) {
+            const nextCursor = this.maskedCursorPosition(
+              sanitized,
+              digitsBeforeCursor,
+            );
+            input.setSelectionRange(nextCursor, nextCursor);
+          }
         }
       },
       sanitizeInputValue(value: string): string {
         const pattern = this.inputMaskPattern();
         const allowedDigits = this.inputMaskConfig().allowedDigits || 'latin';
+        const hasRangeSeparator = /\s-\s/.test(value);
         const literals = pattern
           .replace(/j?(YYYY|YY|MMMM|MMM|MM|M|DD|D|HH|H|mm|m|ss|s)/g, '')
           .split('');
         const allowsLetters = /MMMM|MMM/.test(pattern);
-        return Array.from(value)
+        const sanitized = Array.from(value)
           .filter((character) => {
             const isLatinDigit = /[0-9]/.test(character);
             const isLocaleDigit = /[۰-۹٠-٩]/.test(character);
@@ -2397,11 +2484,29 @@
               (allowedDigits === 'both' && (isLatinDigit || isLocaleDigit))
             )
               return true;
-            if (literals.includes(character) || /\s/.test(character))
+            if (
+              literals.includes(character) ||
+              /\s/.test(character) ||
+              (hasRangeSeparator && character === '-')
+            )
               return true;
             return allowsLetters && /\p{L}/u.test(character);
           })
-          .join('');
+          .join('')
+          .replace(/\s{2,}/g, ' ')
+          .replace(/([/:.,-])\1+/g, '$1');
+        if (this.inputMaskConfig().autoInsert === false) return sanitized;
+        const masked = this.maskedInputValue(sanitized);
+        // Keep explicitly typed separators and variable-width fields (for
+        // example `1399/6/1`) intact. Compact digit input is reformatted only
+        // when it is compatible with the mask's automatic prefix.
+        return (
+          masked === sanitized ||
+          masked.startsWith(sanitized) ||
+          !/\D/.test(sanitized)
+        )
+          ? masked
+          : sanitized;
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       selectInRangeDate(e: any): void {

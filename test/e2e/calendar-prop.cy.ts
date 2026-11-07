@@ -107,6 +107,51 @@ describe('calendar prop', () => {
     });
   });
 
+  context('display format', () => {
+    before(() => {
+      cy.changeProps(
+        {
+          calendar: 'gregorian',
+          locale: 'en',
+          from: '2020',
+          to: '2030',
+          displayFormat: 'YY-MM-DD',
+          mode: 'single',
+          model: '2025-04-04',
+        },
+        null,
+        true,
+      );
+    });
+
+    it('renders date tokens in the picker footer', () => {
+      cy.get('.pdp-input').focus();
+      cy.get('.pdp-footer small').first().should('have.text', '25-04-04');
+    });
+
+    it('keeps Jalali format tokens aligned with the Jalali model', () => {
+      cy.changeProps(
+        {
+          calendar: 'jalali',
+          locale: 'fa',
+          from: '1400',
+          to: '1410',
+          format: 'jYYYY/jMM/jDD',
+          inputFormat: 'jYY/jMM/jDD',
+          inputMask: 'jYY/jMM/jDD',
+          displayFormat: 'jYY/jMM/jDD',
+          mode: 'single',
+          model: '1404/01/05',
+        },
+        null,
+        true,
+      );
+
+      cy.get('.pdp-input').should('have.value', '04/01/05').focus();
+      cy.get('.pdp-footer small').first().should('have.text', '04/01/05');
+    });
+  });
+
   context('manual input synchronization', () => {
     before(() => {
       cy.changeProps(
@@ -230,6 +275,25 @@ describe('calendar prop', () => {
         null,
       );
       cy.get('.pdp-input').should('have.attr', 'placeholder', 'YYYY/MM/DD');
+    });
+
+    it('inserts mask literals while typing compact digits', () => {
+      cy.changeProps(
+        {
+          calendar: 'jalali',
+          locale: 'fa',
+          from: '1400',
+          to: '1410',
+          inputFormat: 'jYY/jMM-jDD',
+          inputMask: { pattern: 'jYY/jMM-jDD', autoInsert: true },
+          mode: 'single',
+          model: '1404/01/05',
+        },
+        null,
+        true,
+      );
+      cy.get('.pdp-input').clear().type('050415');
+      cy.get('.pdp-input').should('have.value', '05/04-15');
     });
   });
 

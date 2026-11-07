@@ -79,6 +79,8 @@ export type InputMaskConfig = {
   pattern?: string;
   placeholder?: string;
   strict?: boolean;
+  /** Insert literal separators while the user types digits. */
+  autoInsert?: boolean;
   allowedDigits?: 'latin' | 'locale' | 'both';
 };
 export type InputMask =

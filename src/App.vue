@@ -205,6 +205,7 @@
   const advancedColumns = ref(1);
   const advancedClearable = ref(true);
   const advancedAutoSubmit = ref(true);
+  const advancedMaskAutoInsert = ref(true);
   const advancedIconInside = ref(false);
   const advancedDualInput = ref(false);
   const advancedMinuteStep = ref(1);
@@ -284,7 +285,7 @@
         ? `  input-format="${advancedInputFormat.value}"`
         : '',
       advancedInputMask.value
-        ? `  input-mask="${advancedInputMask.value}"`
+        ? `  :input-mask="{ pattern: '${advancedInputMask.value}', autoInsert: ${advancedMaskAutoInsert.value} }"`
         : '',
       advancedDisplayFormat.value
         ? `  display-format="${advancedDisplayFormat.value}"`
@@ -380,6 +381,7 @@
     advancedColumns.value = 1;
     advancedClearable.value = true;
     advancedAutoSubmit.value = true;
+    advancedMaskAutoInsert.value = true;
     advancedIconInside.value = false;
     advancedDualInput.value = false;
     advancedMinuteStep.value = 1;
@@ -528,17 +530,50 @@
                   v-model="advancedTo"
                   :placeholder="selectedCalendar.to" /></label
               ><label
-                >Input format<input
+                ><span class="format-label"
+                  >Input format<button
+                    type="button"
+                    class="format-info"
+                    aria-label="Input format examples"
+                  >?</button
+                  ><span class="field-tooltip" role="tooltip"
+                    >Jalali: <code>jYYYY/jMM/jDD</code> or
+                    <code>jYY/jMM/jDD</code>. Gregorian and other calendars:
+                    <code>YYYY-MM-DD</code>.</span
+                ></span
+                ><input
                   v-model="advancedInputFormat"
                   placeholder="YYYY-MM-DD" /></label
               ><label
-                >Input mask<input
+                ><span class="format-label"
+                  >Input mask<button
+                    type="button"
+                    class="format-info"
+                    aria-label="Input mask examples"
+                  >?</button
+                  ><span class="field-tooltip" role="tooltip"
+                    >Controls the allowed shape and characters. Example:
+                    <code>YYYY/MM/DD</code>. Keep it aligned with Input
+                    format.</span
+                ></span
+                ><input
                   v-model="advancedInputMask"
                   placeholder="calendar-default" /></label
               ><label
-                >Display format<input
+                ><span class="format-label"
+                  >Display format<button
+                    type="button"
+                    class="format-info"
+                    aria-label="Display format examples"
+                  >?</button
+                  ><span class="field-tooltip" role="tooltip"
+                    >Use <code>jYY/jMM/jDD</code> for a short Jalali date or
+                    <code>YY-MM-DD</code> for Gregorian. This changes the
+                    footer only.</span
+                ></span
+                ><input
                   v-model="advancedDisplayFormat"
-                  placeholder="?D ?MMMM" /></label
+                  placeholder="YY-MM-DD" /></label
               ><label
                 >Months shown<select v-model.number="advancedColumns">
                   <option :value="1">1 month</option>
@@ -571,40 +606,49 @@
                   type="number"
                   min="1"
                   max="24" /></label
-              ><span class="advanced-label weekly-label">Weekly holidays</span
-              ><label class="check-option"
-                ><input
-                  v-model="advancedWeekendDays"
-                  type="checkbox"
-                  :value="0"
-                />Sunday</label
-              ><label class="check-option"
-                ><input
-                  v-model="advancedWeekendDays"
-                  type="checkbox"
-                  :value="5"
-                />Friday</label
-              ><label class="check-option"
-                ><input
-                  v-model="advancedWeekendDays"
-                  type="checkbox"
-                  :value="6"
-                />Saturday</label
-              ><label class="check-option"
-                ><input
-                  v-model="advancedClearable"
-                  type="checkbox"
-                />Clearable</label
-              ><label class="check-option"
-                ><input v-model="advancedAutoSubmit" type="checkbox" />Auto
-                submit</label
-              ><label class="check-option"
-                ><input v-model="advancedIconInside" type="checkbox" />Icon
-                inside</label
-              ><label class="check-option"
-                ><input v-model="advancedDualInput" type="checkbox" />Dual
-                input</label
-              >
+              ><fieldset class="advanced-group">
+                <legend>Weekly holidays</legend>
+                <label class="check-option"
+                  ><input
+                    v-model="advancedWeekendDays"
+                    type="checkbox"
+                    :value="0"
+                  />Sunday</label
+                ><label class="check-option"
+                  ><input
+                    v-model="advancedWeekendDays"
+                    type="checkbox"
+                    :value="5"
+                  />Friday</label
+                ><label class="check-option"
+                  ><input
+                    v-model="advancedWeekendDays"
+                    type="checkbox"
+                    :value="6"
+                  />Saturday</label
+              ></fieldset
+              ><fieldset class="advanced-group">
+                <legend>Behavior</legend>
+                <label class="check-option"
+                  ><input
+                    v-model="advancedClearable"
+                    type="checkbox"
+                  />Clearable</label
+                ><label class="check-option"
+                  ><input v-model="advancedAutoSubmit" type="checkbox" />Auto
+                  submit</label
+                ><label class="check-option"
+                  ><input
+                    v-model="advancedMaskAutoInsert"
+                    type="checkbox"
+                  />Auto mask separators</label
+                ><label class="check-option"
+                  ><input v-model="advancedIconInside" type="checkbox" />Icon
+                  inside</label
+                ><label class="check-option"
+                  ><input v-model="advancedDualInput" type="checkbox" />Dual
+                  input</label
+              ></fieldset>
             </div>
           </details>
           <div class="api-note">
@@ -625,14 +669,21 @@
           </div>
           <div class="picker-wrap" :dir="selectedCalendar.direction">
             <DatePicker
-              :key="`${activeCalendar}-${hijriProvider}-${mode}-${pickerType}-${language}-${advancedInputFormat}-${advancedInputMask}-${advancedDisplayFormat}`"
+              :key="`${activeCalendar}-${hijriProvider}-${mode}-${pickerType}-${language}`"
               v-model="mainValue"
               :calendar="activeCalendar"
               :format="
                 activeCalendar === 'jalali' ? 'jYYYY/jMM/jDD' : undefined
               "
               :input-format="advancedInputFormat || undefined"
-              :input-mask="advancedInputMask || undefined"
+              :input-mask="
+                advancedInputMask
+                  ? {
+                      pattern: advancedInputMask,
+                      autoInsert: advancedMaskAutoInsert,
+                    }
+                  : undefined
+              "
               :display-format="advancedDisplayFormat || undefined"
               :hijri-provider="hijriProvider"
               :mode="mode"
@@ -1460,6 +1511,63 @@
     gap: 4px;
     color: var(--muted);
     font-size: 0.68rem;
+  }
+  .format-label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .format-info {
+    width: 15px;
+    height: 15px;
+    padding: 0;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--accent);
+    cursor: help;
+    font-size: 0.58rem;
+    font-weight: 800;
+  }
+  .field-tooltip {
+    position: absolute;
+    z-index: 5;
+    left: 20px;
+    bottom: 20px;
+    display: none;
+    width: min(290px, calc(100vw - 70px));
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #263236;
+    color: #fffdf9;
+    box-shadow: 0 8px 20px #2632362b;
+    font-size: 0.68rem;
+    line-height: 1.45;
+  }
+  .field-tooltip code {
+    color: #f4c0a4;
+  }
+  .format-label:hover .field-tooltip,
+  .format-label:focus-within .field-tooltip {
+    display: block;
+  }
+  .advanced-group {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-column: 1 / -1;
+    gap: 7px;
+    margin: 0;
+    padding: 8px;
+    border: 1px solid #e4ded5;
+    border-radius: 7px;
+  }
+  .advanced-group legend {
+    padding: 0 4px;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 700;
   }
   .advanced-fields select,
   .advanced-fields input {

@@ -295,10 +295,16 @@ default is used. Object configuration can override the pattern per picker type:
       placeholder: 'YYYY/MM/DD',
       allowedDigits: 'both',
       strict: true,
+      autoInsert: true,
     },
   }"
 />
 ```
+
+With `autoInsert: true` (the default), users can type only the digits and the
+mask inserts its literals as they go. For example, `050415` becomes
+`05/04-15` for the pattern `jYY/jMM-jDD`. Set `autoInsert: false` when the
+application should filter characters without inserting separators.
 
 `allowedDigits` can be `latin`, `locale`, or `both`. The `format` prop controls
 the serialized `v-model`; `inputFormat` controls the input representation.
@@ -314,6 +320,25 @@ the open picker. These three contracts are independent:
   display-format="D MMMM YYYY"
 />
 ```
+
+### Format token guide
+
+Formats use the Persian Date token convention:
+
+| Token | Meaning | Example |
+| --- | --- | --- |
+| `YYYY` / `jYYYY` | four-digit Gregorian / Jalali year | `2025` / `1404` |
+| `YY` / `jYY` | two-digit Gregorian / Jalali year | `25` / `04` |
+| `MM` / `M` | month, padded / unpadded | `01` / `1` |
+| `DD` / `D` | day, padded / unpadded | `05` / `5` |
+| `HH` / `H` | hour, padded / unpadded | `08` / `8` |
+| `mm` / `m` | minute, padded / unpadded | `10` / `10` |
+
+For example, use `jYY/jMM/jDD` for a short Jalali date and `YY-MM-DD` for a
+Gregorian date. `YY-mm-DD` is different: `mm` means minutes, so it is intended
+for a date-time format such as `YY-MM-DD HH:mm`. `displayFormat` affects only
+the footer shown inside the open calendar; use `inputFormat` for the text field
+and `format` for the serialized `v-model` value.
 
 When `inputMask` is omitted, the component uses a calendar-aware default:
 `jYYYY/jMM/jDD` for Jalali and `YYYY-MM-DD` for the other date calendars.

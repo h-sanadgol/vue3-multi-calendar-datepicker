@@ -2289,7 +2289,10 @@
             : this.core.clone().parse(normalizedValue);
         }
 
-        const part = this.type === 'time' ? 'time' : 'date';
+        // Datetime values must respect both date and time boundaries. Date-only
+        // values use the calendar-day validation path; time and datetime use
+        // the full timestamp path.
+        const part = this.type === 'date' ? 'date' : 'time';
         const selectionResult = this.selectDate(onDisplay, part);
         if (!onDisplay.isValid() || selectionResult < 0) return;
 

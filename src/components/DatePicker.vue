@@ -2398,7 +2398,8 @@
       },
       maskTokenMaximum(token: string): number | undefined {
         const normalized = token.replace(/^j/, '');
-        const block = this.inputMaskConfig().blocks?.[token] ||
+        const block =
+          this.inputMaskConfig().blocks?.[token] ||
           this.inputMaskConfig().blocks?.[normalized] ||
           this.inputMaskConfig().blocks?.[`j${normalized}`];
         if (block?.to !== undefined) return block.to;
@@ -2410,7 +2411,8 @@
       },
       maskTokenMinimum(token: string): number | undefined {
         const normalized = token.replace(/^j/, '');
-        const block = this.inputMaskConfig().blocks?.[token] ||
+        const block =
+          this.inputMaskConfig().blocks?.[token] ||
           this.inputMaskConfig().blocks?.[normalized] ||
           this.inputMaskConfig().blocks?.[`j${normalized}`];
         return block?.from;
@@ -2428,8 +2430,8 @@
         const size = this.maskTokenSize(token);
         if (value.length < size) return value;
         const number = Number(value.slice(0, size));
-        return ((maximum !== undefined && number > maximum) ||
-          (minimum !== undefined && number < minimum))
+        return (maximum !== undefined && number > maximum) ||
+          (minimum !== undefined && number < minimum)
           ? value.slice(0, size - 1)
           : value.slice(0, size);
       },

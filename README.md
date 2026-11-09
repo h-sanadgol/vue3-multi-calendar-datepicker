@@ -247,38 +247,38 @@ Use `week-starts-on="auto"` to use the calendar's default. If `weekend-days` is 
 
 ## Props
 
-| Prop            | Type                                    | Default        | Description                                                                 |
-| --------------- | --------------------------------------- | -------------- | --------------------------------------------------------------------------- |
-| `calendar`      | `Calendar`                              | Locale-based   | `jalali`, `gregorian`, `hijri`, `hebrew`, `buddhist`, or `chinese`          |
-| `modelCalendar` | `Calendar \| 'active'`                  | `'active'`     | Calendar used to serialize `modelValue`                                     |
-| `type`          | `'date' \| 'time' \| 'datetime'`        | `'date'`       | Picker value type                                                           |
-| `mode`          | `'single' \| 'range'`                   | `'range'`      | Single value or range selection                                             |
-| `locale`        | `String`                                | Calendar-aware | UI language, with comma-separated fallback locales supported                |
-| `hijriProvider` | `'ummalqura' \| 'tabular'`              | `'ummalqura'`  | Hijri calculation method                                                    |
-| `format`        | `String`                                | Type-based     | `v-model` serialization format; independent from the input field format     |
-| `inputFormat`   | `String`                                | Type-based     | Input field display and parsing format                                      |
-| `displayFormat` | `String`                                | Type-based     | Footer display format; does not change `v-model` or input serialization     |
+| Prop            | Type                                    | Default        | Description                                                                            |
+| --------------- | --------------------------------------- | -------------- | -------------------------------------------------------------------------------------- |
+| `calendar`      | `Calendar`                              | Locale-based   | `jalali`, `gregorian`, `hijri`, `hebrew`, `buddhist`, or `chinese`                     |
+| `modelCalendar` | `Calendar \| 'active'`                  | `'active'`     | Calendar used to serialize `modelValue`                                                |
+| `type`          | `'date' \| 'time' \| 'datetime'`        | `'date'`       | Picker value type                                                                      |
+| `mode`          | `'single' \| 'range'`                   | `'range'`      | Single value or range selection                                                        |
+| `locale`        | `String`                                | Calendar-aware | UI language, with comma-separated fallback locales supported                           |
+| `hijriProvider` | `'ummalqura' \| 'tabular'`              | `'ummalqura'`  | Hijri calculation method                                                               |
+| `format`        | `String`                                | Type-based     | `v-model` serialization format; independent from the input field format                |
+| `inputFormat`   | `String`                                | Type-based     | Input field display and parsing format                                                 |
+| `displayFormat` | `String`                                | Type-based     | Footer display format; does not change `v-model` or input serialization                |
 | `inputMask`     | `String \| Object`                      | Calendar-based | Input mask with `autoInsert`, `strict`, `allowedDigits`, and per-token `blocks` ranges |
-| `from`          | `String`                                | `'1300'`       | Minimum selectable date/time                                                |
-| `to`            | `String`                                | `'1499'`       | Maximum selectable date/time                                                |
-| `column`        | `Number \| Record<number, number>`      | `{ 576: 1 }`   | Number of visible calendar columns by breakpoint                            |
-| `weekStartsOn`  | `Number \| 'auto'`                      | `'auto'`       | First weekday, from `0` to `6`                                              |
-| `weekendDays`   | `Number[]`                              | Calendar-aware | Weekly holiday weekdays                                                     |
-| `minuteStep`    | `Number`                                | `1`            | Minute increment                                                            |
-| `hourStep`      | `Number`                                | `1`            | Hour increment                                                              |
-| `autoSubmit`    | `Boolean`                               | `true`         | Submit automatically after selection                                        |
-| `clearable`     | `Boolean`                               | `false`        | Show a clear control                                                        |
-| `clickOn`       | `'all' \| 'input' \| 'icon' \| 'none'`  | `'all'`        | Area that opens the picker                                                  |
-| `modal`         | `Boolean`                               | `false`        | Use modal picker presentation                                               |
-| `show`          | `Boolean`                               | `false`        | Control picker visibility                                                   |
-| `label`         | `String`                                | —              | Input label                                                                 |
-| `dualInput`     | `Boolean`                               | `false`        | Render separate inputs for a range                                          |
-| `iconInside`    | `Boolean`                               | `false`        | Render the calendar icon inside the input                                   |
-| `shortcut`      | `Boolean \| Object`                     | `false`        | Enable date/time shortcuts                                                  |
-| `disable`       | `Array \| String \| Function \| RegExp` | —              | Disable dates or times                                                      |
-| `localeConfig`  | `Object`                                | —              | Extend or override locale strings                                           |
-| `styles`        | `Object`                                | —              | Custom component styles                                                     |
-| `color`         | `String`                                | —              | Preset color: `blue`, `red`, `pink`, `orange`, `green`, `purple`, or `gray` |
+| `from`          | `String`                                | `'1300'`       | Minimum selectable date/time                                                           |
+| `to`            | `String`                                | `'1499'`       | Maximum selectable date/time                                                           |
+| `column`        | `Number \| Record<number, number>`      | `{ 576: 1 }`   | Number of visible calendar columns by breakpoint                                       |
+| `weekStartsOn`  | `Number \| 'auto'`                      | `'auto'`       | First weekday, from `0` to `6`                                                         |
+| `weekendDays`   | `Number[]`                              | Calendar-aware | Weekly holiday weekdays                                                                |
+| `minuteStep`    | `Number`                                | `1`            | Minute increment                                                                       |
+| `hourStep`      | `Number`                                | `1`            | Hour increment                                                                         |
+| `autoSubmit`    | `Boolean`                               | `true`         | Submit automatically after selection                                                   |
+| `clearable`     | `Boolean`                               | `false`        | Show a clear control                                                                   |
+| `clickOn`       | `'all' \| 'input' \| 'icon' \| 'none'`  | `'all'`        | Area that opens the picker                                                             |
+| `modal`         | `Boolean`                               | `false`        | Use modal picker presentation                                                          |
+| `show`          | `Boolean`                               | `false`        | Control picker visibility                                                              |
+| `label`         | `String`                                | —              | Input label                                                                            |
+| `dualInput`     | `Boolean`                               | `false`        | Render separate inputs for a range                                                     |
+| `iconInside`    | `Boolean`                               | `false`        | Render the calendar icon inside the input                                              |
+| `shortcut`      | `Boolean \| Object`                     | `false`        | Enable date/time shortcuts                                                             |
+| `disable`       | `Array \| String \| Function \| RegExp` | —              | Disable dates or times                                                                 |
+| `localeConfig`  | `Object`                                | —              | Extend or override locale strings                                                      |
+| `styles`        | `Object`                                | —              | Custom component styles                                                                |
+| `color`         | `String`                                | —              | Preset color: `blue`, `red`, `pink`, `orange`, `green`, `purple`, or `gray`            |
 
 The demo has a separate **Complete props guide** section with every prop in
 this table, its type, default, purpose, and multiple copyable examples. The

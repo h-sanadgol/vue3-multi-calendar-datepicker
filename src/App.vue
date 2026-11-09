@@ -195,7 +195,10 @@
         en: 'Changes only the readable footer label; it does not change the input or v-model.',
         ar: 'يغير التسمية أسفل التقويم المفتوح فقط، ولا يغير الإدخال أو v-model.',
       },
-      examples: ['display-format="D MMMM YYYY"', 'display-format="jYY/jMM/jDD"'],
+      examples: [
+        'display-format="D MMMM YYYY"',
+        'display-format="jYY/jMM/jDD"',
+      ],
     },
     {
       name: 'inputMask',
@@ -209,7 +212,7 @@
       examples: [
         'input-mask="YYYY/MM/DD"',
         ':input-mask="{ pattern: \'jYY/jMM-jDD\', autoInsert: true }"',
-        ":input-mask=\"{ pattern: 'YYYY/MM/DD HH:mm', blocks: { YYYY: { from: 1970, to: 2030 }, MM: { from: 1, to: 12 }, DD: { from: 1, to: 31 }, HH: { from: 0, to: 23 }, mm: { from: 0, to: 59 } } }\"",
+        ':input-mask="{ pattern: \'YYYY/MM/DD HH:mm\', blocks: { YYYY: { from: 1970, to: 2030 }, MM: { from: 1, to: 12 }, DD: { from: 1, to: 31 }, HH: { from: 0, to: 23 }, mm: { from: 0, to: 59 } } }"',
       ],
     },
     {
@@ -221,7 +224,10 @@
         en: 'Set the minimum and maximum selectable date or time.',
         ar: 'يحددان أدنى وأقصى تاريخ أو وقت يمكن اختياره.',
       },
-      examples: ['from="1400/01/01" to="1410/12/29"', 'from="09:00" to="18:00"'],
+      examples: [
+        'from="1400/01/01" to="1410/12/29"',
+        'from="09:00" to="18:00"',
+      ],
     },
     {
       name: 'column',
@@ -375,7 +381,10 @@
         en: 'Adds or overrides localized strings and locale settings.',
         ar: 'يضيف أو يستبدل النصوص وإعدادات اللغة.',
       },
-      examples: [':locale-config="{ today: \'Now\' }"', ':locale-config="customLocale"'],
+      examples: [
+        ':locale-config="{ today: \'Now\' }"',
+        ':locale-config="customLocale"',
+      ],
     },
     {
       name: 'styles',
@@ -386,7 +395,10 @@
         en: 'Overrides internal component styles for visual customization.',
         ar: 'يستبدل أنماط المكوّن الداخلية للتخصيص البصري.',
       },
-      examples: [':styles="{ primaryColor: \'#7c3aed\' }"', ':styles="themeStyles"'],
+      examples: [
+        ':styles="{ primaryColor: \'#7c3aed\' }"',
+        ':styles="themeStyles"',
+      ],
     },
     {
       name: 'color',
@@ -727,7 +739,7 @@
         ? `  input-format="${advancedInputFormat.value}"`
         : '',
       advancedInputMask.value
-        ? `  :input-mask="{ pattern: '${advancedInputMask.value}', autoInsert: ${advancedMaskAutoInsert.value}, strict: ${advancedMaskStrict.value}${advancedMaskBlocks.value ? ", blocks: { YYYY: { from: 1970, to: 2030 }, MM: { from: 1, to: 12 }, DD: { from: 1, to: 31 }, HH: { from: 0, to: 23 }, mm: { from: 0, to: 59 } }" : ''} }"`
+        ? `  :input-mask="{ pattern: '${advancedInputMask.value}', autoInsert: ${advancedMaskAutoInsert.value}, strict: ${advancedMaskStrict.value}${advancedMaskBlocks.value ? ', blocks: { YYYY: { from: 1970, to: 2030 }, MM: { from: 1, to: 12 }, DD: { from: 1, to: 31 }, HH: { from: 0, to: 23 }, mm: { from: 0, to: 59 } }' : ''} }"`
         : '',
       advancedDisplayFormat.value
         ? `  display-format="${advancedDisplayFormat.value}"`
@@ -984,7 +996,8 @@
                   <option value="zh">中文</option>
                 </select></label
               ><label
-                >{{ t.modelCalendar }}<select v-model="advancedModelCalendar">
+                >{{ t.modelCalendar
+                }}<select v-model="advancedModelCalendar">
                   <option value="active">{{ t.modelCalendarActive }}</option>
                   <option
                     v-for="calendar in calendars"
@@ -1004,57 +1017,61 @@
                   :placeholder="selectedCalendar.to" /></label
               ><label
                 ><span class="format-label"
-                  >{{ t.format }}<button
+                  >{{ t.format
+                  }}<button
                     type="button"
                     class="format-info"
                     :aria-label="`${t.format} ${t.formatExample}`"
                   >
                     ?</button
-                  ><span class="field-tooltip" role="tooltip"
-                    >{{ t.modelFormatGuide }}</span
-                  ></span
+                  ><span class="field-tooltip" role="tooltip">{{
+                    t.modelFormatGuide
+                  }}</span></span
                 ><input
                   v-model="advancedFormat"
                   placeholder="YYYY-MM-DD" /></label
               ><label
                 ><span class="format-label"
-                  >{{ t.formatInput }}<button
+                  >{{ t.formatInput
+                  }}<button
                     type="button"
                     class="format-info"
                     :aria-label="`${t.formatInput} ${t.formatExample}`"
                   >
                     ?</button
-                  ><span class="field-tooltip" role="tooltip"
-                    >{{ t.inputFormatGuide }}</span
-                  ></span
+                  ><span class="field-tooltip" role="tooltip">{{
+                    t.inputFormatGuide
+                  }}</span></span
                 ><input
                   v-model="advancedInputFormat"
                   placeholder="YYYY-MM-DD" /></label
               ><label
                 ><span class="format-label"
-                  >{{ t.formatMask }}<button
+                  >{{ t.formatMask
+                  }}<button
                     type="button"
                     class="format-info"
                     :aria-label="`${t.formatMask} ${t.formatExample}`"
                   >
                     ?</button
-                  ><span class="field-tooltip" role="tooltip"
-                    >{{ t.inputMaskGuide }}</span
-                  ></span
+                  ><span class="field-tooltip" role="tooltip">{{
+                    t.inputMaskGuide
+                  }}</span></span
                 ><input
                   v-model="advancedInputMask"
                   placeholder="calendar-default" /></label
               ><label
                 ><span class="format-label"
-                  >{{ t.formatDisplay }}<button
+                  >{{ t.formatDisplay
+                  }}<button
                     type="button"
                     class="format-info"
                     :aria-label="`${t.formatDisplay} ${t.formatExample}`"
                   >
                     ?</button
-                  ><span class="field-tooltip" role="tooltip"
-                    >{{ t.displayFormatGuide }}</span
-                  ></span
+                  ><span class="field-tooltip" role="tooltip">{{
+                    t.displayFormatGuide
+                  }}</span></span
                 ><input
                   v-model="advancedDisplayFormat"
                   placeholder="YY-MM-DD" /></label
@@ -1129,15 +1146,11 @@
                     type="checkbox"
                   />Auto mask separators</label
                 ><label class="check-option"
-                  ><input
-                    v-model="advancedMaskStrict"
-                    type="checkbox"
-                  />Strict mask dates</label
+                  ><input v-model="advancedMaskStrict" type="checkbox" />Strict
+                  mask dates</label
                 ><label class="check-option"
-                  ><input
-                    v-model="advancedMaskBlocks"
-                    type="checkbox"
-                  />Custom mask blocks</label
+                  ><input v-model="advancedMaskBlocks" type="checkbox" />Custom
+                  mask blocks</label
                 ><label class="check-option"
                   ><input v-model="advancedIconInside" type="checkbox" />Icon
                   inside</label
@@ -1153,26 +1166,27 @@
                     t.show
                   }}</label
                 ><label class="check-option"
-                  ><input
-                    v-model="advancedShortcut"
-                    type="checkbox"
-                  />{{ t.shortcut }}</label
+                  ><input v-model="advancedShortcut" type="checkbox" />{{
+                    t.shortcut
+                  }}</label
                 >
               </fieldset>
               <label
-                >{{ t.label }}<input
+                >{{ t.label
+                }}<input
                   v-model="advancedLabel"
                   :placeholder="t.active" /></label
               ><label
-                >{{ t.styles }}<select v-model="advancedStyles">
+                >{{ t.styles
+                }}<select v-model="advancedStyles">
                   <option value="default">{{ t.stylesDefault }}</option>
                   <option value="purple">{{ t.stylesPurple }}</option>
                 </select></label
               ><label class="check-option advanced-toggle"
-                ><input
-                  v-model="advancedLocaleConfig"
-                  type="checkbox"
-                />{{ t.localeConfig }}</label>
+                ><input v-model="advancedLocaleConfig" type="checkbox" />{{
+                  t.localeConfig
+                }}</label
+              >
             </div>
           </details>
         </aside>
@@ -1231,7 +1245,8 @@
               :modal="advancedModal"
               :show="advancedShow"
               :label="
-                advancedLabel || `${t.active} ${selectedCalendar.title[language]}`
+                advancedLabel ||
+                `${t.active} ${selectedCalendar.title[language]}`
               "
               :shortcut="advancedShortcut"
               :locale-config="liveLocaleConfig"
@@ -1268,7 +1283,9 @@
           <small>{{ t.defaultValue }}: {{ prop.defaultValue }}</small>
           <div class="prop-examples">
             <strong>{{ t.examples }}</strong>
-            <code v-for="example in prop.examples" :key="example">{{ example }}</code>
+            <code v-for="example in prop.examples" :key="example">{{
+              example
+            }}</code>
           </div>
         </article>
       </div>

@@ -34,7 +34,7 @@
         <slot name="input" v-bind="inputSlotProps(index)">
           <input
             ref="inputs"
-            v-model="displayValue[index]"
+            :value="displayValue[index] || ''"
             type="text"
             autocomplete="off"
             v-bind="attrs[input]"
@@ -2357,7 +2357,8 @@
           'pattern' in mask ||
           'allowedDigits' in mask ||
           'strict' in mask ||
-          'autoInsert' in mask
+          'autoInsert' in mask ||
+          'blocks' in mask
         )
           return mask as InputMaskConfig;
         const value = (
@@ -2395,6 +2396,43 @@
           tokens.push({ literal: pattern.slice(lastIndex) });
         return tokens;
       },
+      maskTokenMaximum(token: string): number | undefined {
+        const normalized = token.replace(/^j/, '');
+        const block = this.inputMaskConfig().blocks?.[token] ||
+          this.inputMaskConfig().blocks?.[normalized] ||
+          this.inputMaskConfig().blocks?.[`j${normalized}`];
+        if (block?.to !== undefined) return block.to;
+        if (['M', 'MM'].includes(normalized)) return 12;
+        if (['D', 'DD'].includes(normalized)) return 31;
+        if (['H', 'HH'].includes(normalized)) return 23;
+        if (['m', 'mm', 's', 'ss'].includes(normalized)) return 59;
+        return undefined;
+      },
+      maskTokenMinimum(token: string): number | undefined {
+        const normalized = token.replace(/^j/, '');
+        const block = this.inputMaskConfig().blocks?.[token] ||
+          this.inputMaskConfig().blocks?.[normalized] ||
+          this.inputMaskConfig().blocks?.[`j${normalized}`];
+        return block?.from;
+      },
+      maskTokenSize(token: string): number {
+        return token.replace(/^j/, '') === 'YYYY' ? 4 : 2;
+      },
+      sanitizeMaskToken(token: string, value: string): string {
+        const maximum = this.maskTokenMaximum(token);
+        const minimum = this.maskTokenMinimum(token);
+        if (maximum === undefined && minimum === undefined) return value;
+        if (value.length < 1) return value;
+        // Keep a one-digit partial block editable. The next digit is checked
+        // against the complete block, matching an IMask date block.
+        const size = this.maskTokenSize(token);
+        if (value.length < size) return value;
+        const number = Number(value.slice(0, size));
+        return ((maximum !== undefined && number > maximum) ||
+          (minimum !== undefined && number < minimum))
+          ? value.slice(0, size - 1)
+          : value.slice(0, size);
+      },
       maskedInputValue(value: string): string {
         const config = this.inputMaskConfig();
         if (config.autoInsert === false) return value;
@@ -2412,6 +2450,12 @@
         const digits = Array.from(value).filter((character) =>
           this.isInputDigit(character),
         );
+        const expectedDigits = parts.reduce(
+          (total, part) =>
+            total + (part.token ? this.maskTokenSize(part.token) : 0),
+          0,
+        );
+        const maskedDigits = digits.slice(0, expectedDigits);
         let digitIndex = 0;
         let result = '';
         parts.forEach((part, index) => {
@@ -2419,15 +2463,14 @@
             return;
           }
           const token = part.token!.replace(/^j/, '');
-          const size = ['YYYY'].includes(token)
-            ? 4
-            : ['YY', 'MM', 'DD', 'HH', 'mm', 'ss'].includes(token)
-              ? 2
-              : 2;
-          const chunk = digits.slice(digitIndex, digitIndex + size).join('');
+          const size = this.maskTokenSize(token);
+          const rawChunk = maskedDigits
+            .slice(digitIndex, digitIndex + size)
+            .join('');
+          const chunk = this.sanitizeMaskToken(part.token!, rawChunk);
           result += chunk;
-          digitIndex += chunk.length;
-          if (chunk.length < size) return;
+          digitIndex += rawChunk.length;
+          if (rawChunk.length < size) return;
           const next = parts[index + 1];
           if (next?.literal) result += next.literal;
         });
@@ -2451,15 +2494,18 @@
       sanitizeInput(index: number, event?: Event): void {
         const input = event?.target as HTMLInputElement | undefined;
         const value = input?.value ?? this.displayValue[index];
-        if (!value) return;
+        if (!value) {
+          this.displayValue[index] = '';
+          return;
+        }
         const cursor = input?.selectionStart ?? value.length;
         const digitsBeforeCursor = Array.from(value.slice(0, cursor)).filter(
           (character) => this.isInputDigit(character),
         ).length;
         const sanitized = this.sanitizeInputValue(value);
+        this.displayValue[index] = sanitized;
         if (sanitized !== value) {
           if (input) input.value = sanitized;
-          this.displayValue[index] = sanitized;
           if (input && input === document.activeElement) {
             const nextCursor = this.maskedCursorPosition(
               sanitized,
@@ -2500,11 +2546,28 @@
           .replace(/([/:.,-])\1+/g, '$1');
         if (this.inputMaskConfig().autoInsert === false) return sanitized;
         const masked = this.maskedInputValue(sanitized);
+        const maskParts = this.maskTokens(pattern);
+        const expectedDigits = maskParts.reduce(
+          (total, part) =>
+            total + (part.token ? this.maskTokenSize(part.token) : 0),
+          0,
+        );
+        const hasCompleteMask =
+          maskParts.some((part) => part.literal) &&
+          Array.from(sanitized).filter((character) =>
+            this.isInputDigit(character),
+          ).length === expectedDigits;
+        const hasOverflow =
+          Array.from(sanitized).filter((character) =>
+            this.isInputDigit(character),
+          ).length > expectedDigits;
         // Keep explicitly typed separators and variable-width fields (for
         // example `1399/6/1`) intact. Compact digit input is reformatted only
         // when it is compatible with the mask's automatic prefix.
         return masked === sanitized ||
           masked.startsWith(sanitized) ||
+          hasCompleteMask ||
+          hasOverflow ||
           !/\D/.test(sanitized)
           ? masked
           : sanitized;

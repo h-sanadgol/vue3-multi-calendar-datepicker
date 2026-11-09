@@ -295,6 +295,66 @@ describe('calendar prop', () => {
       cy.get('.pdp-input').clear().type('050415');
       cy.get('.pdp-input').should('have.value', '05/04-15');
     });
+
+    it('rejects out-of-range date block digits while typing', () => {
+      cy.changeProps(
+        {
+          calendar: 'gregorian',
+          locale: 'en',
+          from: '2020',
+          to: '2030',
+          inputFormat: 'YYYY/MM/DD',
+          inputMask: {
+            pattern: 'YYYY/MM/DD',
+            autoInsert: true,
+            strict: true,
+          },
+          mode: 'single',
+          model: '2025-04-04',
+        },
+        null,
+        true,
+      );
+
+      cy.get('.pdp-input').clear().type('2025/04/65');
+      cy.get('.pdp-input')
+        .should('not.have.value', '2025/04/65')
+        .and('not.contain.value', '65');
+    });
+
+    it('supports independent custom ranges for mask blocks', () => {
+      cy.changeProps(
+        {
+          calendar: 'gregorian',
+          locale: 'en',
+          type: 'datetime',
+          from: '1970',
+          to: '2030',
+          inputFormat: 'YYYY/MM/DD HH:mm',
+          inputMask: {
+            pattern: 'YYYY/MM/DD HH:mm',
+            blocks: {
+              YYYY: { from: 1970, to: 2030 },
+              MM: { from: 1, to: 12 },
+              DD: { from: 1, to: 31 },
+              HH: { from: 0, to: 23 },
+              mm: { from: 0, to: 59 },
+            },
+          },
+          mode: 'single',
+          model: '2025-04-04 12:30',
+        },
+        null,
+        true,
+      );
+
+      cy.get('.pdp-input').clear().type('2025/13/32 25:60');
+      cy.get('.pdp-input')
+        .should('not.contain.value', '13')
+        .and('not.contain.value', '32')
+        .and('not.contain.value', ' 25:')
+        .and('not.contain.value', ':60');
+    });
   });
 
   context('default input mask', () => {

@@ -40,28 +40,28 @@
 
 ## قابلیت‌های جدید مورد توافق
 
-- [ ] **INPUT-01 — تثبیت قرارداد فرمت‌های model و input**
+- [x] **INPUT-01 — تثبیت قرارداد فرمت‌های model و input**
   - `format` به‌عنوان فرمت `v-model` باقی بماند.
   - `inputFormat` به‌عنوان فرمت نمایش/parse فیلد ورودی مستقل بماند.
   - قرارداد `displayFormat` برای متن نمایشی picker مستند و regression شود؛ prop جدید فقط در صورت اثبات نیاز اضافه شود.
 
-- [ ] **INPUT-02 — همگام‌سازی ورودی دستی با picker**
+- [x] **INPUT-02 — همگام‌سازی ورودی دستی با picker**
   - ورود دستی به‌صورت پیش‌فرض فعال باشد.
   - مقدار معتبر، `selectedDates` و `onDisplay` را همزمان به‌روزرسانی کند.
   - ورودی ناقص قابل ادامه‌دادن باشد و مقدار نامعتبر state داخلی را تغییر ندهد.
   - commit نهایی با `blur`، `Enter` و مسیر submit پوشش داده شود.
 
-- [ ] **INPUT-03 — اعتبارسنجی کاراکتر و تاریخ**
+- [x] **INPUT-03 — اعتبارسنجی کاراکتر و تاریخ**
   - کاراکترهای مجاز بر اساس format، locale و تقویم فعال کنترل شوند.
   - ارقام فارسی/عربی و لاتین طبق تنظیمات پشتیبانی شوند.
   - محدودیت واقعی سال/ماه/روز و leap month از adapter فعال گرفته شود؛ نمونه‌هایی مانند روز ۸۸ رد شوند.
 
-- [ ] **INPUT-04 — موتور mask و preset تقویمی**
+- [x] **INPUT-04 — موتور mask و preset تقویمی**
   - `inputMask` با ورودی String برای shorthand و Object/TypeScript برای تنظیمات کامل ارائه شود.
   - preset پیش‌فرض برای هر تقویم و type وجود داشته باشد.
   - placeholder، جداکننده، digit policy، strict mode و امکان override مستند و تست شوند.
 
-- [ ] **INPUT-05 — scoped slot برای فیلد ورودی سفارشی**
+- [x] **INPUT-05 — scoped slot برای فیلد ورودی سفارشی**
   - slot استاندارد `#input` با props لازم مانند `value`، `inputAttrs`، `open`، `clear` و handler همگام‌سازی ارائه شود.
   - فیلد سفارشی و input داخلی از یک `v-model` canonical استفاده کنند.
   - single/range، dual input، clear، keyboard و validation تست شوند.

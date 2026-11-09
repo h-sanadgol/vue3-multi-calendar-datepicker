@@ -258,7 +258,7 @@ Use `week-starts-on="auto"` to use the calendar's default. If `weekend-days` is 
 | `format`        | `String`                                | Type-based     | `v-model` serialization format; independent from the input field format     |
 | `inputFormat`   | `String`                                | Type-based     | Input field display and parsing format                                      |
 | `displayFormat` | `String`                                | Type-based     | Footer display format; does not change `v-model` or input serialization     |
-| `inputMask`     | `String \| Object`                      | Calendar-based | Input character mask; supports `calendar-default` and per-type overrides    |
+| `inputMask`     | `String \| Object`                      | Calendar-based | Input mask with `autoInsert`, `strict`, `allowedDigits`, and per-token `blocks` ranges |
 | `from`          | `String`                                | `'1300'`       | Minimum selectable date/time                                                |
 | `to`            | `String`                                | `'1499'`       | Maximum selectable date/time                                                |
 | `column`        | `Number \| Record<number, number>`      | `{ 576: 1 }`   | Number of visible calendar columns by breakpoint                            |
@@ -280,6 +280,18 @@ Use `week-starts-on="auto"` to use the calendar's default. If `weekend-days` is 
 | `styles`        | `Object`                                | —              | Custom component styles                                                     |
 | `color`         | `String`                                | —              | Preset color: `blue`, `red`, `pink`, `orange`, `green`, `purple`, or `gray` |
 
+The demo has a separate **Complete props guide** section with every prop in
+this table, its type, default, purpose, and multiple copyable examples. The
+section is available in English, فارسی, and العربية through the language
+switcher, so the same API can be reviewed without changing the code examples.
+
+**راهنمای فارسی:** در بخش «راهنمای کامل پراپ‌ها» هر پراپ ورودی با نوع، مقدار
+پیش‌فرض، کاربرد و چند مثال توضیح داده شده است. زبان فارسی را از بالای دمو
+انتخاب کنید.
+
+**الدليل العربي:** يعرض قسم «الدليل الكامل للخصائص» كل خاصية مع النوع والقيمة
+الافتراضية والوظيفة وأمثلة متعددة. اختر العربية من أعلى العرض التفاعلي.
+
 ### Input mask
 
 `inputMask` accepts a format string or an object. When omitted, a calendar-aware
@@ -296,6 +308,11 @@ default is used. Object configuration can override the pattern per picker type:
       allowedDigits: 'both',
       strict: true,
       autoInsert: true,
+      blocks: {
+        YYYY: { from: 1970, to: 2030 },
+        MM: { from: 1, to: 12 },
+        DD: { from: 1, to: 31 },
+      },
     },
   }"
 />
@@ -305,6 +322,54 @@ With `autoInsert: true` (the default), users can type only the digits and the
 mask inserts its literals as they go. For example, `050415` becomes
 `05/04-15` for the pattern `jYY/jMM-jDD`. Set `autoInsert: false` when the
 application should filter characters without inserting separators.
+
+Date-like mask blocks behave like date blocks in IMask: month values are
+limited to `01`–`12`, day values to `01`–`31`, hours to `00`–`23`, and minutes
+and seconds to `00`–`59` while typing. With `strict: true`, complete calendar
+dates are also validated on commit, so values such as `2025/02/31` are rejected.
+For example:
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="gregorian"
+  input-format="YYYY/MM/DD"
+  :input-mask="{
+    date: {
+      pattern: 'YYYY/MM/DD',
+      autoInsert: true,
+      strict: true,
+    },
+  }"
+/>
+```
+
+For per-token ranges, use the independent `blocks` configuration. It follows
+the same idea as IMask's `MaskedRange`, but it is implemented inside this
+component and does not install or depend on IMask:
+
+```vue
+<DatePicker
+  v-model="dateTime"
+  calendar="gregorian"
+  input-format="YYYY/MM/DD HH:mm"
+  :input-mask="{
+    pattern: 'YYYY/MM/DD HH:mm',
+    blocks: {
+      YYYY: { from: 1970, to: 2030 },
+      MM: { from: 1, to: 12 },
+      DD: { from: 1, to: 31 },
+      HH: { from: 0, to: 23 },
+      mm: { from: 0, to: 59 },
+    },
+  }"
+/>
+```
+
+The token names in `blocks` must match tokens in `pattern`. `jYYYY` can use
+the `YYYY` block, and omitted ranges keep the built-in calendar-safe defaults.
+The Interactive playground exposes **Custom mask blocks** to try these ranges
+live and includes the generated configuration in its HTML example.
 
 `allowedDigits` can be `latin`, `locale`, or `both`. The `format` prop controls
 the serialized `v-model`; `inputFormat` controls the input representation.
@@ -350,6 +415,28 @@ The Interactive playground includes live fields for `inputFormat`, `inputMask`,
 and `displayFormat`. Type directly into the preview input, then blur the field
 to verify that both the selected day and the visible month follow the entered
 value.
+
+#### Quick guide in فارسی و العربية
+
+**فارسی**
+
+- **Input format** (`inputFormat`): قالبی است که متن داخل فیلد ورودی با آن
+  خوانده و parse می‌شود؛ برای جلالی از `jYY/jMM/jDD` استفاده کنید.
+- **Input mask** (`inputMask`): کاراکترها و ترتیب مجاز تایپ را کنترل می‌کند.
+  با `autoInsert: true` جداکننده‌ها هنگام تایپ درج می‌شوند؛ مثلاً `050415`
+  با mask `jYY/jMM-jDD` به `05/04-15` تبدیل می‌شود.
+- **Display format** (`displayFormat`): فقط عنوان خوانای پایین تقویم باز را
+  تغییر می‌دهد و مقدار فیلد ورودی یا `v-model` را تغییر نمی‌دهد.
+
+**العربية**
+
+- **Input format** (`inputFormat`): يحدد تنسيق النص الذي يقرأه الحقل؛ استخدم
+  `jYY/jMM/jDD` للتاريخ الجلالي.
+- **Input mask** (`inputMask`): يقيّد الأحرف وترتيب الإدخال. عند تفعيل
+  `autoInsert: true` تتم إضافة الفواصل أثناء الكتابة؛ فمثلاً تتحول `050415`
+  إلى `05/04-15` مع القناع `jYY/jMM-jDD`.
+- **Display format** (`displayFormat`): يغير تسمية التاريخ أسفل التقويم المفتوح
+  فقط، ولا يغير قيمة الحقل أو `v-model`.
 
 ### Custom input field
 

@@ -2,11 +2,12 @@
   "name": "@h-sanadgol/vue3-multi-calendar-datepicker",
   "packageManager": "pnpm@11.21.0",
   "description": "A simple multi-calendar datepicker component for Vue 3 and Nuxt 3.",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "private": false,
   "files": [
     "dist/*",
-    "src/*"
+    "src/*",
+    "CHANGELOG.md"
   ],
   "main": "./dist/index-umd.js",
   "module": "./dist/index-es.js",

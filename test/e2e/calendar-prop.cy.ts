@@ -16,6 +16,44 @@ describe('calendar prop', () => {
     cy.get('.pdp-month').first().should('not.contain.text', 'فروردین');
   });
 
+  it('keeps pre-1970 adapter bounds selectable', () => {
+    cy.changeProps(
+      {
+        calendar: 'gregorian',
+        locale: 'en',
+        from: '1900-01-01',
+        to: '2100-01-01',
+      },
+      null,
+      true,
+    );
+
+    cy.get('.pdp-input').focus();
+    cy.get('.pdp-day:not(.disabled)').should('have.length.greaterThan', 0);
+    cy.get('.pdp-today').should('exist');
+    cy.get('.pdp-year').first().click();
+    cy.get('.pdp-select-year li').should('have.length.greaterThan', 0);
+  });
+
+  it('keeps Buddhist adapter bounds selectable before the Unix epoch', () => {
+    cy.changeProps(
+      {
+        calendar: 'buddhist',
+        locale: 'en',
+        from: '2500-01-01',
+        to: '2600-01-01',
+      },
+      null,
+      true,
+    );
+
+    cy.get('.pdp-input').focus();
+    cy.get('.pdp-day:not(.disabled)').should('have.length.greaterThan', 0);
+    cy.get('.pdp-today').should('exist');
+    cy.get('.pdp-year').first().click();
+    cy.get('.pdp-select-year li').should('have.length.greaterThan', 0);
+  });
+
   it('selects the calendar-native locale when locale is omitted', () => {
     cy.changeProps({ calendar: 'hijri', from: '1446', to: '1447' }, null, true);
     cy.get('.pdp-input').focus();
@@ -37,7 +75,7 @@ describe('calendar prop', () => {
   it('supports calendar-specific week starts and weekly holidays', () => {
     cy.changeProps(
       {
-        calendar: 'gregorian',
+        calendar: 'hijri',
         locale: 'en',
         from: '2021',
         to: '2021',
@@ -50,6 +88,27 @@ describe('calendar prop', () => {
     cy.get('.pdp-input').focus();
     cy.get('.pdp-weekday').first().should('contain.text', 'Mo');
     cy.get('.pdp-day.weekend').should('have.length.greaterThan', 0);
+  });
+
+  it('applies string disable values in the active calendar', () => {
+    cy.changeProps(
+      {
+        calendar: 'gregorian',
+        locale: 'en',
+        from: '2025',
+        to: '2025',
+        disable: '2025-04-05',
+        mode: 'single',
+        model: '2025-04-04',
+      },
+      null,
+      true,
+    );
+
+    cy.get('.pdp-input').focus();
+    cy.get('.pdp-day[value="5"]')
+      .should('have.attr', 'class')
+      .and('match', /disabled/);
   });
 
   it('serializes modelValue in an explicitly selected calendar', () => {
@@ -66,6 +125,58 @@ describe('calendar prop', () => {
     );
 
     cy.get('.show').should('contain.text', '2025-04-04');
+  });
+
+  it('updates modelValue when modelCalendar changes from Jalali', () => {
+    cy.changeProps(
+      {
+        calendar: 'jalali',
+        locale: 'fa',
+        format: 'jYYYY/jMM/jDD',
+        modelCalendar: 'gregorian',
+        mode: 'single',
+        model: '1404/01/15',
+      },
+      null,
+      true,
+    );
+
+    cy.get('.show').should('contain.text', '2025/04/04');
+  });
+
+  it('updates modelValue when modelCalendar changes to Jalali', () => {
+    cy.changeProps(
+      {
+        calendar: 'hijri',
+        locale: 'en',
+        format: 'YYYY-MM-DD',
+        modelCalendar: 'jalali',
+        mode: 'single',
+        model: '1446/10/06',
+      },
+      null,
+      true,
+    );
+
+    cy.get('.show').should('contain.text', '1404-01-15');
+  });
+
+  it('does not leak Jalali token prefixes into non-Jalali models', () => {
+    cy.changeProps(
+      {
+        calendar: 'jalali',
+        locale: 'fa',
+        format: 'jYYYY/jMM/jDD',
+        modelCalendar: 'hijri',
+        mode: 'single',
+        model: '1404/01/15',
+      },
+      null,
+      true,
+    );
+
+    cy.get('.show').should('contain.text', '1446/10/05');
+    cy.get('.show').should('not.contain.text', 'j');
   });
 
   it('keeps the active calendar as the compatibility default for modelValue', () => {
@@ -194,6 +305,32 @@ describe('calendar prop', () => {
     cy.get('.pdp-footer').should('not.contain.text', '?');
   });
 
+  it('normalizes legacy display tokens for non-Jalali calendars', () => {
+    const cases = [
+      { calendar: 'buddhist', from: '2560', to: '2570', model: '2568-04-04' },
+      { calendar: 'chinese', from: '2020', to: '2030', model: '2023-02-01' },
+    ] as const;
+
+    cases.forEach(({ calendar, from, to, model }) => {
+      cy.changeProps(
+        {
+          calendar,
+          locale: 'en',
+          from,
+          to,
+          displayFormat: '?D ?MMMM',
+          mode: 'single',
+          model,
+        },
+        null,
+        true,
+      );
+
+      cy.get('.pdp-input').focus();
+      cy.get('.pdp-footer').should('not.contain.text', '?');
+    });
+  });
+
   it('moves the visible calendar to a manually entered adapter date', () => {
     cy.changeProps(
       {
@@ -210,6 +347,139 @@ describe('calendar prop', () => {
 
     cy.get('.pdp-input').clear().type('1446-10-07').blur().focus();
     cy.get('.pdp-day.start-range').should('have.attr', 'value', '7');
+  });
+
+  it('generates default shortcuts through the active calendar adapter', () => {
+    cy.changeProps(
+      {
+        calendar: 'gregorian',
+        locale: 'en',
+        from: '2000',
+        to: '2100',
+        mode: 'single',
+        shortcut: true,
+        model: '2025-04-04',
+      },
+      null,
+      true,
+    );
+
+    cy.get('.pdp-input').focus();
+    cy.get('.pdp-shortcut').contains('Yesterday').click();
+    cy.get('.show').should('not.contain.text', '—');
+  });
+
+  it('generates time shortcuts through the active calendar adapter', () => {
+    cy.changeProps(
+      {
+        calendar: 'hijri',
+        locale: 'en',
+        type: 'time',
+        mode: 'single',
+        shortcut: true,
+        model: '12:00',
+      },
+      null,
+      true,
+    );
+
+    cy.get('.pdp-input').focus();
+    cy.get('.pdp-shortcut').contains('Midnight').click();
+    cy.get('.show').should('not.contain.text', '—');
+  });
+
+  it('synchronizes manually entered time through an explicit Gregorian adapter', () => {
+    cy.changeProps(
+      {
+        calendar: 'gregorian',
+        locale: 'en',
+        type: 'time',
+        from: '10:00',
+        to: '20:00',
+        mode: 'single',
+        model: '12:00',
+      },
+      null,
+      true,
+    );
+
+    cy.get('.pdp-input').clear().type('15:30').blur();
+    cy.get('.show').should('contain.text', '15:30');
+  });
+
+  it('opens an adapter time picker with its initial time model', () => {
+    cy.changeProps(
+      {
+        calendar: 'gregorian',
+        locale: 'en',
+        type: 'time',
+        from: '09:00',
+        to: '18:00',
+        mode: 'single',
+        model: '14:30',
+      },
+      null,
+      true,
+    );
+
+    cy.get('.pdp-input').should('have.value', '14:30').click();
+    cy.get('.pdp-time').should('be.visible');
+  });
+
+  it('uses time bounds when a demo supplies calendar date bounds in time mode', () => {
+    cy.changeProps(
+      {
+        calendar: 'gregorian',
+        locale: 'en',
+        type: 'time',
+        from: '1900-01-01',
+        to: '2100-01-01',
+        mode: 'single',
+        model: '14:30',
+      },
+      null,
+      true,
+    );
+
+    cy.get('.pdp-input').should('have.value', '14:30').click();
+    cy.get('.pdp-time').should('be.visible');
+  });
+
+  it('parses an explicit Gregorian datetime range through the adapter', () => {
+    cy.changeProps(
+      {
+        calendar: 'gregorian',
+        locale: 'en',
+        type: 'datetime',
+        mode: 'range',
+        model: ['2025-04-04 09:15', '2025-04-05 17:45'],
+      },
+      null,
+      true,
+    );
+
+    cy.get('.pdp-input').should(
+      'have.value',
+      '2025-04-04 09:15 - 2025-04-05 17:45',
+    );
+  });
+
+  it('does not commit an impossible date through an explicit Gregorian adapter', () => {
+    cy.changeProps(
+      {
+        calendar: 'gregorian',
+        locale: 'en',
+        from: '2020',
+        to: '2030',
+        mode: 'single',
+        model: '2025-04-04',
+      },
+      null,
+      true,
+    );
+
+    cy.get('.pdp-input').clear().type('2025-02-31').blur();
+    cy.get('.show').should('contain.text', '2025-04-04');
   });
 
   context('input mask', () => {

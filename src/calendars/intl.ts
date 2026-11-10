@@ -1,8 +1,9 @@
-import type {
-  CalendarAdapter,
-  CalendarId,
-  CalendarParts,
-  HijriProvider,
+import {
+  validateTimeParts,
+  type CalendarAdapter,
+  type CalendarId,
+  type CalendarParts,
+  type HijriProvider,
 } from './types';
 
 type IntlCalendar =
@@ -244,6 +245,7 @@ export function createIntlAdapter(
       return formatParts(formatter, date);
     },
     fromParts(parts) {
+      validateTimeParts(parts);
       const date = findGregorianDate(formatter, id, parts);
       date.setUTCHours(
         parts.hour || 0,

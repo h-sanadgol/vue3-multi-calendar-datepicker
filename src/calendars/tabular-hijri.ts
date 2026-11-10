@@ -1,4 +1,8 @@
-import type { CalendarAdapter, CalendarParts } from './types';
+import {
+  type CalendarAdapter,
+  type CalendarParts,
+  validateTimeParts,
+} from './types';
 
 const dayMilliseconds = 86_400_000;
 const islamicEpoch = 1_948_439.5;
@@ -48,6 +52,21 @@ export function createTabularHijriAdapter(): CalendarAdapter {
     provider: 'tabular',
     getParts: gregorianToIslamic,
     fromParts(parts) {
+      validateTimeParts(parts);
+      if (
+        !Number.isInteger(parts.year) ||
+        !Number.isInteger(parts.month) ||
+        !Number.isInteger(parts.day) ||
+        parts.year < 1 ||
+        parts.month < 1 ||
+        parts.month > 12 ||
+        parts.day < 1 ||
+        parts.day > this.daysInMonth(parts.year, parts.month)
+      ) {
+        throw new RangeError(
+          `Unable to convert ${parts.year}/${parts.month}/${parts.day} from hijri`,
+        );
+      }
       const date = julianDayToGregorian(
         islamicToJulianDay(parts.year, parts.month, parts.day),
       );

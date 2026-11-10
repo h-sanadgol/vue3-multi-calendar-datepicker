@@ -1,6 +1,6 @@
 # کارهای باقی‌مانده پس از hardening و QA
 
-موارد انجام‌شده‌ی امنیتی، تقویمی، build، dependency و QA از این فهرست حذف شده‌اند. وضعیت فعلی بر اساس اجرای کامل `pnpm test` در ۵ نوامبر ۲۰۲۶ ثبت شده است: ۱۳ spec و ۲۲۵ تست، همگی موفق.
+موارد انجام‌شده‌ی امنیتی، تقویمی، build، dependency و QA از این فهرست حذف شده‌اند. وضعیت فعلی بر اساس اجرای کامل `pnpm test` و تست‌های رگرسیون جدید ثبت شده است: ۱۳ spec و ۲۶۵ تست، همگی موفق.
 
 ## کارهای توسعه‌ای باقی‌مانده
 
@@ -72,7 +72,7 @@
   - timestamp فقط transport boundary باشد و تبدیل آن به `PersianDate` منطق تقویم را تعیین نکند.
   - migration مرحله‌ای بدون شکستن Jalali compatibility و با typeهای مستقل انجام شود.
 
-- [ ] **CAL-07 — حذف syntax وابسته به PersianDate از formatter adapterها**
+- [x] **CAL-07 — حذف syntax وابسته به PersianDate از formatter adapterها**
   - `?D`، `?MMMM` و tokenهای مشابه در تقویم‌های غیرشمسی به علامت سؤال یا خروجی ناقص تبدیل نشوند.
   - formatter عمومی adapter جایگزین tokenهای وابسته به PersianDate شود.
   - Hebrew، Chinese و Buddhist برای نام ماه، روز و خروجی model regression داشته باشند.

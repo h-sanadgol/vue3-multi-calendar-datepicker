@@ -378,10 +378,16 @@
   import { PersianDate, Core } from './utils/modules/core';
   import {
     createCalendarAdapter,
+    formatCalendarParts,
+    normalizeCalendarFormat,
+    isWithinCalendarBounds,
+    matchesDisable,
+    parseCalendarParts,
     type CalendarAdapter,
     type CalendarParts,
     type HijriProvider,
   } from '../calendars';
+  import { useCalendarAdapter } from '../composables/useCalendarAdapter';
   // ************************ Types ************************
   import type {
     Obj,
@@ -421,6 +427,19 @@
     datetime: 'jYYYY/jM/jD H:m',
     time: 'H:m',
   } as const;
+
+  function gregorianPartsFromTimestamp(timestamp: number) {
+    const date = new Date(timestamp);
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+      hour: date.getHours(),
+      minute: date.getMinutes(),
+      second: date.getSeconds(),
+      millisecond: date.getMilliseconds(),
+    };
+  }
 
   export { PersianDate };
   export default defineComponent({
@@ -842,7 +861,7 @@
       calendarAdapter(): CalendarAdapter | undefined {
         if (
           this.activeCalendar === 'jalali' ||
-          this.activeCalendar === 'gregorian'
+          (this.activeCalendar === 'gregorian' && this.calendar !== 'gregorian')
         )
           return undefined;
         return createCalendarAdapter(this.activeCalendar, {
@@ -1036,7 +1055,11 @@
           display:
             this.displayFormat ||
             this.lang.displayFormat ||
-            displayFormat[this.type],
+            (this.calendarAdapter
+              ? displayFormat[this.type]
+                  .replace('?D', 'D')
+                  .replace('?MMMM', 'MMMM')
+              : displayFormat[this.type]),
           alt:
             (this.attrs.alt.format as string) ||
             this.format ||
@@ -1045,7 +1068,11 @@
       },
       defaultDate(): DefaultDate {
         const prefix =
-          this.type === 'time' ? this.core.toString('jYYYY/jMM/jDD') + ' ' : '';
+          this.type === 'time'
+            ? `${this.calendarAdapter
+                ? this.formatDateValue(this.core, 'YYYY-MM-DD')
+                : this.core.toString('jYYYY/jMM/jDD')} `
+            : '';
         return {
           from: prefix + this.from,
           to: prefix + this.to,
@@ -1097,6 +1124,10 @@
         };
 
         if (this.shortcut === true) {
+          if (this.calendarAdapter) {
+            setShortcut(this.adapterShortcuts(part));
+            return shortcuts;
+          }
           setShortcut(
             Core.getShortcuts(
               d,
@@ -1149,6 +1180,21 @@
         handler: function (val) {
           if (val == 'single' && this.selectedDates.length == 2)
             this.selectedDates.pop();
+        },
+      },
+      modelCalendar: {
+        handler: function () {
+          if (this.selectedDates.length) this.submitDate(false);
+        },
+      },
+      format: {
+        handler: function () {
+          if (this.selectedDates.length) this.submitDate(false);
+        },
+      },
+      inputFormat: {
+        handler: function () {
+          if (this.selectedDates.length) this.submitDate(false);
         },
       },
       locale: {
@@ -1232,6 +1278,105 @@
       this.stopChangeTime();
     },
     methods: {
+      adapterShortcuts(part: 'date' | 'time'): Shortcuts {
+        if (!this.calendarAdapter) return {};
+
+        const adapter = this.calendarAdapter;
+        const now = new Date();
+        const current = adapter.getParts(now);
+        const fromParts = (parts: CalendarParts): PersianDate =>
+          this.fromCalendarParts(parts);
+        const shift = (amount: number): PersianDate =>
+          fromParts(adapter.getParts(adapter.addDays(now, amount)));
+        const dayStart = (parts: CalendarParts): CalendarParts => ({
+          ...parts,
+          hour: 0,
+          minute: 0,
+          second: 0,
+          millisecond: 0,
+        });
+
+        if (part === 'time') {
+          const startOfDay = dayStart(current);
+          return {
+            [this.lang.translations.now]: [fromParts(current)],
+            [this.lang.translations.oneHourAgo]: [
+              fromParts(
+                adapter.getParts(new Date(now.getTime() - 60 * 60 * 1000)),
+              ),
+            ],
+            [this.lang.translations.oneHourLater]: [
+              fromParts(
+                adapter.getParts(new Date(now.getTime() + 60 * 60 * 1000)),
+              ),
+            ],
+            [this.lang.translations.midnight]: [fromParts(startOfDay)],
+            [this.lang.translations.midday]: [
+              fromParts({ ...startOfDay, hour: 12 }),
+            ],
+          };
+        }
+
+        const currentDate = fromParts(current);
+        const weekOffset = this.calendarWeekdayOffset(currentDate);
+        const weekStart = fromParts(
+          adapter.getParts(adapter.addDays(now, -weekOffset)),
+        );
+        const weekEnd = fromParts(
+          adapter.getParts(adapter.addDays(now, 6 - weekOffset)),
+        );
+        const monthStart = fromParts({ ...current, day: 1 });
+        const monthEnd = fromParts({
+          ...current,
+          day: adapter.daysInMonth(current.year, current.month),
+        });
+        const previousMonth = fromParts(
+          adapter.getParts(adapter.addMonths(now, -1)),
+        );
+        const nextMonth = fromParts(
+          adapter.getParts(adapter.addMonths(now, 1)),
+        );
+        const monthRange = (start: PersianDate): [PersianDate, PersianDate] => {
+          const parts = this.getCalendarParts(start);
+          return [
+            start,
+            this.calendarAddDays(
+              start,
+              adapter.daysInMonth(parts.year, parts.month) - 1,
+            ) as PersianDate,
+          ];
+        };
+
+        return {
+          [this.lang.translations.now]: [currentDate],
+          [this.lang.translations.yesterday]: [shift(-1)],
+          [this.lang.translations.tomorrow]: [shift(1)],
+          [this.lang.translations.firstOfWeek]: [weekStart],
+          [this.lang.translations.lastOfWeek]: [weekEnd],
+          [this.lang.translations.thisWeek]: [weekStart, weekEnd],
+          [this.lang.translations.prevWeek]: [
+            this.calendarAddDays(weekStart, -7) as PersianDate,
+            this.calendarAddDays(weekEnd, -7) as PersianDate,
+          ],
+          [this.lang.translations.nextWeek]: [
+            this.calendarAddDays(weekStart, 7) as PersianDate,
+            this.calendarAddDays(weekEnd, 7) as PersianDate,
+          ],
+          [this.lang.translations.thisMonth]: [monthStart, monthEnd],
+          [this.lang.translations.prevMonth]: monthRange(
+            this.fromCalendarParts({
+              ...this.getCalendarParts(previousMonth),
+              day: 1,
+            }),
+          ),
+          [this.lang.translations.nextMonth]: monthRange(
+            this.fromCalendarParts({
+              ...this.getCalendarParts(nextMonth),
+              day: 1,
+            }),
+          ),
+        };
+      },
       defaultLocaleForCalendar(calendar?: Calendar): string {
         switch (calendar) {
           case 'jalali':
@@ -1431,12 +1576,22 @@
       usesCalendarAdapter(): boolean {
         return this.activeCalendar !== 'jalali';
       },
+      calendarBridge() {
+        return useCalendarAdapter<PersianDate>(
+          this.calendarAdapter,
+          (value) => new Date(this.getDateTimestamp(value)),
+          (date) =>
+            markRaw(
+              new PersianDate().fromGregorian(
+                gregorianPartsFromTimestamp(date.getTime()),
+              ),
+            ) as PersianDate,
+        );
+      },
       getCalendarParts(date: CalendarDateLike): CalendarParts {
         const value = date as PersianDate;
         if (this.calendarAdapter) {
-          return this.calendarAdapter.getParts(
-            new Date(this.getDateTimestamp(value)),
-          );
+          return this.calendarBridge().getParts(value);
         }
         const native = value
           .clone()
@@ -1468,19 +1623,60 @@
         );
       },
       normalizeEndDate(date: PersianDate, unit: Units): PersianDate {
+        if (this.calendarAdapter && this.type === 'time') {
+          const adapter = this.calendarAdapter;
+          const parts = this.getCalendarParts(date);
+          const end: CalendarParts = {
+            ...parts,
+            ...(unit === 'year' || unit === 'month'
+              ? { day: adapter.daysInMonth(parts.year, parts.month) }
+              : {}),
+            ...(unit === 'year' ? { month: parts.month } : {}),
+            ...(unit === 'date' || unit === 'hour' || unit === 'minute'
+              ? { hour: unit === 'date' ? 23 : parts.hour || 0 }
+              : {}),
+            ...(unit === 'date' || unit === 'hour' || unit === 'minute'
+              ? { minute: unit === 'date' || unit === 'hour' ? 59 : parts.minute || 0 }
+              : {}),
+            ...(unit === 'date' || unit === 'hour' || unit === 'minute'
+              ? { second: unit === 'date' || unit === 'hour' || unit === 'minute' ? 59 : parts.second || 0 }
+              : {}),
+            ...(unit !== 'millisecond' ? { millisecond: 999 } : {}),
+          };
+          if (unit === 'year') {
+            let month = 1;
+            while (month < 20) {
+              try {
+                const candidate = adapter.fromParts({
+                  ...parts,
+                  month: month + 1,
+                  day: 1,
+                });
+                if (adapter.getParts(candidate).year !== parts.year) break;
+                month += 1;
+              } catch {
+                break;
+              }
+            }
+            end.month = month;
+            end.day = adapter.daysInMonth(parts.year, month);
+          }
+          if (unit === 'month') {
+            end.day = adapter.daysInMonth(parts.year, parts.month);
+          }
+          return this.fromCalendarParts(end);
+        }
         return markRaw(
           new PersianDate()
-            .fromGregorian(this.getDateTimestamp(date))
+            .fromGregorian(
+              gregorianPartsFromTimestamp(this.getDateTimestamp(date)),
+            )
             .endOf(unit),
         );
       },
       fromCalendarParts(parts: CalendarParts): PersianDate {
         if (this.calendarAdapter) {
-          return markRaw(
-            new PersianDate().fromGregorian(
-              this.calendarAdapter.fromParts(parts).getTime(),
-            ),
-          );
+          return this.calendarBridge().fromParts(parts);
         }
         const values: [number, number, number, number, number, number, number] =
           [
@@ -1511,31 +1707,20 @@
         const value = date as PersianDate;
         if (!this.calendarAdapter)
           return markRaw(value.clone().addMonth(amount));
-        return markRaw(
-          new PersianDate().fromGregorian(
-            this.calendarAdapter
-              .addMonths(new Date(this.getDateTimestamp(value)), amount)
-              .getTime(),
-          ),
-        );
+        return this.calendarBridge().addMonths(value, amount) as PersianDate;
       },
       calendarDayDate(date: CalendarDateLike, day: number): PersianDate {
         const value = date as PersianDate;
         if (!this.calendarAdapter) return markRaw(value.clone().date(day));
-        return this.fromCalendarParts({
+        return this.calendarBridge().fromParts({
           ...this.getCalendarParts(date),
           day,
-        });
+        }) as PersianDate;
       },
-      calendarAddDays(date: PersianDate, amount: number): PersianDate {
-        if (!this.calendarAdapter) return markRaw(date.clone().addDay(amount));
-        return markRaw(
-          new PersianDate().fromGregorian(
-            this.calendarAdapter
-              .addDays(new Date(this.getDateTimestamp(date)), amount)
-              .getTime(),
-          ),
-        );
+      calendarAddDays(date: CalendarDateLike, amount: number): CalendarDateLike {
+        if (!this.calendarAdapter)
+          return markRaw((date as PersianDate).clone().addDay(amount));
+        return this.calendarBridge().addDays(date as PersianDate, amount);
       },
       calendarMonthKey(date: CalendarDateLike): string {
         const parts = this.getCalendarParts(date);
@@ -1543,7 +1728,7 @@
       },
       calendarDaysInMonth(year: number, month: number): number {
         if (this.calendarAdapter) {
-          return this.calendarAdapter.daysInMonth(year, month);
+          return this.calendarBridge().daysInMonth(year, month);
         }
         return this.core.getDaysInMonth(year, month);
       },
@@ -1578,33 +1763,13 @@
         const value = date as PersianDate;
         if (!this.calendarAdapter) return value.toString(format);
         const parts = this.getCalendarParts(date);
-        const pad = (value: number, size = 2) =>
-          String(value).padStart(size, '0');
-        const leapSuffix =
-          this.activeCalendar === 'chinese' && parts.leapMonth ? 'bis' : '';
-        const leapPlaceholder = leapSuffix ? '__LEAP__' : '';
         const monthName =
           this.monthNamesForYear(parts.year)[parts.month - 1] ||
           `Month ${parts.month}`;
-        const paddedMonth = `${pad(parts.month)}${leapPlaceholder}`;
-        const shortMonth = `${parts.month}${leapPlaceholder}`;
-        return format
-          .replace('?D', String(parts.day))
-          .replace('?MMMM', monthName)
-          .replace('MMMM', monthName)
-          .replace('YYYY', String(parts.year))
-          .replace('YY', String(parts.year).slice(-2))
-          .replace('MM', paddedMonth)
-          .replace('M', shortMonth)
-          .replace('DD', pad(parts.day))
-          .replace('D', String(parts.day))
-          .replace('HH', pad(parts.hour || 0))
-          .replace('H', String(parts.hour || 0))
-          .replace('mm', pad(parts.minute || 0))
-          .replace('m', String(parts.minute || 0))
-          .replace('ss', pad(parts.second || 0))
-          .replace('s', String(parts.second || 0))
-          .replace(/__LEAP__/g, leapSuffix);
+        return formatCalendarParts(parts, format, {
+          calendar: this.activeCalendar,
+          monthName,
+        });
       },
       formatModelValue(date: CalendarDateLike): string {
         const target =
@@ -1616,54 +1781,43 @@
         }
         const value = date as PersianDate;
         const timestamp = this.getDateTimestamp(value);
+        const modelFormat = normalizeCalendarFormat(
+          this.formats.model,
+          target,
+        );
         if (target === 'jalali' || target === 'gregorian') {
           return new PersianDate()
-            .fromGregorian(timestamp)
+            .fromGregorian(gregorianPartsFromTimestamp(timestamp))
             .calendar(target)
-            .toString(this.formats.model);
+            .toString(modelFormat);
         }
         const adapter = createCalendarAdapter(target, {
           hijriProvider: this.hijriProvider,
         });
         const parts = adapter.getParts(new Date(timestamp));
-        const pad = (part: number, size = 2) =>
-          String(part).padStart(size, '0');
-        const leapSuffix = target === 'chinese' && parts.leapMonth ? 'bis' : '';
-        const leapPlaceholder = leapSuffix ? '__LEAP__' : '';
-        return this.formats.model
-          .replace('YYYY', String(parts.year))
-          .replace('YY', String(parts.year).slice(-2))
-          .replace('MM', `${pad(parts.month)}${leapPlaceholder}`)
-          .replace('M', `${parts.month}${leapPlaceholder}`)
-          .replace('DD', pad(parts.day))
-          .replace('D', String(parts.day))
-          .replace('HH', pad(parts.hour || 0))
-          .replace('H', String(parts.hour || 0))
-          .replace('mm', pad(parts.minute || 0))
-          .replace('m', String(parts.minute || 0))
-          .replace('ss', pad(parts.second || 0))
-          .replace('s', String(parts.second || 0))
-          .replace(/__LEAP__/g, leapSuffix);
-      },
-      parseCalendarParts(value: string): CalendarParts {
-        const values = value.split(/[-/ .,\\:]/).filter(Boolean);
-        const monthToken = values[1] || '1';
-        const leapMonth =
-          this.activeCalendar === 'chinese' && /bis$/i.test(monthToken);
-        const month = Number.parseInt(monthToken.replace(/bis$/i, ''), 10);
-        return {
-          year: Number(values[0]),
-          month: month || 1,
-          day: Number(values[2]) || 1,
-          hour: Number(values[3]) || 0,
-          minute: Number(values[4]) || 0,
-          second: Number(values[5]) || 0,
-          ...(leapMonth ? { leapMonth: true } : {}),
-        };
+        return formatCalendarParts(parts, modelFormat, {
+          calendar: target,
+        });
       },
       parseCalendarDate(value: string): PersianDate {
         if (this.calendarAdapter) {
-          return this.fromCalendarParts(this.parseCalendarParts(value));
+          try {
+            if (this.type === 'time' && !/[\s/-]/.test(value)) {
+              const time = value.split(/[:.,]/).map(Number);
+              const base = this.getCalendarParts(this.core);
+              return this.fromCalendarParts({
+                ...base,
+                hour: time[0] || 0,
+                minute: time[1] || 0,
+                second: time[2] || 0,
+              });
+            }
+            return this.fromCalendarParts(
+              parseCalendarParts(value, this.activeCalendar),
+            );
+          } catch {
+            return markRaw(this.core.clone().parse('invalid'));
+          }
         }
         const date = this.core.clone();
         const sourceCalendar: 'jalali' | 'gregorian' =
@@ -1852,7 +2006,10 @@
             this.inputName = 'secondInput';
           } else if (this.inputName === 'secondInput') {
             this.inputName = 'firstInput';
-            if (!date.isBefore(this.selectedDates[0] as PersianDate)) {
+            if (
+              this.getDateTimestamp(date) >=
+              this.getDateTimestamp(this.selectedDates[0])
+            ) {
               this.selectedDates[1] = date;
             } else {
               if (this.selectedDates.length === 1)
@@ -1938,14 +2095,12 @@
           const currentTime = this.getDateTimestamp(current);
           const fromTime = this.getDateTimestamp(this.fromDate!);
           const toTime = this.getDateTimestamp(this.toDate!);
-          if (part === 'year' || part === 'month' || part === 'date') {
-            const currentDay = this.getDayTimestamp(current);
-            return (
-              currentDay <= this.getDayTimestamp(this.toDate!) &&
-              currentDay >= this.getDayTimestamp(this.fromDate!)
-            );
-          }
-          return currentTime >= fromTime && currentTime <= toTime;
+          return isWithinCalendarBounds(
+            new Date(currentTime),
+            new Date(fromTime),
+            new Date(toTime),
+            part,
+          );
         }
         let from, to;
         if (!Core.isPersianDate(date))
@@ -1981,29 +2136,11 @@
         const normalizedDate = Core.isPersianDate(candidate)
           ? candidate.clone()
           : this.core.clone().parse(candidate);
-        if (Core.isString(disable)) {
-          return this.isSameDisabledValue(normalizedDate, disable as string);
-        } else if (disable instanceof RegExp) {
-          return this.testDisableRegex(
-            disable,
-            this.formatDisableValue(normalizedDate),
-          );
-        } else if (Core.isFunction(disable)) {
-          return (disable as (date: PersianDate) => boolean)(normalizedDate);
-        } else if (Array.isArray(disable)) {
-          return disable.some((val) => {
-            if (Core.isString(val)) {
-              return this.isSameDisabledValue(normalizedDate, val as string);
-            } else if (val instanceof RegExp) {
-              return this.testDisableRegex(
-                val,
-                this.formatDisableValue(normalizedDate),
-              );
-            }
-          });
-        } else {
-          return false;
-        }
+        return matchesDisable(normalizedDate, disable, {
+          matchesString: (value) =>
+            this.isSameDisabledValue(normalizedDate, value),
+          format: (value) => this.formatDisableValue(value),
+        });
       },
       selectedTimeValue(index: number): PersianDate | undefined {
         const time = this.selectedTimes[index];
@@ -2024,6 +2161,33 @@
         );
       },
       isSameDisabledValue(date: PersianDate, value: string): boolean {
+        if (this.calendarAdapter) {
+          const disabled = this.parseDisabledValue(
+            this.type === 'time' && !/[\s/-]/.test(value)
+              ? `${this.formatDateValue(date, 'YYYY-MM-DD')} ${value}`
+              : value,
+          );
+          const candidateParts = this.getCalendarParts(date);
+          const disabledParts = this.getCalendarParts(disabled);
+          if (this.type === 'time') {
+            return (
+              candidateParts.hour === disabledParts.hour &&
+              candidateParts.minute === disabledParts.minute
+            );
+          }
+          const sameDate =
+            candidateParts.year === disabledParts.year &&
+            candidateParts.month === disabledParts.month &&
+            candidateParts.day === disabledParts.day &&
+            Boolean(candidateParts.leapMonth) ===
+              Boolean(disabledParts.leapMonth);
+          if (this.type === 'date' || !/[\s:]/.test(value)) return sameDate;
+          return (
+            sameDate &&
+            candidateParts.hour === disabledParts.hour &&
+            candidateParts.minute === disabledParts.minute
+          );
+        }
         const disabled = this.parseDisabledValue(
           this.type === 'time' && !/[\s/-]/.test(value)
             ? `${date.toString('YYYY-MM-DD')} ${value}`
@@ -2064,12 +2228,6 @@
           return this.core.clone().calendar('jalali').parse(value);
         }
         return this.parseCalendarDate(value);
-      },
-      testDisableRegex(regex: RegExp, value: string): boolean {
-        regex.lastIndex = 0;
-        const result = regex.test(value);
-        regex.lastIndex = 0;
-        return result;
       },
       formatDisableValue(date: PersianDate): string {
         if (this.calendarAdapter)
@@ -2279,10 +2437,20 @@
         let onDisplay: PersianDate;
         if (this.type === 'time') {
           const time = normalizedValue.split(/[/ -.,:\\]/);
-          onDisplay = this.checkDate(this.core.clone(), 'time')
-            ? this.core.clone()
-            : this.fromDate!.clone();
-          onDisplay.time(time as [string]);
+          if (this.calendarAdapter) {
+            const base = this.getCalendarParts(this.onDisplay || this.core);
+            onDisplay = this.fromCalendarParts({
+              ...base,
+              hour: Number(time[0]) || 0,
+              minute: Number(time[1]) || 0,
+              second: Number(time[2]) || 0,
+            });
+          } else {
+            onDisplay = this.checkDate(this.core.clone(), 'time')
+              ? this.core.clone()
+              : this.fromDate!.clone();
+            onDisplay.time(time as [string]);
+          }
         } else {
           onDisplay = this.calendarAdapter
             ? this.parseCalendarDate(normalizedValue)
@@ -2584,12 +2752,84 @@
         });
 
         let column = this.getColumn(target);
+        if (this.calendarAdapter) {
+          const hoveredDate = this.calendarDayDate(
+            this.calendarMonthDate(this.onDisplay!, Number(column)),
+            Number(target.innerText),
+          );
+          let selectedDate: CalendarDateLike = this.fromCalendarParts({
+            ...this.getCalendarParts(this.selectedDates[0]),
+            hour: 0,
+            minute: 0,
+            second: 0,
+            millisecond: 0,
+          });
+          const number =
+            this.getDateTimestamp(hoveredDate) >=
+            this.getDateTimestamp(selectedDate)
+              ? 1
+              : -1;
+          const selectedDateDOM = root.querySelector(
+            '.pdp-day.start-range,.pdp-day.end-range',
+          ) as HTMLElement;
+          if (selectedDateDOM) {
+            column = +this.getColumn(selectedDateDOM);
+            selectedDateDOM.classList.replace(
+              ...((number < 0
+                ? ['start-range', 'end-range']
+                : ['end-range', 'start-range']) as [string, string]),
+            );
+          } else if (number === 1) {
+            const parts = this.getCalendarParts(this.onDisplay!);
+            selectedDate = this.calendarAddDays(
+              this.fromCalendarParts({ ...parts, day: 1 }),
+              -1,
+            ) as PersianDate;
+            column = -1;
+          } else {
+            const monthDate = this.calendarMonthDate(
+              this.onDisplay!,
+              this.columnCount - 1,
+            );
+            const parts = this.getCalendarParts(monthDate);
+            selectedDate = this.calendarAddDays(
+              this.fromCalendarParts({
+                ...parts,
+                day: this.calendarDaysInMonth(parts.year, parts.month),
+              }),
+              1,
+            ) as PersianDate;
+            column = this.columnCount;
+          }
+          while (!this.isSameCalendarDate(hoveredDate, selectedDate)) {
+            const oldMonth = this.displayMonth(selectedDate);
+            selectedDate = this.calendarAddDays(selectedDate, number);
+            if (oldMonth !== this.displayMonth(selectedDate)) {
+              column += number;
+            }
+            if (
+              this.checkDate(selectedDate, 'date') &&
+              !this.isInDisable(selectedDate)
+            ) {
+              root
+                .querySelector(
+                  `.pdp-column[data-column='${column}'] .pdp-day[value='${this.displayDay(selectedDate)}']`,
+                )
+                ?.classList.add('in-range');
+            } else {
+              break;
+            }
+          }
+          return;
+        }
+
         const hoveredDate = this.onDisplay!.clone()
           .startOf('date')
-          .addMonth(column)
+          .addMonth(+column)
           .date(target.innerText);
         const selectedDate = this.selectedDates[0].clone().startOf('date');
-        const number = hoveredDate.isAfter(selectedDate) ? 1 : -1;
+        const number =
+          hoveredDate.isAfter(selectedDate) ? 1 : -1;
         const selectedDateDOM = root.querySelector(
           '.pdp-day.start-range,.pdp-day.end-range',
         ) as HTMLElement;
@@ -2615,9 +2855,9 @@
           }
         }
         while (!hoveredDate.isSame(selectedDate)) {
-          const oldMonth = selectedDate.month();
+          const oldMonth = this.displayMonth(selectedDate);
           selectedDate.addDay(number);
-          if (oldMonth != selectedDate.month()) {
+          if (oldMonth != this.displayMonth(selectedDate)) {
             column += number;
           }
           if (
@@ -2725,6 +2965,10 @@
         unit: 'minute' | 'hour',
         operator: 'add' | 'sub',
       ) {
+        if (this.calendarAdapter) {
+          this.startChangeTimeWithAdapter(timeIndex, unit, operator);
+          return;
+        }
         let time = this.selectedTimes[timeIndex];
         if (!time) {
           time = this.core.clone();
@@ -2788,6 +3032,101 @@
               )
             )
               this.submitDate(false);
+          }
+        };
+        changeTime();
+        this.interval = setInterval(changeTime, 300);
+      },
+      startChangeTimeWithAdapter(
+        timeIndex: number,
+        unit: 'minute' | 'hour',
+        operator: 'add' | 'sub',
+      ): void {
+        let time = this.selectedTimes[timeIndex] as CalendarDateLike | undefined;
+        if (!time) {
+          const currentParts = this.getCalendarParts(this.core);
+          time = this.fromCalendarParts(currentParts);
+          if (!this.checkDate(time, 'time')) {
+            const fallback = this.calendarAddDays(this.toDate!, -1);
+            time = this.fromCalendarParts({
+              ...this.getCalendarParts(fallback),
+              hour: currentParts.hour || 0,
+              minute: currentParts.minute || 0,
+              second: currentParts.second || 0,
+              millisecond: currentParts.millisecond || 0,
+            });
+          }
+          if (timeIndex === 1 && !this.selectedTimes.length) {
+            this.selectedTimes.push(time as PersianDate);
+          }
+          this.selectedTimes.push(time as PersianDate);
+        }
+
+        this.stopChangeTime();
+        const maxAmount = unit === 'hour' ? 23 : 59;
+        const step = unit === 'hour' ? this.hourStepCount : this.minuteStepCount;
+        let currentAmount = this.getCalendarParts(time)[unit] || 0;
+        const changeTime = () => {
+          currentAmount += operator === 'add' ? step : -step;
+          if (currentAmount > maxAmount) currentAmount = 0;
+          if (currentAmount < 0) currentAmount = maxAmount;
+
+          const parts = this.getCalendarParts(time!);
+          const candidate = this.fromCalendarParts({
+            ...parts,
+            [unit]: currentAmount,
+          });
+          if (!this.checkDate(candidate, 'time')) {
+            const boundary =
+              this.getDateTimestamp(candidate) >= this.getDateTimestamp(this.toDate!)
+                ? this.toDate!
+                : this.fromDate!;
+            time = this.fromCalendarParts({
+              ...this.getCalendarParts(boundary),
+              hour: parts.hour || 0,
+              minute: parts.minute || 0,
+              second: parts.second || 0,
+              millisecond: parts.millisecond || 0,
+            });
+          } else if (
+            this.selectedTimes.length === 2 &&
+            timeIndex === 0 &&
+            this.getDateTimestamp(candidate) >
+              this.getDateTimestamp(this.selectedTimes[1])
+          ) {
+            time = this.selectedTimes[1];
+          } else if (
+            this.selectedTimes.length === 2 &&
+            timeIndex === 1 &&
+            this.getDateTimestamp(candidate) <
+              this.getDateTimestamp(this.selectedTimes[0])
+          ) {
+            time = this.selectedTimes[0];
+          } else {
+            time = candidate;
+          }
+
+          const selectedDate = this.selectedDates[timeIndex]
+            ? this.fromCalendarParts({
+                ...this.getCalendarParts(this.selectedDates[timeIndex]),
+                hour: this.getCalendarParts(time).hour || 0,
+                minute: this.getCalendarParts(time).minute || 0,
+                second: this.getCalendarParts(time).second || 0,
+                millisecond: this.getCalendarParts(time).millisecond || 0,
+              })
+            : time;
+          this.selectedTimes[timeIndex] = time as PersianDate;
+          if (!this.isInDisable(selectedDate)) {
+            this.selectedDates[timeIndex] = selectedDate as PersianDate;
+            this.$emit('select', selectedDate);
+            if (
+              this.autoSubmit &&
+              !this.selectedTimes.some((_, index) =>
+                this.isSelectedTimeDisabled(index),
+              )
+            ) {
+              this.submitDate(false);
+            }
           }
         };
         changeTime();

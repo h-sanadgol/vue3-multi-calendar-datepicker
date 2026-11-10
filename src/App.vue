@@ -355,11 +355,20 @@
       type: 'Boolean | Object',
       defaultValue: 'false',
       description: {
-        fa: 'میانبرهای تاریخ و زمان را فعال یا با object سفارشی می‌کند.',
-        en: 'Enables date/time shortcuts or configures custom shortcuts with an object.',
-        ar: 'يفعل اختصارات التاريخ والوقت أو يخصصها بكائن.',
+        fa: 'با مقدار true میانبرهای داخلی را فعال می‌کند. در حالت object می‌توانید میانبرهای تک‌تاریخ، بازه، زمان و datetime را با برچسب دلخواه تعریف کنید.',
+        en: 'true enables built-in date/time shortcuts. An object lets you define labeled single dates, ranges, times, and datetimes.',
+        ar: 'تفعّل true الاختصارات المضمنة للتاريخ والوقت. ويسمح object بتعريف تواريخ أو نطاقات أو أوقات أو datetime بعناوين مخصصة.',
       },
-      examples: ['shortcut', ':shortcut="{ today: true }"'],
+      examples: [
+        'shortcut',
+        'date-single: now · yesterday · tomorrow · first/last of week',
+        'date-range: this/previous/next week · this/previous/next month',
+        'time-single: now · one hour ago/later · midnight · midday',
+        'time-range: this/previous/next hour · all day',
+        ':shortcut="{ \'Release\': [releaseDate] }"',
+        ':shortcut="{ \'Sprint\': [sprintStart, sprintEnd] }"',
+        ':shortcut="{ \'Office hours\': [startTime, endTime] }"',
+      ],
     },
     {
       name: 'disable',
@@ -1228,8 +1237,14 @@
               :type="pickerType"
               :locale="advancedLocale || calendarLocale(activeCalendar)"
               :column="advancedColumns"
-              :from="advancedFrom || selectedCalendar.from"
-              :to="advancedTo || selectedCalendar.to"
+              :from="
+                advancedFrom ||
+                (pickerType === 'time' ? '00:00' : selectedCalendar.from)
+              "
+              :to="
+                advancedTo ||
+                (pickerType === 'time' ? '23:59' : selectedCalendar.to)
+              "
               :week-starts-on="advancedWeekStart"
               :weekend-days="
                 advancedWeekendDays.length ? advancedWeekendDays : undefined

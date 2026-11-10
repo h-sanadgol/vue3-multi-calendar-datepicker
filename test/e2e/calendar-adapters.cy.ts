@@ -45,7 +45,9 @@ describe('calendar adapters', () => {
   });
 
   it('parses calendar parts without relying on PersianDate', () => {
-    expect(parseCalendarParts('2025-04-05 13:27:42', 'gregorian')).to.deep.include({
+    expect(
+      parseCalendarParts('2025-04-05 13:27:42', 'gregorian'),
+    ).to.deep.include({
       year: 2025,
       month: 4,
       day: 5,
@@ -114,18 +116,17 @@ describe('calendar adapters', () => {
     ).to.equal('2023/02bis/01 13:07 Second month');
 
     expect(
-      formatCalendarParts(
-        { year: 5785, month: 1, day: 6 },
-        '?D ?MMMM',
-        { calendar: 'hebrew', monthName: 'Nisan' },
-      ),
+      formatCalendarParts({ year: 5785, month: 1, day: 6 }, '?D ?MMMM', {
+        calendar: 'hebrew',
+        monthName: 'Nisan',
+      }),
     ).to.equal('6 Nisan');
   });
 
   it('normalizes calendar-specific model tokens at the serialization boundary', () => {
-    expect(normalizeCalendarFormat('jYYYY/jMM/jDD HH:mm', 'gregorian')).to.equal(
-      'YYYY/MM/DD HH:mm',
-    );
+    expect(
+      normalizeCalendarFormat('jYYYY/jMM/jDD HH:mm', 'gregorian'),
+    ).to.equal('YYYY/MM/DD HH:mm');
     expect(normalizeCalendarFormat('YYYY-MM-DD HH:mm', 'jalali')).to.equal(
       'jYYYY-jMM-jDD HH:mm',
     );
@@ -153,9 +154,14 @@ describe('calendar adapters', () => {
 
       expect(() =>
         adapter.fromParts({
-          year: calendar === 'gregorian' || calendar === 'chinese' ? 2025 :
-            calendar === 'hijri' ? 1446 :
-              calendar === 'hebrew' ? 5785 : 2568,
+          year:
+            calendar === 'gregorian' || calendar === 'chinese'
+              ? 2025
+              : calendar === 'hijri'
+                ? 1446
+                : calendar === 'hebrew'
+                  ? 5785
+                  : 2568,
           month: 1,
           day: 1,
           hour: 24,
@@ -163,9 +169,14 @@ describe('calendar adapters', () => {
       ).to.throw();
       expect(() =>
         adapter.fromParts({
-          year: calendar === 'gregorian' || calendar === 'chinese' ? 2025 :
-            calendar === 'hijri' ? 1446 :
-              calendar === 'hebrew' ? 5785 : 2568,
+          year:
+            calendar === 'gregorian' || calendar === 'chinese'
+              ? 2025
+              : calendar === 'hijri'
+                ? 1446
+                : calendar === 'hebrew'
+                  ? 5785
+                  : 2568,
           month: 1,
           day: 1,
           minute: 60,
@@ -320,7 +331,8 @@ describe('calendar adapters', () => {
     expect(value.date).to.be.instanceOf(Date);
     expect(value.parts).to.deep.include({ year: 2021, month: 1, day: 31 });
     expect(
-      calendarValueFromDate(adapter, addCalendarMonths(adapter, value, 1)).parts,
+      calendarValueFromDate(adapter, addCalendarMonths(adapter, value, 1))
+        .parts,
     ).to.deep.include({ year: 2021, month: 2, day: 28 });
     expect(
       calendarValueFromDate(adapter, addCalendarDays(adapter, value, 1)).parts,

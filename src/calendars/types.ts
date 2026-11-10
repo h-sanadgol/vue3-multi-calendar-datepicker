@@ -28,7 +28,10 @@ export function validateTimeParts(parts: CalendarParts): void {
   ] as const;
 
   for (const [name, value, min, max] of ranges) {
-    if (value !== undefined && (!Number.isInteger(value) || value < min || value > max)) {
+    if (
+      value !== undefined &&
+      (!Number.isInteger(value) || value < min || value > max)
+    ) {
       throw new RangeError(`Invalid ${name} value: ${value}`);
     }
   }

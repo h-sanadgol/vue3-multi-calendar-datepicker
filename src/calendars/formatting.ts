@@ -15,16 +15,14 @@ export function normalizeCalendarFormat(
   format: string,
   calendar: CalendarId,
 ): string {
-  return format.replace(
-    /j?(YYYY|YY|MMMM|MM|M|DD|D)/g,
-    (token, name: string) =>
-      calendar === 'jalali'
-        ? token.startsWith('j')
-          ? token
-          : `j${name}`
-        : token.startsWith('j')
-          ? name
-          : token,
+  return format.replace(/j?(YYYY|YY|MMMM|MM|M|DD|D)/g, (token, name: string) =>
+    calendar === 'jalali'
+      ? token.startsWith('j')
+        ? token
+        : `j${name}`
+      : token.startsWith('j')
+        ? name
+        : token,
   );
 }
 
@@ -33,8 +31,7 @@ export function formatCalendarParts(
   format: string,
   options: FormatOptions,
 ): string {
-  const pad = (value: number, size = 2) =>
-    String(value).padStart(size, '0');
+  const pad = (value: number, size = 2) => String(value).padStart(size, '0');
   const leapSuffix =
     options.calendar === 'chinese' && parts.leapMonth ? 'bis' : '';
   const normalizedFormat = normalizeCalendarFormat(format, options.calendar)

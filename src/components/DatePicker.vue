@@ -1069,9 +1069,11 @@
       defaultDate(): DefaultDate {
         const prefix =
           this.type === 'time'
-            ? `${this.calendarAdapter
-                ? this.formatDateValue(this.core, 'YYYY-MM-DD')
-                : this.core.toString('jYYYY/jMM/jDD')} `
+            ? `${
+                this.calendarAdapter
+                  ? this.formatDateValue(this.core, 'YYYY-MM-DD')
+                  : this.core.toString('jYYYY/jMM/jDD')
+              } `
             : '';
         return {
           from: prefix + this.from,
@@ -1636,10 +1638,18 @@
               ? { hour: unit === 'date' ? 23 : parts.hour || 0 }
               : {}),
             ...(unit === 'date' || unit === 'hour' || unit === 'minute'
-              ? { minute: unit === 'date' || unit === 'hour' ? 59 : parts.minute || 0 }
+              ? {
+                  minute:
+                    unit === 'date' || unit === 'hour' ? 59 : parts.minute || 0,
+                }
               : {}),
             ...(unit === 'date' || unit === 'hour' || unit === 'minute'
-              ? { second: unit === 'date' || unit === 'hour' || unit === 'minute' ? 59 : parts.second || 0 }
+              ? {
+                  second:
+                    unit === 'date' || unit === 'hour' || unit === 'minute'
+                      ? 59
+                      : parts.second || 0,
+                }
               : {}),
             ...(unit !== 'millisecond' ? { millisecond: 999 } : {}),
           };
@@ -1717,7 +1727,10 @@
           day,
         }) as PersianDate;
       },
-      calendarAddDays(date: CalendarDateLike, amount: number): CalendarDateLike {
+      calendarAddDays(
+        date: CalendarDateLike,
+        amount: number,
+      ): CalendarDateLike {
         if (!this.calendarAdapter)
           return markRaw((date as PersianDate).clone().addDay(amount));
         return this.calendarBridge().addDays(date as PersianDate, amount);
@@ -1781,10 +1794,7 @@
         }
         const value = date as PersianDate;
         const timestamp = this.getDateTimestamp(value);
-        const modelFormat = normalizeCalendarFormat(
-          this.formats.model,
-          target,
-        );
+        const modelFormat = normalizeCalendarFormat(this.formats.model, target);
         if (target === 'jalali' || target === 'gregorian') {
           return new PersianDate()
             .fromGregorian(gregorianPartsFromTimestamp(timestamp))
@@ -2828,8 +2838,7 @@
           .addMonth(+column)
           .date(target.innerText);
         const selectedDate = this.selectedDates[0].clone().startOf('date');
-        const number =
-          hoveredDate.isAfter(selectedDate) ? 1 : -1;
+        const number = hoveredDate.isAfter(selectedDate) ? 1 : -1;
         const selectedDateDOM = root.querySelector(
           '.pdp-day.start-range,.pdp-day.end-range',
         ) as HTMLElement;
@@ -3042,7 +3051,9 @@
         unit: 'minute' | 'hour',
         operator: 'add' | 'sub',
       ): void {
-        let time = this.selectedTimes[timeIndex] as CalendarDateLike | undefined;
+        let time = this.selectedTimes[timeIndex] as
+          | CalendarDateLike
+          | undefined;
         if (!time) {
           const currentParts = this.getCalendarParts(this.core);
           time = this.fromCalendarParts(currentParts);
@@ -3064,7 +3075,8 @@
 
         this.stopChangeTime();
         const maxAmount = unit === 'hour' ? 23 : 59;
-        const step = unit === 'hour' ? this.hourStepCount : this.minuteStepCount;
+        const step =
+          unit === 'hour' ? this.hourStepCount : this.minuteStepCount;
         let currentAmount = this.getCalendarParts(time)[unit] || 0;
         const changeTime = () => {
           currentAmount += operator === 'add' ? step : -step;
@@ -3078,7 +3090,8 @@
           });
           if (!this.checkDate(candidate, 'time')) {
             const boundary =
-              this.getDateTimestamp(candidate) >= this.getDateTimestamp(this.toDate!)
+              this.getDateTimestamp(candidate) >=
+              this.getDateTimestamp(this.toDate!)
                 ? this.toDate!
                 : this.fromDate!;
             time = this.fromCalendarParts({

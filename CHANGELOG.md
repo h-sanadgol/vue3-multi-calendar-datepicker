@@ -27,4 +27,3 @@
 - 13 Cypress component specs, 265 tests passing.
 - ESLint passing.
 - Library and Nuxt builds passing.
-

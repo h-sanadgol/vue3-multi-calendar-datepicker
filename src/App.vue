@@ -5,6 +5,14 @@
 
   type Language = 'fa' | 'en' | 'ar';
   type PickerType = 'date' | 'time' | 'datetime';
+  type PickerColor =
+    | 'blue'
+    | 'red'
+    | 'pink'
+    | 'orange'
+    | 'green'
+    | 'purple'
+    | 'gray';
   type DemoCalendar = {
     id: CalendarId;
     title: Record<Language, string>;
@@ -14,6 +22,13 @@
     sample: string;
     from: string;
     to: string;
+  };
+  type PropGuide = {
+    name: string;
+    type: string;
+    defaultValue: string;
+    description: Record<Language, string>;
+    examples: string[];
   };
   type CodeSample = { title: string; html: string };
   const calendars: DemoCalendar[] = [
@@ -82,6 +97,330 @@
       to: '2100-01-01',
     },
   ];
+  const propGuide: PropGuide[] = [
+    {
+      name: 'calendar',
+      type: 'Calendar',
+      defaultValue: 'locale-based',
+      description: {
+        fa: 'تقویم فعال برای تبدیل، نمایش و حرکت بین تاریخ‌ها.',
+        en: 'Calendar used to parse, display, and navigate dates.',
+        ar: 'التقويم المستخدم لتحليل التواريخ وعرضها والتنقل بينها.',
+      },
+      examples: ['calendar="jalali"', 'calendar="gregorian"'],
+    },
+    {
+      name: 'modelCalendar',
+      type: 'Calendar | active',
+      defaultValue: 'active',
+      description: {
+        fa: 'تقویم مستقل برای سریال‌سازی مقدار v-model، بدون تغییر تقویم نمایشی.',
+        en: 'Calendar used to serialize v-model without changing the visible calendar.',
+        ar: 'تقويم مستقل لتسلسل قيمة v-model دون تغيير التقويم المعروض.',
+      },
+      examples: ['model-calendar="gregorian"', 'model-calendar="active"'],
+    },
+    {
+      name: 'type',
+      type: 'date | time | datetime',
+      defaultValue: 'date',
+      description: {
+        fa: 'نوع مقداری که کاربر انتخاب می‌کند: تاریخ، زمان یا هر دو.',
+        en: 'Value selected by the user: date, time, or both.',
+        ar: 'نوع القيمة التي يحددها المستخدم: تاريخ أو وقت أو كلاهما.',
+      },
+      examples: ['type="date"', 'type="datetime"'],
+    },
+    {
+      name: 'mode',
+      type: 'single | range',
+      defaultValue: 'range',
+      description: {
+        fa: 'انتخاب یک مقدار یا یک بازه‌ی شروع و پایان.',
+        en: 'Select one value or a start/end range.',
+        ar: 'اختيار قيمة واحدة أو نطاق ببداية ونهاية.',
+      },
+      examples: ['mode="single"', 'mode="range"'],
+    },
+    {
+      name: 'locale',
+      type: 'String',
+      defaultValue: 'calendar-aware',
+      description: {
+        fa: 'زبان متن‌ها و برچسب‌های تقویم؛ می‌تواند فهرستی با fallback کاما جدا باشد.',
+        en: 'UI language and labels; comma-separated fallback locales are supported.',
+        ar: 'لغة الواجهة والتسميات، مع دعم قائمة لغات بديلة مفصولة بفواصل.',
+      },
+      examples: ['locale="fa"', 'locale="en,fa"'],
+    },
+    {
+      name: 'hijriProvider',
+      type: 'ummalqura | tabular',
+      defaultValue: 'ummalqura',
+      description: {
+        fa: 'روش محاسبه‌ی تاریخ هجری را انتخاب می‌کند.',
+        en: 'Chooses the Hijri calculation method.',
+        ar: 'يحدد طريقة حساب التاريخ الهجري.',
+      },
+      examples: ['hijri-provider="ummalqura"', 'hijri-provider="tabular"'],
+    },
+    {
+      name: 'format',
+      type: 'String',
+      defaultValue: 'type-based',
+      description: {
+        fa: 'فقط شکل رشته‌ی v-model را تعیین می‌کند؛ متن input و footer را تغییر نمی‌دهد.',
+        en: 'Controls only the serialized v-model string; it does not format the input text or footer.',
+        ar: 'يحدد شكل سلسلة v-model فقط، ولا يغير نص الإدخال أو التسمية السفلية.',
+      },
+      examples: ['format="YYYY-MM-DD"', 'format="jYYYY/jMM/jDD"'],
+    },
+    {
+      name: 'inputFormat',
+      type: 'String',
+      defaultValue: 'type-based',
+      description: {
+        fa: 'قالب نمایش و parse شدن متن داخل فیلد ورودی؛ روی رشته‌ی v-model اثر ندارد.',
+        en: 'Displays and parses the input text; it does not change the serialized v-model string.',
+        ar: 'يعرض نص الإدخال ويحلله، ولا يغير سلسلة v-model الناتجة.',
+      },
+      examples: ['input-format="DD.MM.YYYY"', 'input-format="jYY/jMM/jDD"'],
+    },
+    {
+      name: 'displayFormat',
+      type: 'String',
+      defaultValue: 'type-based',
+      description: {
+        fa: 'فقط برچسب خوانای پایین تقویم باز را تغییر می‌دهد؛ روی input و v-model اثر ندارد.',
+        en: 'Changes only the readable footer label; it does not change the input or v-model.',
+        ar: 'يغير التسمية أسفل التقويم المفتوح فقط، ولا يغير الإدخال أو v-model.',
+      },
+      examples: [
+        'display-format="D MMMM YYYY"',
+        'display-format="jYY/jMM/jDD"',
+      ],
+    },
+    {
+      name: 'inputMask',
+      type: 'String | Object',
+      defaultValue: 'calendar-based',
+      description: {
+        fa: 'کاراکترها، ترتیب و جداکننده‌های تایپ را کنترل می‌کند؛ blocks بازه‌ی هر token را تعیین می‌کند و مقدار v-model را قالب‌بندی نمی‌کند.',
+        en: 'Restricts typed characters, order, and separators; blocks define per-token ranges and it does not serialize v-model.',
+        ar: 'يقيد أحرف وترتيب وفواصل الإدخال؛ تحدد blocks نطاق كل token ولا تقوم بتسلسل v-model.',
+      },
+      examples: [
+        'input-mask="YYYY/MM/DD"',
+        ':input-mask="{ pattern: \'jYY/jMM-jDD\', autoInsert: true }"',
+        ':input-mask="{ pattern: \'YYYY/MM/DD HH:mm\', blocks: { YYYY: { from: 1970, to: 2030 }, MM: { from: 1, to: 12 }, DD: { from: 1, to: 31 }, HH: { from: 0, to: 23 }, mm: { from: 0, to: 59 } } }"',
+      ],
+    },
+    {
+      name: 'from / to',
+      type: 'String',
+      defaultValue: '1300 / 1499',
+      description: {
+        fa: 'حداقل و حداکثر تاریخ یا زمان قابل انتخاب را مشخص می‌کنند.',
+        en: 'Set the minimum and maximum selectable date or time.',
+        ar: 'يحددان أدنى وأقصى تاريخ أو وقت يمكن اختياره.',
+      },
+      examples: [
+        'from="1400/01/01" to="1410/12/29"',
+        'from="09:00" to="18:00"',
+      ],
+    },
+    {
+      name: 'column',
+      type: 'Number | Record',
+      defaultValue: '{ 576: 1 }',
+      description: {
+        fa: 'تعداد ستون‌های تقویم را ثابت یا بر اساس breakpoint تنظیم می‌کند.',
+        en: 'Sets visible calendar columns directly or by responsive breakpoint.',
+        ar: 'يضبط عدد أعمدة التقويم مباشرة أو حسب نقاط التوقف responsive.',
+      },
+      examples: [':column="2"', ':column="{ 576: 2, 900: 3 }"'],
+    },
+    {
+      name: 'weekStartsOn',
+      type: 'Number | auto',
+      defaultValue: 'auto',
+      description: {
+        fa: 'روز شروع هفته را از ۰ تا ۶ یا به‌صورت پیش‌فرض تقویم تعیین می‌کند.',
+        en: 'Sets the first weekday from 0 to 6 or uses the calendar default.',
+        ar: 'يحدد أول يوم في الأسبوع من 0 إلى 6 أو يستخدم إعداد التقويم.',
+      },
+      examples: [':week-starts-on="1"', 'week-starts-on="auto"'],
+    },
+    {
+      name: 'weekendDays',
+      type: 'Number[]',
+      defaultValue: 'calendar-aware',
+      description: {
+        fa: 'روزهای تعطیل هفتگی را برای رنگ‌بندی و رفتار تقویم مشخص می‌کند.',
+        en: 'Defines weekly holidays used for calendar styling and behavior.',
+        ar: 'يحدد العطلات الأسبوعية المستخدمة في تنسيق التقويم وسلوكه.',
+      },
+      examples: [':weekend-days="[5, 6]"', ':weekend-days="[0]"'],
+    },
+    {
+      name: 'minuteStep / hourStep',
+      type: 'Number',
+      defaultValue: '1 / 1',
+      description: {
+        fa: 'گام افزایش دقیقه و ساعت در انتخاب‌گر زمان.',
+        en: 'Minute and hour increments in the time picker.',
+        ar: 'مقدار زيادة الدقائق والساعات في منتقي الوقت.',
+      },
+      examples: [':minute-step="5"', ':hour-step="2"'],
+    },
+    {
+      name: 'autoSubmit',
+      type: 'Boolean',
+      defaultValue: 'true',
+      description: {
+        fa: 'پس از کامل شدن انتخاب، مقدار را خودکار ثبت می‌کند یا منتظر دکمه submit می‌ماند.',
+        en: 'Submits after a complete selection or waits for the submit action.',
+        ar: 'يرسل القيمة بعد اكتمال الاختيار أو ينتظر إجراء الإرسال.',
+      },
+      examples: ['auto-submit', ':auto-submit="false"'],
+    },
+    {
+      name: 'clearable',
+      type: 'Boolean',
+      defaultValue: 'false',
+      description: {
+        fa: 'دکمه‌ی پاک‌کردن مقدار را نمایش می‌دهد.',
+        en: 'Shows a control for clearing the selected value.',
+        ar: 'يعرض زرًا لمسح القيمة المحددة.',
+      },
+      examples: ['clearable', ':clearable="false"'],
+    },
+    {
+      name: 'clickOn',
+      type: 'all | input | icon | none',
+      defaultValue: 'all',
+      description: {
+        fa: 'مشخص می‌کند کلیک روی کدام بخش picker را باز کند.',
+        en: 'Chooses which area opens the picker.',
+        ar: 'يحدد الجزء الذي يفتح منتقي التاريخ عند النقر.',
+      },
+      examples: ['click-on="input"', 'click-on="icon"'],
+    },
+    {
+      name: 'modal / show',
+      type: 'Boolean',
+      defaultValue: 'false',
+      description: {
+        fa: 'modal نحوه‌ی نمایش را modal می‌کند؛ show باز یا بسته بودن را کنترل می‌کند.',
+        en: 'modal changes presentation; show controls whether the picker is open.',
+        ar: 'modal يغير طريقة العرض، و show يتحكم في فتح المنتقي.',
+      },
+      examples: ['modal', ':show="isOpen"'],
+    },
+    {
+      name: 'label',
+      type: 'String',
+      defaultValue: '—',
+      description: {
+        fa: 'برچسب دسترس‌پذیر و قابل نمایش برای فیلد ورودی.',
+        en: 'Visible and accessible label for the input field.',
+        ar: 'تسمية مرئية وميسرة لحقل الإدخال.',
+      },
+      examples: ['label="Start date"', 'label="تاریخ شروع"'],
+    },
+    {
+      name: 'dualInput',
+      type: 'Boolean',
+      defaultValue: 'false',
+      description: {
+        fa: 'در حالت range دو فیلد جدا برای شروع و پایان نمایش می‌دهد.',
+        en: 'Renders separate start and end inputs in range mode.',
+        ar: 'يعرض حقلي بداية ونهاية منفصلين في وضع النطاق.',
+      },
+      examples: ['dual-input', ':dual-input="false"'],
+    },
+    {
+      name: 'iconInside',
+      type: 'Boolean',
+      defaultValue: 'false',
+      description: {
+        fa: 'آیکن تقویم را داخل کادر input قرار می‌دهد.',
+        en: 'Places the calendar icon inside the input box.',
+        ar: 'يضع أيقونة التقويم داخل حقل الإدخال.',
+      },
+      examples: ['icon-inside', ':icon-inside="false"'],
+    },
+    {
+      name: 'shortcut',
+      type: 'Boolean | Object',
+      defaultValue: 'false',
+      description: {
+        fa: 'با مقدار true میانبرهای داخلی را فعال می‌کند. در حالت object می‌توانید میانبرهای تک‌تاریخ، بازه، زمان و datetime را با برچسب دلخواه تعریف کنید.',
+        en: 'true enables built-in date/time shortcuts. An object lets you define labeled single dates, ranges, times, and datetimes.',
+        ar: 'تفعّل true الاختصارات المضمنة للتاريخ والوقت. ويسمح object بتعريف تواريخ أو نطاقات أو أوقات أو datetime بعناوين مخصصة.',
+      },
+      examples: [
+        'shortcut',
+        'date-single: now · yesterday · tomorrow · first/last of week',
+        'date-range: this/previous/next week · this/previous/next month',
+        'time-single: now · one hour ago/later · midnight · midday',
+        'time-range: this/previous/next hour · all day',
+        ':shortcut="{ \'Release\': [releaseDate] }"',
+        ':shortcut="{ \'Sprint\': [sprintStart, sprintEnd] }"',
+        ':shortcut="{ \'Office hours\': [startTime, endTime] }"',
+      ],
+    },
+    {
+      name: 'disable',
+      type: 'Array | String | Function | RegExp',
+      defaultValue: '—',
+      description: {
+        fa: 'روزها یا زمان‌های غیرقابل انتخاب را با چند نوع قانون مشخص می‌کند.',
+        en: 'Disables dates or times using a list, string, function, or regular expression.',
+        ar: 'يعطل تواريخ أو أوقاتًا باستخدام قائمة أو نص أو دالة أو تعبير منتظم.',
+      },
+      examples: ['disable="1404/01/01"', ':disable="date => date.day() === 5"'],
+    },
+    {
+      name: 'localeConfig',
+      type: 'Object',
+      defaultValue: '—',
+      description: {
+        fa: 'رشته‌های ترجمه و تنظیمات زبان را اضافه یا override می‌کند.',
+        en: 'Adds or overrides localized strings and locale settings.',
+        ar: 'يضيف أو يستبدل النصوص وإعدادات اللغة.',
+      },
+      examples: [
+        ':locale-config="{ today: \'Now\' }"',
+        ':locale-config="customLocale"',
+      ],
+    },
+    {
+      name: 'styles',
+      type: 'Object',
+      defaultValue: '—',
+      description: {
+        fa: 'استایل‌های داخلی کامپوننت را برای ظاهر سفارشی override می‌کند.',
+        en: 'Overrides internal component styles for visual customization.',
+        ar: 'يستبدل أنماط المكوّن الداخلية للتخصيص البصري.',
+      },
+      examples: [
+        ':styles="{ primaryColor: \'#7c3aed\' }"',
+        ':styles="themeStyles"',
+      ],
+    },
+    {
+      name: 'color',
+      type: 'String',
+      defaultValue: 'theme default',
+      description: {
+        fa: 'رنگ آماده‌ی رابط را از بین blue، red، pink، orange، green، purple و gray انتخاب می‌کند.',
+        en: 'Selects a preset UI color: blue, red, pink, orange, green, purple, or gray.',
+        ar: 'يختار لون الواجهة من blue أو red أو pink أو orange أو green أو purple أو gray.',
+      },
+      examples: ['color="blue"', 'color="purple"'],
+    },
+  ];
   const ui = {
     fa: {
       eyebrow: 'Vue 3 · انتخاب‌گر تاریخ عمومی',
@@ -108,7 +447,40 @@
       copy: 'کپی کد',
       copied: 'کپی شد',
       timeSamples: 'نمونه‌های زمان و بازه',
-      api: 'با propهای calendar، mode و hijri-provider رفتار کامپوننت را کنترل کنید.',
+      formatGuide: 'راهنمای فرمت‌ها',
+      formatInput: 'فرمت ورودی',
+      formatMask: 'ماسک ورودی',
+      formatDisplay: 'فرمت نمایش',
+      formatGuideIntro:
+        'این سه تنظیم جدا از هم کار می‌کنند: مقدار v-model، متن ورودی و برچسب پایین تقویم.',
+      inputFormatGuide:
+        'قالبی است که کاربر در فیلد متنی وارد می‌کند. مثال: jYY/jMM/jDD برای تاریخ جلالی.',
+      inputMaskGuide:
+        'ورودی را به کاراکترها و ترتیب مجاز محدود می‌کند؛ blocks برای بازه‌ی هر token، روز ۰۱ تا ۳۱، ماه ۰۱ تا ۱۲ و strict برای بررسی تاریخ کامل است.',
+      displayFormatGuide:
+        'فقط برچسب خوانای پایین تقویم باز را تغییر می‌دهد و مقدار input یا v-model را تغییر نمی‌دهد.',
+      formatExample: 'مثال',
+      propsGuide: 'راهنمای کامل پراپ‌ها',
+      propsGuideKicker: 'راهنمای پراپ‌ها',
+      propsGuideIntro:
+        'همه‌ی پراپ‌های ورودی کامپوننت را با کاربرد، مقدار پیش‌فرض و چند مثال ببینید.',
+      defaultValue: 'پیش‌فرض',
+      examples: 'مثال‌ها',
+      modelCalendar: 'تقویم v-model',
+      modelCalendarActive: 'تقویم فعال',
+      format: 'فرمت v-model',
+      modelFormatGuide:
+        'فقط شکل رشته‌ی v-model را تعیین می‌کند؛ متن input و برچسب پایین تقویم را تغییر نمی‌دهد.',
+      modal: 'نمایش modal',
+      show: 'باز بودن اجباری',
+      label: 'برچسب ورودی',
+      shortcut: 'میانبرها',
+      localeConfig: 'سفارشی‌سازی ترجمه',
+      styles: 'استایل سفارشی',
+      stylesDefault: 'پیش‌فرض',
+      stylesPurple: 'تم بنفش',
+      liveHint:
+        'تاریخ را دستی وارد کنید؛ پس از blur، مقدار تقویم و ماه نمایشی همگام می‌شوند.',
     },
     en: {
       eyebrow: 'Vue 3 · Universal datepicker',
@@ -135,7 +507,40 @@
       copy: 'Copy code',
       copied: 'Copied',
       timeSamples: 'Time and range examples',
-      api: 'Control the component with calendar, mode, and hijri-provider props.',
+      formatGuide: 'Format guide',
+      formatInput: 'Input format',
+      formatMask: 'Input mask',
+      formatDisplay: 'Display format',
+      formatGuideIntro:
+        'These three settings have separate jobs: the v-model value, the text input, and the label at the bottom of the open calendar.',
+      inputFormatGuide:
+        'Controls the text the user enters. Example: jYY/jMM/jDD for a Jalali date.',
+      inputMaskGuide:
+        'Restricts characters and order; blocks define token ranges, day is 01–31, month 01–12, and strict validates the complete date.',
+      displayFormatGuide:
+        'Changes only the readable label at the bottom of the open calendar; it does not change the input or v-model.',
+      formatExample: 'Example',
+      propsGuide: 'Complete props guide',
+      propsGuideKicker: 'PROPS GUIDE',
+      propsGuideIntro:
+        'Review every component input prop with its purpose, default value, and multiple examples.',
+      defaultValue: 'Default',
+      examples: 'Examples',
+      modelCalendar: 'v-model calendar',
+      modelCalendarActive: 'Active calendar',
+      format: 'v-model format',
+      modelFormatGuide:
+        'Controls only the serialized v-model string; it does not format the input text or the calendar footer.',
+      modal: 'Modal presentation',
+      show: 'Force open',
+      label: 'Input label',
+      shortcut: 'Shortcuts',
+      localeConfig: 'Custom translations',
+      styles: 'Custom styles',
+      stylesDefault: 'Default',
+      stylesPurple: 'Purple theme',
+      liveHint:
+        'Type a date manually; on blur, the model and visible calendar stay in sync.',
     },
     ar: {
       eyebrow: 'Vue 3 · منتقي تواريخ شامل',
@@ -161,7 +566,40 @@
       copy: 'نسخ الكود',
       copied: 'تم النسخ',
       timeSamples: 'أمثلة الوقت والنطاق',
-      api: 'تحكم في المكوّن عبر calendar و mode و hijri-provider.',
+      formatGuide: 'دليل التنسيقات',
+      formatInput: 'تنسيق الإدخال',
+      formatMask: 'قناع الإدخال',
+      formatDisplay: 'تنسيق العرض',
+      formatGuideIntro:
+        'تعمل هذه الإعدادات الثلاثة بشكل مستقل: قيمة v-model، وحقل الإدخال، والتسمية أسفل التقويم المفتوح.',
+      inputFormatGuide:
+        'يحدد النص الذي يدخله المستخدم. مثال: jYY/jMM/jDD للتاريخ الجلالي.',
+      inputMaskGuide:
+        'يقيد الأحرف والترتيب؛ blocks تحدد نطاق كل token، واليوم 01–31 والشهر 01–12، وstrict يحقق التاريخ الكامل.',
+      displayFormatGuide:
+        'يغير التسمية المقروءة أسفل التقويم المفتوح فقط، ولا يغير حقل الإدخال أو v-model.',
+      formatExample: 'مثال',
+      propsGuide: 'الدليل الكامل للخصائص',
+      propsGuideKicker: 'دليل الخصائص',
+      propsGuideIntro:
+        'راجع كل خاصية إدخال مع وظيفتها وقيمتها الافتراضية وأمثلة متعددة.',
+      defaultValue: 'الافتراضي',
+      examples: 'أمثلة',
+      modelCalendar: 'تقويم v-model',
+      modelCalendarActive: 'التقويم النشط',
+      format: 'تنسيق v-model',
+      modelFormatGuide:
+        'يحدد شكل سلسلة v-model فقط، ولا يغير نص الإدخال أو تسمية أسفل التقويم.',
+      modal: 'عرض مشروط',
+      show: 'فتح إجباري',
+      label: 'تسمية الإدخال',
+      shortcut: 'الاختصارات',
+      localeConfig: 'ترجمات مخصصة',
+      styles: 'أنماط مخصصة',
+      stylesDefault: 'الافتراضي',
+      stylesPurple: 'سمة بنفسجية',
+      liveHint:
+        'أدخل التاريخ يدوياً؛ بعد مغادرة الحقل يتزامن النموذج والشهر المعروض.',
     },
   } as const;
   const language = ref<Language>('en');
@@ -178,24 +616,65 @@
   );
   const modalSample = ref<CodeSample | null>(null);
   const copied = ref(false);
-  const advancedColor = ref('blue');
+  const advancedColor = ref<PickerColor>('blue');
   const advancedFrom = ref('');
   const advancedTo = ref('');
   const advancedWeekStart = ref<'auto' | number>('auto');
   const advancedWeekendDays = ref<number[]>([]);
   const advancedLocale = ref('');
+  const advancedModelCalendar = ref<CalendarId | 'active'>('active');
   const advancedValue = ref('2025-04-04');
+  const advancedFormat = ref('');
+  const advancedInputFormat = ref('');
+  const advancedInputMask = ref('');
+  const advancedDisplayFormat = ref('');
   const advancedColumns = ref(1);
   const advancedClearable = ref(true);
   const advancedAutoSubmit = ref(true);
+  const advancedMaskAutoInsert = ref(true);
+  const advancedMaskStrict = ref(true);
+  const advancedMaskBlocks = ref(false);
   const advancedIconInside = ref(false);
   const advancedDualInput = ref(false);
+  const advancedModal = ref(false);
+  const advancedShow = ref(false);
+  const advancedLabel = ref('');
+  const advancedShortcut = ref(false);
+  const advancedLocaleConfig = ref(false);
+  const advancedStyles = ref<'default' | 'purple'>('default');
   const advancedMinuteStep = ref(1);
   const advancedHourStep = ref(1);
   const advancedClickOn = ref<'all' | 'input' | 'icon' | 'none'>('all');
   const t = computed(() => ui[language.value]);
-  const selectedCalendar = computed(
-    () => calendars.find((calendar) => calendar.id === activeCalendar.value)!,
+  const liveStyles = computed(() =>
+    advancedStyles.value === 'purple'
+      ? {
+          'primary-color': '#7c3aed',
+          'secondary-color': '#ddd6fe',
+          'in-range-background': '#ede9fe',
+        }
+      : undefined,
+  );
+  const liveLocaleConfig = computed(() =>
+    advancedLocaleConfig.value
+      ? {
+          en: { translations: { today: 'Now' } },
+          fa: { translations: { today: 'اکنون' } },
+          ar: { translations: { today: 'الآن' } },
+        }
+      : undefined,
+  );
+  const liveMaskBlocks = {
+    YYYY: { from: 1970, to: 2030 },
+    MM: { from: 1, to: 12 },
+    DD: { from: 1, to: 31 },
+    HH: { from: 0, to: 23 },
+    mm: { from: 0, to: 59 },
+  };
+  const selectedCalendar = computed<DemoCalendar>(
+    () =>
+      calendars.find((calendar) => calendar.id === activeCalendar.value) ||
+      calendars[0],
   );
   const pageDirection = computed(() =>
     language.value === 'en' ? 'ltr' : 'rtl',
@@ -253,6 +732,9 @@
       `  type="${pickerType.value}"`,
       `  mode="${mode.value}"`,
       `  locale="${advancedLocale.value || calendarLocale(calendar.id)}"`,
+      advancedModelCalendar.value !== 'active'
+        ? `  model-calendar="${advancedModelCalendar.value}"`
+        : '',
       `  :column="${advancedColumns.value}"`,
       `  color="${advancedColor.value}"`,
       `  week-starts-on="${advancedWeekStart.value}"`,
@@ -261,8 +743,28 @@
       `  :hour-step="${advancedHourStep.value}"`,
       advancedClearable.value ? '  clearable' : '  :clearable="false"',
       advancedAutoSubmit.value ? '  auto-submit' : '  :auto-submit="false"',
+      advancedFormat.value ? `  format="${advancedFormat.value}"` : '',
+      advancedInputFormat.value
+        ? `  input-format="${advancedInputFormat.value}"`
+        : '',
+      advancedInputMask.value
+        ? `  :input-mask="{ pattern: '${advancedInputMask.value}', autoInsert: ${advancedMaskAutoInsert.value}, strict: ${advancedMaskStrict.value}${advancedMaskBlocks.value ? ', blocks: { YYYY: { from: 1970, to: 2030 }, MM: { from: 1, to: 12 }, DD: { from: 1, to: 31 }, HH: { from: 0, to: 23 }, mm: { from: 0, to: 59 } }' : ''} }"`
+        : '',
+      advancedDisplayFormat.value
+        ? `  display-format="${advancedDisplayFormat.value}"`
+        : '',
       advancedIconInside.value ? '  icon-inside' : '',
       advancedDualInput.value ? '  dual-input' : '',
+      advancedModal.value ? '  modal' : '',
+      advancedShow.value ? '  show' : '',
+      advancedLabel.value ? `  label="${advancedLabel.value}"` : '',
+      advancedShortcut.value ? '  shortcut' : '',
+      advancedLocaleConfig.value
+        ? `  :locale-config="{ en: { translations: { today: 'Now' } } }"`
+        : '',
+      advancedStyles.value === 'purple'
+        ? `  :styles="{ 'primary-color': '#7c3aed' }"`
+        : '',
       advancedFrom.value ? `  from="${advancedFrom.value}"` : '',
       advancedTo.value ? `  to="${advancedTo.value}"` : '',
       advancedWeekendDays.value.length
@@ -315,10 +817,11 @@
       if (pickerType.value === 'time') {
         mainValue.value = undefined;
       } else if (!Array.isArray(mainValue.value)) {
-        mainValue.value = [mainValue.value, mainValue.value];
+        const value = mainValue.value ?? pickerSeedValue();
+        mainValue.value = [value, value];
       }
     } else if (Array.isArray(mainValue.value)) {
-      mainValue.value = mainValue.value[0] || pickerSeedValue();
+      mainValue.value = mainValue.value[0] ?? pickerSeedValue();
     }
   });
   function openCode(sample: CodeSample) {
@@ -344,12 +847,26 @@
     advancedWeekStart.value = 'auto';
     advancedWeekendDays.value = [];
     advancedLocale.value = '';
+    advancedModelCalendar.value = 'active';
     advancedValue.value = '2025-04-04';
+    advancedFormat.value = '';
+    advancedInputFormat.value = '';
+    advancedInputMask.value = '';
+    advancedDisplayFormat.value = '';
     advancedColumns.value = 1;
     advancedClearable.value = true;
     advancedAutoSubmit.value = true;
+    advancedMaskAutoInsert.value = true;
+    advancedMaskStrict.value = true;
+    advancedMaskBlocks.value = false;
     advancedIconInside.value = false;
     advancedDualInput.value = false;
+    advancedModal.value = false;
+    advancedShow.value = false;
+    advancedLabel.value = '';
+    advancedShortcut.value = false;
+    advancedLocaleConfig.value = false;
+    advancedStyles.value = 'default';
     advancedMinuteStep.value = 1;
     advancedHourStep.value = 1;
     advancedClickOn.value = 'all';
@@ -488,6 +1005,18 @@
                   <option value="zh">中文</option>
                 </select></label
               ><label
+                >{{ t.modelCalendar
+                }}<select v-model="advancedModelCalendar">
+                  <option value="active">{{ t.modelCalendarActive }}</option>
+                  <option
+                    v-for="calendar in calendars"
+                    :key="calendar.id"
+                    :value="calendar.id"
+                  >
+                    {{ calendar.title[language] }}
+                  </option>
+                </select></label
+              ><label
                 >From<input
                   v-model="advancedFrom"
                   :placeholder="selectedCalendar.from" /></label
@@ -495,6 +1024,66 @@
                 >To<input
                   v-model="advancedTo"
                   :placeholder="selectedCalendar.to" /></label
+              ><label
+                ><span class="format-label"
+                  >{{ t.format
+                  }}<button
+                    type="button"
+                    class="format-info"
+                    :aria-label="`${t.format} ${t.formatExample}`"
+                  >
+                    ?</button
+                  ><span class="field-tooltip" role="tooltip">{{
+                    t.modelFormatGuide
+                  }}</span></span
+                ><input
+                  v-model="advancedFormat"
+                  placeholder="YYYY-MM-DD" /></label
+              ><label
+                ><span class="format-label"
+                  >{{ t.formatInput
+                  }}<button
+                    type="button"
+                    class="format-info"
+                    :aria-label="`${t.formatInput} ${t.formatExample}`"
+                  >
+                    ?</button
+                  ><span class="field-tooltip" role="tooltip">{{
+                    t.inputFormatGuide
+                  }}</span></span
+                ><input
+                  v-model="advancedInputFormat"
+                  placeholder="YYYY-MM-DD" /></label
+              ><label
+                ><span class="format-label"
+                  >{{ t.formatMask
+                  }}<button
+                    type="button"
+                    class="format-info"
+                    :aria-label="`${t.formatMask} ${t.formatExample}`"
+                  >
+                    ?</button
+                  ><span class="field-tooltip" role="tooltip">{{
+                    t.inputMaskGuide
+                  }}</span></span
+                ><input
+                  v-model="advancedInputMask"
+                  placeholder="calendar-default" /></label
+              ><label
+                ><span class="format-label"
+                  >{{ t.formatDisplay
+                  }}<button
+                    type="button"
+                    class="format-info"
+                    :aria-label="`${t.formatDisplay} ${t.formatExample}`"
+                  >
+                    ?</button
+                  ><span class="field-tooltip" role="tooltip">{{
+                    t.displayFormatGuide
+                  }}</span></span
+                ><input
+                  v-model="advancedDisplayFormat"
+                  placeholder="YY-MM-DD" /></label
               ><label
                 >Months shown<select v-model.number="advancedColumns">
                   <option :value="1">1 month</option>
@@ -526,47 +1115,89 @@
                   v-model.number="advancedHourStep"
                   type="number"
                   min="1"
-                  max="24" /></label
-              ><span class="advanced-label weekly-label">Weekly holidays</span
-              ><label class="check-option"
-                ><input
-                  v-model="advancedWeekendDays"
-                  type="checkbox"
-                  :value="0"
-                />Sunday</label
-              ><label class="check-option"
-                ><input
-                  v-model="advancedWeekendDays"
-                  type="checkbox"
-                  :value="5"
-                />Friday</label
-              ><label class="check-option"
-                ><input
-                  v-model="advancedWeekendDays"
-                  type="checkbox"
-                  :value="6"
-                />Saturday</label
-              ><label class="check-option"
-                ><input
-                  v-model="advancedClearable"
-                  type="checkbox"
-                />Clearable</label
-              ><label class="check-option"
-                ><input v-model="advancedAutoSubmit" type="checkbox" />Auto
-                submit</label
-              ><label class="check-option"
-                ><input v-model="advancedIconInside" type="checkbox" />Icon
-                inside</label
-              ><label class="check-option"
-                ><input v-model="advancedDualInput" type="checkbox" />Dual
-                input</label
+                  max="24"
+              /></label>
+              <fieldset class="advanced-group">
+                <legend>Weekly holidays</legend>
+                <label class="check-option"
+                  ><input
+                    v-model="advancedWeekendDays"
+                    type="checkbox"
+                    :value="0"
+                  />Sunday</label
+                ><label class="check-option"
+                  ><input
+                    v-model="advancedWeekendDays"
+                    type="checkbox"
+                    :value="5"
+                  />Friday</label
+                ><label class="check-option"
+                  ><input
+                    v-model="advancedWeekendDays"
+                    type="checkbox"
+                    :value="6"
+                  />Saturday</label
+                >
+              </fieldset>
+              <fieldset class="advanced-group behavior-group">
+                <legend>Behavior</legend>
+                <label class="check-option"
+                  ><input
+                    v-model="advancedClearable"
+                    type="checkbox"
+                  />Clearable</label
+                ><label class="check-option"
+                  ><input v-model="advancedAutoSubmit" type="checkbox" />Auto
+                  submit</label
+                ><label class="check-option"
+                  ><input
+                    v-model="advancedMaskAutoInsert"
+                    type="checkbox"
+                  />Auto mask separators</label
+                ><label class="check-option"
+                  ><input v-model="advancedMaskStrict" type="checkbox" />Strict
+                  mask dates</label
+                ><label class="check-option"
+                  ><input v-model="advancedMaskBlocks" type="checkbox" />Custom
+                  mask blocks</label
+                ><label class="check-option"
+                  ><input v-model="advancedIconInside" type="checkbox" />Icon
+                  inside</label
+                ><label class="check-option"
+                  ><input v-model="advancedDualInput" type="checkbox" />Dual
+                  input</label
+                ><label class="check-option"
+                  ><input v-model="advancedModal" type="checkbox" />{{
+                    t.modal
+                  }}</label
+                ><label class="check-option"
+                  ><input v-model="advancedShow" type="checkbox" />{{
+                    t.show
+                  }}</label
+                ><label class="check-option"
+                  ><input v-model="advancedShortcut" type="checkbox" />{{
+                    t.shortcut
+                  }}</label
+                >
+              </fieldset>
+              <label
+                >{{ t.label
+                }}<input
+                  v-model="advancedLabel"
+                  :placeholder="t.active" /></label
+              ><label
+                >{{ t.styles
+                }}<select v-model="advancedStyles">
+                  <option value="default">{{ t.stylesDefault }}</option>
+                  <option value="purple">{{ t.stylesPurple }}</option>
+                </select></label
+              ><label class="check-option advanced-toggle"
+                ><input v-model="advancedLocaleConfig" type="checkbox" />{{
+                  t.localeConfig
+                }}</label
               >
             </div>
           </details>
-          <div class="api-note">
-            <strong>API</strong>
-            <p>{{ t.api }}</p>
-          </div>
         </aside>
         <div class="main-preview">
           <div class="preview-topline">
@@ -584,16 +1215,36 @@
               :key="`${activeCalendar}-${hijriProvider}-${mode}-${pickerType}-${language}`"
               v-model="mainValue"
               :calendar="activeCalendar"
+              :model-calendar="advancedModelCalendar"
               :format="
-                activeCalendar === 'jalali' ? 'jYYYY/jMM/jDD' : undefined
+                advancedFormat ||
+                (activeCalendar === 'jalali' ? 'jYYYY/jMM/jDD' : undefined)
               "
+              :input-format="advancedInputFormat || undefined"
+              :input-mask="
+                advancedInputMask
+                  ? {
+                      pattern: advancedInputMask,
+                      autoInsert: advancedMaskAutoInsert,
+                      strict: advancedMaskStrict,
+                      blocks: advancedMaskBlocks ? liveMaskBlocks : undefined,
+                    }
+                  : undefined
+              "
+              :display-format="advancedDisplayFormat || undefined"
               :hijri-provider="hijriProvider"
               :mode="mode"
               :type="pickerType"
               :locale="advancedLocale || calendarLocale(activeCalendar)"
               :column="advancedColumns"
-              :from="advancedFrom || selectedCalendar.from"
-              :to="advancedTo || selectedCalendar.to"
+              :from="
+                advancedFrom ||
+                (pickerType === 'time' ? '00:00' : selectedCalendar.from)
+              "
+              :to="
+                advancedTo ||
+                (pickerType === 'time' ? '23:59' : selectedCalendar.to)
+              "
               :week-starts-on="advancedWeekStart"
               :weekend-days="
                 advancedWeekendDays.length ? advancedWeekendDays : undefined
@@ -606,18 +1257,52 @@
               :dual-input="advancedDualInput"
               :auto-submit="advancedAutoSubmit"
               :clearable="advancedClearable"
-              :label="`${t.active} ${selectedCalendar.title[language]}`"
+              :modal="advancedModal"
+              :show="advancedShow"
+              :label="
+                advancedLabel ||
+                `${t.active} ${selectedCalendar.title[language]}`
+              "
+              :shortcut="advancedShortcut"
+              :locale-config="liveLocaleConfig"
+              :styles="liveStyles"
             />
           </div>
           <div class="value-panel">
             <span>{{ t.value }}</span
             ><code>{{ mainValue || '—' }}</code>
           </div>
+          <p class="playground-hint">{{ t.liveHint }}</p>
           <div class="generated-code">
             <h4>HTML</h4>
             <pre><code>{{ mainCodeHtml }}</code></pre>
           </div>
         </div>
+      </div>
+    </section>
+    <section class="prop-guide" aria-labelledby="props-title">
+      <div class="section-heading">
+        <div>
+          <span class="section-kicker">{{ t.propsGuideKicker }}</span>
+          <h2 id="props-title">{{ t.propsGuide }}</h2>
+        </div>
+        <p>{{ t.propsGuideIntro }}</p>
+      </div>
+      <div class="prop-guide-grid">
+        <article v-for="prop in propGuide" :key="prop.name" class="prop-card">
+          <div class="prop-card-heading">
+            <code>{{ prop.name }}</code>
+            <span>{{ prop.type }}</span>
+          </div>
+          <p>{{ prop.description[language] }}</p>
+          <small>{{ t.defaultValue }}: {{ prop.defaultValue }}</small>
+          <div class="prop-examples">
+            <strong>{{ t.examples }}</strong>
+            <code v-for="example in prop.examples" :key="example">{{
+              example
+            }}</code>
+          </div>
+        </article>
       </div>
     </section>
     <section class="gallery" aria-labelledby="gallery-title">
@@ -982,21 +1667,6 @@
   .radio-option input {
     accent-color: var(--accent);
   }
-  .api-note {
-    margin-top: 20px;
-    padding: 13px;
-    border-radius: 8px;
-    background: #f6eee8;
-  }
-  .api-note strong {
-    color: var(--accent);
-  }
-  .api-note p {
-    margin: 5px 0 0;
-    color: var(--muted);
-    font-size: 0.7rem;
-    line-height: 1.7;
-  }
   .main-preview {
     min-height: 370px;
     padding: 25px 30px;
@@ -1066,6 +1736,12 @@
     color: var(--accent-dark);
     font-size: 0.78rem;
     direction: ltr;
+  }
+  .playground-hint {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.6;
   }
   .generated-code {
     margin-top: 16px;
@@ -1407,6 +2083,119 @@
     color: var(--muted);
     font-size: 0.68rem;
   }
+  .format-label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .format-info {
+    width: 15px;
+    height: 15px;
+    padding: 0;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--accent);
+    cursor: help;
+    font-size: 0.58rem;
+    font-weight: 800;
+  }
+  .field-tooltip {
+    position: absolute;
+    z-index: 5;
+    left: 20px;
+    bottom: 20px;
+    display: none;
+    width: min(290px, calc(100vw - 70px));
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #263236;
+    color: #fffdf9;
+    box-shadow: 0 8px 20px #2632362b;
+    font-size: 0.68rem;
+    line-height: 1.45;
+  }
+  .field-tooltip code {
+    color: #f4c0a4;
+  }
+  .format-label:hover .field-tooltip,
+  .format-label:focus-within .field-tooltip {
+    display: block;
+  }
+  .prop-guide {
+    padding: 34px 0 10px;
+  }
+  .prop-guide-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .prop-card {
+    min-height: 190px;
+    padding: 15px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--paper);
+  }
+  .prop-card-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 9px;
+  }
+  .prop-card-heading code {
+    color: var(--accent-dark);
+    font-weight: 800;
+  }
+  .prop-card-heading span,
+  .prop-card small {
+    color: var(--muted);
+    font-size: 0.66rem;
+  }
+  .prop-card p {
+    min-height: 46px;
+    margin: 0 0 8px;
+    color: var(--muted);
+    font-size: 0.72rem;
+    line-height: 1.5;
+  }
+  .prop-examples {
+    display: grid;
+    gap: 5px;
+    margin-top: 10px;
+  }
+  .prop-examples strong {
+    color: var(--accent);
+    font-size: 0.66rem;
+  }
+  .prop-examples code {
+    display: block;
+    overflow-wrap: anywhere;
+    padding: 4px 6px;
+    border-radius: 5px;
+    background: #f2ece5;
+    color: #263236;
+    font-size: 0.64rem;
+  }
+  .advanced-group {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-column: 1 / -1;
+    gap: 7px;
+    margin: 0;
+    padding: 8px;
+    border: 1px solid #e4ded5;
+    border-radius: 7px;
+  }
+  .advanced-group legend {
+    padding: 0 4px;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
   .advanced-fields select,
   .advanced-fields input {
     width: 100%;
@@ -1430,9 +2219,16 @@
     flex-direction: row !important;
     align-items: center;
     gap: 5px;
+    min-height: 28px;
+    line-height: 1.25;
   }
   .check-option input {
     width: auto;
+  }
+  .behavior-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 12px;
+    row-gap: 8px;
   }
   .card-picker .pdp-group,
   .card-picker .pdp-input,
@@ -1443,8 +2239,19 @@
   .control-panel {
     min-width: 0;
   }
+  @media (max-width: 1000px) {
+    .prop-guide-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
   @media (max-width: 650px) {
     .advanced-fields {
+      grid-template-columns: 1fr;
+    }
+    .behavior-group {
+      grid-template-columns: 1fr;
+    }
+    .prop-guide-grid {
       grid-template-columns: 1fr;
     }
   }

@@ -9,15 +9,21 @@
 })(this, function (exports, vue) {
   'use strict';
 
-  function createCommonjsModule(fn, module) {
-    return (
-      (module = { exports: {} }),
-      fn(module, module.exports),
-      module.exports
-    );
+  function getDefaultExportFromCjs(x) {
+    return x &&
+      x.__esModule &&
+      Object.prototype.hasOwnProperty.call(x, 'default')
+      ? x['default']
+      : x;
   }
 
-  var PersianDate_min = createCommonjsModule(function (module) {
+  var PersianDate_min = { exports: {} };
+
+  var hasRequiredPersianDate_min;
+
+  function requirePersianDate_min() {
+    if (hasRequiredPersianDate_min) return PersianDate_min.exports;
+    hasRequiredPersianDate_min = 1;
     var CALENDAR = {
         jalali: {
           months: {
@@ -2052,8 +2058,14 @@
       (PersianDate.isValidDate = isValidDate),
       (PersianDate.isValidTime = isValidTime),
       (PersianDate.getDaysInMonth = getDaysInMonth),
-      (module.exports = PersianDate));
-  });
+      (PersianDate_min.exports = PersianDate));
+    return PersianDate_min.exports;
+  }
+
+  var PersianDate_minExports = requirePersianDate_min();
+  var PersianDate = /*@__PURE__*/ getDefaultExportFromCjs(
+    PersianDate_minExports,
+  );
 
   const Core = {
     langs: {
@@ -2165,14 +2177,33 @@
       },
     },
     mergeObject: function (original, changed) {
-      const newObject = JSON.parse(JSON.stringify(original));
-      for (const key in changed) {
-        if (
-          original[key] &&
-          Object.prototype.toString.call(changed[key]) === '[object Object]'
-        )
-          newObject[key] = this.mergeObject(original[key], changed[key]);
-        else newObject[key] = changed[key];
+      const unsafeKeys = new Set(['__proto__', 'prototype', 'constructor']);
+      const isPlainObject = (value) => {
+        if (Object.prototype.toString.call(value) !== '[object Object]') {
+          return false;
+        }
+        const prototype = Object.getPrototypeOf(value);
+        return prototype === Object.prototype || prototype === null;
+      };
+      const cloneValue = (value) => {
+        if (Array.isArray(value)) return value.map(cloneValue);
+        if (!isPlainObject(value)) return value;
+        const clone = {};
+        for (const key of Object.keys(value)) {
+          if (!unsafeKeys.has(key)) clone[key] = cloneValue(value[key]);
+        }
+        return clone;
+      };
+      const newObject = cloneValue(original);
+      if (!changed) return newObject;
+      for (const key of Object.keys(changed)) {
+        if (unsafeKeys.has(key)) continue;
+        const changedValue = changed[key];
+        if (isPlainObject(newObject[key]) && isPlainObject(changedValue)) {
+          newObject[key] = this.mergeObject(newObject[key], changedValue);
+        } else {
+          newObject[key] = cloneValue(changedValue);
+        }
       }
       return newObject;
     },
@@ -2317,7 +2348,7 @@
       return typeof val == 'function';
     },
     isPersianDate: function (val) {
-      return PersianDate_min.isPersianDate(val);
+      return PersianDate.isPersianDate(val);
     },
   };
   // Built-in language packs used by the calendar-aware locale defaults. They
@@ -2403,22 +2434,22 @@
     const names = isHebrewLeapYear(year)
       ? [
           'Tishri',
-          'Cheshvan',
+          'Heshvan',
           'Kislev',
           'Tevet',
           'Shevat',
           'Adar I',
-          'Adar',
+          'Adar II',
           'Nisan',
           'Iyar',
           'Sivan',
-          'Tammuz',
+          'Tamuz',
           'Av',
           'Elul',
         ]
       : [
           'Tishri',
-          'Cheshvan',
+          'Heshvan',
           'Kislev',
           'Tevet',
           'Shevat',
@@ -2426,7 +2457,7 @@
           'Nisan',
           'Iyar',
           'Sivan',
-          'Tammuz',
+          'Tamuz',
           'Av',
           'Elul',
         ];
@@ -2435,25 +2466,73 @@
     );
     return index >= 0 ? index + 1 : parsePart(value);
   }
+  function parseChineseMonth(value) {
+    const month = (value || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    const names = [
+      'first month',
+      'second month',
+      'third month',
+      'fourth month',
+      'fifth month',
+      'sixth month',
+      'seventh month',
+      'eighth month',
+      'ninth month',
+      'tenth month',
+      'eleventh month',
+      'twelfth month',
+    ];
+    const leapMonth = month.endsWith('bis');
+    const normalized = leapMonth ? month.slice(0, -3).trim() : month;
+    const index = names.indexOf(normalized);
+    return {
+      month: index >= 0 ? index + 1 : parsePart(value),
+      leapMonth,
+    };
+  }
   function sameDate(left, right) {
     return (
       left.year === right.year &&
       left.month === right.month &&
-      left.day === right.day
+      left.day === right.day &&
+      Boolean(left.leapMonth) === Boolean(right.leapMonth)
     );
+  }
+  function compareDateParts(left, right) {
+    const leftValues = [
+      left.year,
+      left.month,
+      left.leapMonth ? 1 : 0,
+      left.day,
+    ];
+    const rightValues = [
+      right.year,
+      right.month,
+      right.leapMonth ? 1 : 0,
+      right.day,
+    ];
+    for (let index = 0; index < leftValues.length; index++) {
+      if (leftValues[index] !== rightValues[index])
+        return leftValues[index] < rightValues[index] ? -1 : 1;
+    }
+    return 0;
   }
   function formatParts(formatter, date) {
     const values = Object.fromEntries(
       formatter.formatToParts(date).map(({ type, value }) => [type, value]),
     );
     const year = parsePart(values.year || values.relatedYear);
+    const calendar = formatter.resolvedOptions().calendar;
+    const chineseMonth =
+      calendar === 'chinese' ? parseChineseMonth(values.month) : undefined;
     return {
       year,
       month:
-        formatter.resolvedOptions().calendar === 'hebrew'
+        calendar === 'hebrew'
           ? parseHebrewMonth(values.month, year)
-          : parsePart(values.month),
+          : chineseMonth?.month || parsePart(values.month),
       day: parsePart(values.day),
+      ...(chineseMonth?.leapMonth ? { leapMonth: true } : {}),
       hour: date.getUTCHours(),
       minute: date.getUTCMinutes(),
       second: date.getUTCSeconds(),
@@ -2464,7 +2543,7 @@
     const formatter = new Intl.DateTimeFormat(`en-u-ca-${calendar}-nu-latn`, {
       timeZone: 'UTC',
       year: 'numeric',
-      month: 'numeric',
+      month: calendar === 'chinese' ? 'long' : 'numeric',
       day: 'numeric',
     });
     if (formatter.resolvedOptions().calendar !== calendar) {
@@ -2497,11 +2576,31 @@
     const searchWindow = calendar === 'hijri' ? 900 : 450;
     const start = estimate.getTime() - searchWindow * dayMilliseconds$1;
     const end = estimate.getTime() + searchWindow * dayMilliseconds$1;
-    for (let time = start; time <= end; time += dayMilliseconds$1) {
-      const candidate = new Date(time);
-      if (sameDate(formatParts(formatter, candidate), wanted)) {
-        return candidate;
-      }
+    const startParts = formatParts(formatter, new Date(start));
+    const endParts = formatParts(formatter, new Date(end));
+    if (
+      compareDateParts(startParts, wanted) > 0 ||
+      compareDateParts(endParts, wanted) < 0
+    ) {
+      throw new RangeError(
+        `Unable to convert ${wanted.year}/${wanted.month}/${wanted.day} from ${calendar}`,
+      );
+    }
+    let lower = start;
+    let upper = end;
+    while (lower <= upper) {
+      const middle =
+        lower +
+        Math.floor((upper - lower) / (2 * dayMilliseconds$1)) *
+          dayMilliseconds$1;
+      const candidate = new Date(middle);
+      const comparison = compareDateParts(
+        formatParts(formatter, candidate),
+        wanted,
+      );
+      if (comparison === 0) return candidate;
+      if (comparison < 0) lower = middle + dayMilliseconds$1;
+      else upper = middle - dayMilliseconds$1;
     }
     throw new RangeError(
       `Unable to convert ${wanted.year}/${wanted.month}/${wanted.day} from ${calendar}`,
@@ -2533,9 +2632,21 @@
       },
       addMonths(date, amount) {
         const current = formatParts(formatter, date);
-        const targetMonth = current.month + amount;
-        const targetYear = current.year + Math.floor((targetMonth - 1) / 12);
-        const normalizedMonth = ((((targetMonth - 1) % 12) + 12) % 12) + 1;
+        let targetYear = current.year;
+        let normalizedMonth = current.month;
+        const monthCount = (year) =>
+          id === 'hebrew' && isHebrewLeapYear(year) ? 13 : 12;
+        const direction = amount < 0 ? -1 : 1;
+        for (let step = 0; step < Math.abs(amount); step++) {
+          normalizedMonth += direction;
+          if (normalizedMonth > monthCount(targetYear)) {
+            normalizedMonth = 1;
+            targetYear += 1;
+          } else if (normalizedMonth < 1) {
+            targetYear -= 1;
+            normalizedMonth = monthCount(targetYear);
+          }
+        }
         const targetDay = Math.min(
           current.day,
           (() => {
@@ -3053,6 +3164,11 @@
   //TODO: refactor and write comment --> pay a high attention
   // ************************ Core ************************
   const isClient = typeof window !== 'undefined';
+  const jalaliDisableFormats = {
+    date: 'jYYYY/jM/jD',
+    datetime: 'jYYYY/jM/jD H:m',
+    time: 'H:m',
+  };
   var script = vue.defineComponent({
     components: {
       PDPArrow: script$3,
@@ -3080,6 +3196,13 @@
        */
       inputFormat: {
         type: String,
+      },
+      /**
+       * input mask configuration. A string is a pattern or
+       * "calendar-default"; an object can customize each picker type.
+       */
+      inputMask: {
+        type: [String, Object],
       },
       /**
        * the format of the value that shows in the footer of picker
@@ -3356,7 +3479,7 @@
     emits: ['open', 'close', 'select', 'submit', 'clear', 'update:modelValue'],
     data() {
       return {
-        core: new PersianDate_min(),
+        core: new PersianDate(),
         onDisplay: undefined,
         fromDate: undefined,
         toDate: undefined,
@@ -3371,9 +3494,11 @@
         pickerPlace: {},
         documentWidth: isClient ? window.innerWidth : Infinity,
         langs: Core.langs,
-        currentLocale:
-          this.locale || this.defaultLocaleForCalendar(this.calendar),
+        currentLocale: (
+          this.locale || this.defaultLocaleForCalendar(this.calendar)
+        ).split(',')[0],
         interval: null,
+        resizeHandler: null,
         submitedValue: [],
       };
     },
@@ -3475,6 +3600,12 @@
         }
         return attrs;
       },
+      altDates() {
+        return this.submitedValue;
+      },
+      displayDate() {
+        return this.onDisplay || this.core;
+      },
       years() {
         let start = this.displayYear(this.fromDate);
         const end = this.displayYear(this.toDate);
@@ -3543,10 +3674,10 @@
                 const dayDate = this.calendarDayDate(monthDate, showDay);
                 month[week][day] = {
                   friday: this.calendarWeekendDays.includes(
-                    new Date(this.getDateTimestamp(dayDate)).getDay(),
+                    new Date(this.getDateTimestamp(dayDate)).getUTCDay(),
                   ),
                   weekend: this.calendarWeekendDays.includes(
-                    new Date(this.getDateTimestamp(dayDate)).getDay(),
+                    new Date(this.getDateTimestamp(dayDate)).getUTCDay(),
                   ),
                   raw: dayDate,
                   startRange:
@@ -3780,13 +3911,28 @@
           this.onDisplay = this.nearestDate(today).startOf('date');
         }
       }
-      window.addEventListener('resize', () => {
+      this.resizeHandler = () => {
         this.documentWidth = window.innerWidth;
-      });
+      };
+      window.addEventListener('resize', this.resizeHandler);
       if (this.type != 'date') {
         this.onDisplay.time(this.core);
       }
       this.showDatePicker = this.show;
+    },
+    beforeUnmount() {
+      if (this.resizeHandler) {
+        window.removeEventListener('resize', this.resizeHandler);
+        this.resizeHandler = null;
+      }
+      document.removeEventListener('scroll', this.locate);
+      if (this.$refs.pdpMain) {
+        this.$refs.pdpMain.removeEventListener(
+          'mouseover',
+          this.selectInRangeDate,
+        );
+      }
+      this.stopChangeTime();
     },
     methods: {
       defaultLocaleForCalendar(calendar) {
@@ -3869,7 +4015,7 @@
                   'Tevet',
                   'Shevat',
                   'Adar I',
-                  'Adar',
+                  'Adar II',
                   'Nisan',
                   'Iyar',
                   'Sivan',
@@ -3937,6 +4083,14 @@
         }
         const count =
           this.activeCalendar === 'hebrew' ? fallback.hebrew.length : 12;
+        const configuredMonths =
+          this.localeConfig?.[this.currentLocale]?.months;
+        if (
+          Array.isArray(configuredMonths) &&
+          configuredMonths.length >= count
+        ) {
+          return configuredMonths;
+        }
         const names = [];
         const calendarName =
           this.activeCalendar === 'buddhist'
@@ -4013,7 +4167,7 @@
       },
       normalizeEndDate(date, unit) {
         return vue.markRaw(
-          new PersianDate_min()
+          new PersianDate()
             .fromGregorian(this.getDateTimestamp(date))
             .endOf(unit),
         );
@@ -4021,7 +4175,7 @@
       fromCalendarParts(parts) {
         if (this.calendarAdapter) {
           return vue.markRaw(
-            new PersianDate_min().fromGregorian(
+            new PersianDate().fromGregorian(
               this.calendarAdapter.fromParts(parts).getTime(),
             ),
           );
@@ -4055,7 +4209,7 @@
         if (!this.calendarAdapter)
           return vue.markRaw(value.clone().addMonth(amount));
         return vue.markRaw(
-          new PersianDate_min().fromGregorian(
+          new PersianDate().fromGregorian(
             this.calendarAdapter
               .addMonths(new Date(this.getDateTimestamp(value)), amount)
               .getTime(),
@@ -4070,6 +4224,21 @@
           day,
         });
       },
+      calendarAddDays(date, amount) {
+        if (!this.calendarAdapter)
+          return vue.markRaw(date.clone().addDay(amount));
+        return vue.markRaw(
+          new PersianDate().fromGregorian(
+            this.calendarAdapter
+              .addDays(new Date(this.getDateTimestamp(date)), amount)
+              .getTime(),
+          ),
+        );
+      },
+      calendarMonthKey(date) {
+        const parts = this.getCalendarParts(date);
+        return `${parts.year}-${parts.month}-${parts.leapMonth ? 'leap' : 'normal'}`;
+      },
       calendarDaysInMonth(year, month) {
         if (this.calendarAdapter) {
           return this.calendarAdapter.daysInMonth(year, month);
@@ -4077,7 +4246,7 @@
         return this.core.getDaysInMonth(year, month);
       },
       calendarWeekdayOffset(date) {
-        const weekday = new Date(this.getDateTimestamp(date)).getDay();
+        const weekday = new Date(this.getDateTimestamp(date)).getUTCDay();
         return (weekday - this.calendarWeekStart + 7) % 7;
       },
       isToday(date) {
@@ -4086,7 +4255,12 @@
       isSameCalendarDate(first, second) {
         const a = this.getCalendarParts(first);
         const b = this.getCalendarParts(second);
-        return a.year === b.year && a.month === b.month && a.day === b.day;
+        return (
+          a.year === b.year &&
+          a.month === b.month &&
+          a.day === b.day &&
+          Boolean(a.leapMonth) === Boolean(b.leapMonth)
+        );
       },
       isBetweenSelectedDates(date) {
         if (this.selectedDates.length !== 2) return false;
@@ -4100,16 +4274,22 @@
         if (!this.calendarAdapter) return value.toString(format);
         const parts = this.getCalendarParts(date);
         const pad = (value, size = 2) => String(value).padStart(size, '0');
+        const leapSuffix =
+          this.activeCalendar === 'chinese' && parts.leapMonth ? 'bis' : '';
+        const leapPlaceholder = leapSuffix ? '__LEAP__' : '';
         const monthName =
           this.monthNamesForYear(parts.year)[parts.month - 1] ||
           `Month ${parts.month}`;
+        const paddedMonth = `${pad(parts.month)}${leapPlaceholder}`;
+        const shortMonth = `${parts.month}${leapPlaceholder}`;
         return format
+          .replace('?D', String(parts.day))
           .replace('?MMMM', monthName)
           .replace('MMMM', monthName)
           .replace('YYYY', String(parts.year))
           .replace('YY', String(parts.year).slice(-2))
-          .replace('MM', pad(parts.month))
-          .replace('M', String(parts.month))
+          .replace('MM', paddedMonth)
+          .replace('M', shortMonth)
           .replace('DD', pad(parts.day))
           .replace('D', String(parts.day))
           .replace('HH', pad(parts.hour || 0))
@@ -4117,7 +4297,8 @@
           .replace('mm', pad(parts.minute || 0))
           .replace('m', String(parts.minute || 0))
           .replace('ss', pad(parts.second || 0))
-          .replace('s', String(parts.second || 0));
+          .replace('s', String(parts.second || 0))
+          .replace(/__LEAP__/g, leapSuffix);
       },
       formatModelValue(date) {
         const target =
@@ -4130,7 +4311,7 @@
         const value = date;
         const timestamp = this.getDateTimestamp(value);
         if (target === 'jalali' || target === 'gregorian') {
-          return new PersianDate_min()
+          return new PersianDate()
             .fromGregorian(timestamp)
             .calendar(target)
             .toString(this.formats.model);
@@ -4140,11 +4321,13 @@
         });
         const parts = adapter.getParts(new Date(timestamp));
         const pad = (part, size = 2) => String(part).padStart(size, '0');
+        const leapSuffix = target === 'chinese' && parts.leapMonth ? 'bis' : '';
+        const leapPlaceholder = leapSuffix ? '__LEAP__' : '';
         return this.formats.model
           .replace('YYYY', String(parts.year))
           .replace('YY', String(parts.year).slice(-2))
-          .replace('MM', pad(parts.month))
-          .replace('M', String(parts.month))
+          .replace('MM', `${pad(parts.month)}${leapPlaceholder}`)
+          .replace('M', `${parts.month}${leapPlaceholder}`)
           .replace('DD', pad(parts.day))
           .replace('D', String(parts.day))
           .replace('HH', pad(parts.hour || 0))
@@ -4152,20 +4335,23 @@
           .replace('mm', pad(parts.minute || 0))
           .replace('m', String(parts.minute || 0))
           .replace('ss', pad(parts.second || 0))
-          .replace('s', String(parts.second || 0));
+          .replace('s', String(parts.second || 0))
+          .replace(/__LEAP__/g, leapSuffix);
       },
       parseCalendarParts(value) {
-        const values = value
-          .split(/[-/ .,\\:]/)
-          .filter(Boolean)
-          .map(Number);
+        const values = value.split(/[-/ .,\\:]/).filter(Boolean);
+        const monthToken = values[1] || '1';
+        const leapMonth =
+          this.activeCalendar === 'chinese' && /bis$/i.test(monthToken);
+        const month = Number.parseInt(monthToken.replace(/bis$/i, ''), 10);
         return {
-          year: values[0],
-          month: values[1] || 1,
-          day: values[2] || 1,
-          hour: values[3] || 0,
-          minute: values[4] || 0,
-          second: values[5] || 0,
+          year: Number(values[0]),
+          month: month || 1,
+          day: Number(values[2]) || 1,
+          hour: Number(values[3]) || 0,
+          minute: Number(values[4]) || 0,
+          second: Number(values[5]) || 0,
+          ...(leapMonth ? { leapMonth: true } : {}),
         };
       },
       parseCalendarDate(value) {
@@ -4174,7 +4360,10 @@
         }
         const date = this.core.clone();
         const sourceCalendar =
-          this.calendar === 'gregorian' ? 'gregorian' : 'jalali';
+          this.calendar === 'gregorian' ||
+          (value.includes('-') && !value.includes('/'))
+            ? 'gregorian'
+            : 'jalali';
         if (!/[-/ ]/.test(value)) {
           return date
             .calendar(sourceCalendar)
@@ -4244,6 +4433,48 @@
       },
       isDisableBetween(first, second) {
         if (!this.disable) return false;
+        if (this.calendarAdapter) {
+          const firstTimestamp = this.getDateTimestamp(first);
+          const secondTimestamp = this.getDateTimestamp(second);
+          const lower = Math.min(firstTimestamp, secondTimestamp);
+          const upper = Math.max(firstTimestamp, secondTimestamp);
+          const timestampFor = (date) =>
+            this.type === 'date'
+              ? this.getDayTimestamp(date)
+              : this.getDateTimestamp(date);
+          const disabledValues =
+            typeof this.disable === 'string'
+              ? [this.disable]
+              : Array.isArray(this.disable)
+                ? this.disable.filter((value) => typeof value === 'string')
+                : [];
+          if (
+            disabledValues.some((value) => {
+              const disabled =
+                this.type === 'time'
+                  ? second.clone().time(value)
+                  : this.parseCalendarDate(value);
+              const timestamp = timestampFor(disabled);
+              return timestamp > lower && timestamp < upper;
+            })
+          ) {
+            return true;
+          }
+          if (this.type !== 'time') {
+            let cursor = new Date(upper);
+            while (true) {
+              cursor = this.calendarAdapter.addDays(cursor, -1);
+              if (cursor.getTime() <= lower) break;
+              if (
+                this.isInDisable(
+                  this.fromCalendarParts(this.calendarAdapter.getParts(cursor)),
+                )
+              )
+                return true;
+            }
+          }
+          return false;
+        }
         if (this.type != 'datetime' && Core.isString(this.disable)) {
           const date =
             this.type == 'time'
@@ -4282,7 +4513,7 @@
             return -2;
           }
         }
-        if (this.type == 'date') {
+        if (this.type == 'date' && !this.calendarAdapter) {
           date.startOf('date');
         }
         if (this.mode == 'single') {
@@ -4364,9 +4595,12 @@
         }
         if (this.type.includes('date'))
           this.$nextTick(() => {
-            document.querySelector('.pdp-day.today').classList.add('tada');
+            const root = this.$refs.root;
+            const today = root?.querySelector('.pdp-day.today');
+            if (!today) return;
+            today.classList.add('tada');
             setTimeout(() => {
-              document.querySelector('.pdp-day.today').classList.remove('tada');
+              today.classList.remove('tada');
             }, 1000);
           });
       },
@@ -4416,69 +4650,138 @@
       isInDisable(date, disable) {
         if (!this.disable) return false;
         disable = disable || this.disable;
-        date = Core.isPersianDate(date)
-          ? date.clone()
-          : this.core.clone().parse(date);
-        if (this.calendarAdapter && Core.isString(disable)) {
-          const disabled = this.parseCalendarDate(disable);
-          if (this.type === 'time') {
-            return (
-              date.hour() === disabled.hour() &&
-              date.minute() === disabled.minute()
-            );
-          }
-          return date
-            .clone()
-            .startOf('date')
-            .isSame(disabled.clone().startOf('date'));
-        }
+        const candidate = date;
+        const normalizedDate = Core.isPersianDate(candidate)
+          ? candidate.clone()
+          : this.core.clone().parse(candidate);
         if (Core.isString(disable)) {
-          if (this.type == 'time') disable = date.toString() + ' ' + disable;
-          return date.calendar('jalali').isSame(disable);
+          return this.isSameDisabledValue(normalizedDate, disable);
         } else if (disable instanceof RegExp) {
-          if (this.calendarAdapter) {
-            return disable.test(this.formatDateValue(date, this.formats.input));
-          }
-          const format = {
-            date: 'jYYYY/jM/jD',
-            datetime: 'jYYYY/jM/jD H:m',
-            time: 'H:m',
-          };
-          return disable.test(date.toString(format[this.type]));
+          return this.testDisableRegex(
+            disable,
+            this.formatDisableValue(normalizedDate),
+          );
         } else if (Core.isFunction(disable)) {
-          return disable(date);
+          return disable(normalizedDate);
         } else if (Array.isArray(disable)) {
           return disable.some((val) => {
             if (Core.isString(val)) {
-              if (this.calendarAdapter) {
-                return this.isSameCalendarDate(
-                  date,
-                  this.parseCalendarDate(val),
-                );
-              }
-              if (this.type == 'time') val = date.toString() + ' ' + val;
-              return date.calendar('jalali').isSame(val);
+              return this.isSameDisabledValue(normalizedDate, val);
             } else if (val instanceof RegExp) {
-              if (this.calendarAdapter) {
-                return val.test(this.formatDateValue(date, this.formats.input));
-              }
-              const format = {
-                date: 'jYYYY/jM/jD',
-                datetime: 'jYYYY/jM/jD H:m',
-                time: 'H:m',
-              };
-              return val.test(date.toString(format[this.type]));
+              return this.testDisableRegex(
+                val,
+                this.formatDisableValue(normalizedDate),
+              );
             }
           });
         } else {
           return false;
         }
       },
+      selectedTimeValue(index) {
+        const time = this.selectedTimes[index];
+        if (!time) return undefined;
+        const date = this.selectedDates[index];
+        if (!date) return time;
+        return date
+          .clone()
+          .hour(time.hour())
+          .minute(time.minute())
+          .second(time.second())
+          .millisecond(time.millisecond());
+      },
+      isSelectedTimeDisabled(index) {
+        const time = this.selectedTimeValue(index);
+        return (
+          !!time && (!this.checkDate(time, 'time') || this.isInDisable(time))
+        );
+      },
+      isSameDisabledValue(date, value) {
+        const disabled = this.parseDisabledValue(
+          this.type === 'time' && !/[\s/-]/.test(value)
+            ? `${date.toString('YYYY-MM-DD')} ${value}`
+            : value,
+        );
+        if (!this.calendarAdapter && !this.calendar && value.includes('/')) {
+          const candidate = date.clone().calendar('jalali');
+          const target = disabled.clone().calendar('jalali');
+          const sameDate =
+            candidate.year() === target.year() &&
+            candidate.month() === target.month() &&
+            candidate.date() === target.date();
+          if (this.type === 'date' || !/\s/.test(value)) return sameDate;
+          if (this.type === 'datetime') {
+            return (
+              sameDate &&
+              candidate.hour() === target.hour() &&
+              candidate.minute() === target.minute()
+            );
+          }
+        }
+        if (this.type === 'time') {
+          return (
+            date.hour() === disabled.hour() &&
+            date.minute() === disabled.minute()
+          );
+        }
+        if (this.type === 'date' || !/[\s:]/.test(value)) {
+          return date
+            .clone()
+            .startOf('date')
+            .isSame(disabled.clone().startOf('date'));
+        }
+        return date.isSame(disabled);
+      },
+      parseDisabledValue(value) {
+        if (!this.calendarAdapter && !this.calendar && value.includes('/')) {
+          return this.core.clone().calendar('jalali').parse(value);
+        }
+        return this.parseCalendarDate(value);
+      },
+      testDisableRegex(regex, value) {
+        regex.lastIndex = 0;
+        const result = regex.test(value);
+        regex.lastIndex = 0;
+        return result;
+      },
+      formatDisableValue(date) {
+        if (this.calendarAdapter)
+          return this.formatDateValue(date, this.formats.input);
+        return date.toString(jalaliDisableFormats[this.type]);
+      },
+      inputSlotProps(index) {
+        const input = this.inputs[index];
+        return {
+          value: this.displayValue[index] || '',
+          inputAttrs: {
+            ...this.attrs[input],
+            ref: 'inputs',
+            type: 'text',
+            autocomplete: 'off',
+            placeholder:
+              this.inputMaskConfig().placeholder ||
+              this.attrs[input].placeholder,
+          },
+          open: () => this.showPicker('input', index),
+          clear: () => this.clear(input),
+          onInput: (event) => {
+            const target = event.target;
+            this.displayValue[index] = target.value;
+            this.sanitizeInput(index, event);
+          },
+          onBlur: () => {
+            this.sanitizeInput(index);
+            this.commitInput(index);
+          },
+          onKeydown: (event) => this.selectWithArrow(event),
+        };
+      },
       showPicker(el, index) {
         if (this.clickOn == 'all' || this.clickOn == el) {
           const inputName = this.inputs[index];
           if (this.dualInput) this.inputName = inputName;
-          this.$refs.inputs[index].focus();
+          const inputs = this.$refs.inputs;
+          inputs?.[index]?.focus();
           this.showDatePicker = true;
           if (!this.modal) {
             this.$nextTick(() => {
@@ -4507,45 +4810,68 @@
             ['ArrowLeft', 'ArrowRight'].includes(e.key)
           )
             numberOfDay = -numberOfDay;
-          // eslint-disable-next-line no-undef
-          let focusedDay = document.querySelectorAll('.pdp .pdp-day.hover');
-          if (!focusedDay.length) {
-            focusedDay = document.querySelectorAll(
+          const root = this.$refs.root;
+          let focusedDays = root.querySelectorAll('.pdp .pdp-day.hover');
+          if (!focusedDays.length) {
+            focusedDays = root.querySelectorAll(
               '.pdp .pdp-day.start-range,.pdp .pdp-day.end-range',
             );
           }
-          focusedDay = focusedDay[focusedDay.length - 1];
+          let focusedDay = focusedDays[focusedDays.length - 1];
           if (focusedDay) {
-            let column = this.getColumn(focusedDay);
+            let column = Number(this.getColumn(focusedDay));
             focusedDay.classList.remove('hover');
-            const firstColumnMonth = this.onDisplay.toString();
-            const focusedMonth = this.onDisplay.clone().addMonth(column);
-            let nextElementValue = focusedMonth
-              .date(focusedDay.innerText)
-              .addDay(numberOfDay);
-            if (!this.checkDate(nextElementValue, 'date'))
+            const focusedMonth = this.calendarMonthDate(this.onDisplay, column);
+            const focusedDate = this.calendarDayDate(
+              focusedMonth,
+              Number(focusedDay.innerText),
+            );
+            const nextDate = this.calendarAddDays(focusedDate, numberOfDay);
+            if (!this.checkDate(nextDate, 'date'))
               return focusedDay.classList.add('hover');
-            nextElementValue = nextElementValue.date();
-            column = focusedMonth.diff(firstColumnMonth, 'month');
+            const nextMonthKey = this.calendarMonthKey(nextDate);
+            column = -1;
+            for (let i = 0; i < this.columnCount; i++) {
+              if (
+                this.calendarMonthKey(
+                  this.calendarMonthDate(this.onDisplay, i),
+                ) === nextMonthKey
+              ) {
+                column = i;
+                break;
+              }
+            }
             if (column < 0) {
-              this.onDisplay.subMonth(this.columnCount);
-              column = this.columnCount - 1;
-            } else if (column >= this.columnCount) {
-              this.onDisplay.addMonth(this.columnCount);
-              column = 0;
+              const firstMonth = this.calendarMonthDate(this.onDisplay, 0);
+              if (
+                this.getDateTimestamp(nextDate) <
+                this.getDateTimestamp(firstMonth)
+              ) {
+                this.onDisplay = this.calendarMonthDate(
+                  this.onDisplay,
+                  -this.columnCount,
+                );
+                column = this.columnCount - 1;
+              } else {
+                this.onDisplay = this.calendarMonthDate(
+                  this.onDisplay,
+                  this.columnCount,
+                );
+                column = 0;
+              }
             }
             await this.$nextTick();
-            focusedDay = document.querySelector(
-              `.pdp .pdp-main .pdp-column[data-column='${column}'] .pdp-day[value='${nextElementValue}']`,
+            focusedDay = root.querySelector(
+              `.pdp .pdp-main .pdp-column[data-column='${column}'] .pdp-day[value='${this.displayDay(nextDate)}']`,
             );
-            focusedDay.classList.add('hover');
+            if (focusedDay) focusedDay.classList.add('hover');
           } else {
-            focusedDay = document.querySelector(
+            focusedDay = root.querySelector(
               '.pdp .pdp-day:not(.empty):not(.disabled)',
             );
             if (focusedDay) focusedDay.classList.add('hover');
             else {
-              focusedDay = document.querySelector(
+              focusedDay = root.querySelector(
                 `.pdp .pdp-main .pdp-column[data-column="0"] .pdp-day[value="${this.fromDate.date()}"]`,
               );
               focusedDay.classList.add('hover');
@@ -4557,43 +4883,172 @@
         } else if (e.key == 'Enter') {
           // 13 is key code of Enter key
           e.preventDefault();
-          const focusedDay = document.querySelector('.pdp .pdp-day.hover');
+          const focusedDay = this.$refs.root.querySelector(
+            '.pdp .pdp-day.hover',
+          );
           if (focusedDay) {
             this.selectDate(
-              this.onDisplay
-                .clone()
-                .addMonth(this.getColumn(focusedDay) || 0)
-                .date(focusedDay.innerText),
+              this.calendarDayDate(
+                this.calendarMonthDate(
+                  this.onDisplay,
+                  Number(this.getColumn(focusedDay) || 0),
+                ),
+                Number(focusedDay.innerText),
+              ),
               'date',
             );
           } else {
-            let onDisplay;
-            this.displayValue.forEach((value, index) => {
-              if (!value) return false;
-              if (this.type == 'time') {
-                const time = value.split(/[/ -.,:\\]/);
-                if (this.checkDate(this.core.clone(), 'time'))
-                  onDisplay = this.core.clone();
-                else onDisplay = this.fromDate.clone();
-                onDisplay.time(time);
-              } else {
-                onDisplay = this.core.clone().parse(value);
-              }
-              if (this.selectDate(onDisplay, 'time') === 0) {
-                const diff = onDisplay.diff(this.onDisplay, 'month');
-                if (diff < 0 || diff >= this.columnCount)
-                  this.onDisplay = onDisplay.clone();
-                this.displayValue[index] = '';
-              }
+            this.displayValue.forEach((_, index) => {
+              this.commitInput(index);
             });
           }
         }
+      },
+      commitInput(index) {
+        const inputs = this.$refs.inputs;
+        const input = inputs?.[index];
+        const rawValue = input?.value ?? this.displayValue[index];
+        const submittedValue = this.dualInput
+          ? this.selectedDates[index]
+            ? this.formatDateValue(
+                this.selectedDates[index],
+                this.formats.input,
+              )
+            : ''
+          : this.selectedDates
+              .map((date) => this.formatDateValue(date, this.formats.input))
+              .join(' - ');
+        if (rawValue === submittedValue) return;
+        const value = this.inputMask
+          ? rawValue
+          : this.sanitizeInputValue(rawValue);
+        if (!value) return;
+        if (value !== rawValue) {
+          if (input) input.value = value;
+          this.displayValue[index] = value;
+        }
+        const normalizedValue = this.normalizeInputDigits(value);
+        let onDisplay;
+        if (this.type === 'time') {
+          const time = normalizedValue.split(/[/ -.,:\\]/);
+          onDisplay = this.checkDate(this.core.clone(), 'time')
+            ? this.core.clone()
+            : this.fromDate.clone();
+          onDisplay.time(time);
+        } else {
+          onDisplay = this.calendarAdapter
+            ? this.parseCalendarDate(normalizedValue)
+            : this.core.clone().parse(normalizedValue);
+        }
+        const part = this.type === 'time' ? 'time' : 'date';
+        const selectionResult = this.selectDate(onDisplay, part);
+        if (!onDisplay.isValid() || selectionResult < 0) return;
+        if (this.mode === 'single' && this.type.includes('date')) {
+          this.onDisplay = onDisplay.clone();
+        } else {
+          const diff = onDisplay.diff(this.onDisplay, 'month');
+          if (diff < 0 || diff >= this.columnCount)
+            this.onDisplay = onDisplay.clone();
+        }
+        this.displayValue[index] = '';
+      },
+      inputMaskPattern() {
+        const config = this.inputMaskConfig();
+        let value = config.pattern;
+        if (!value || value === 'calendar-default')
+          value = this.defaultInputMaskPattern();
+        if (value === 'date' || value === 'datetime' || value === 'time') {
+          if (!this.calendarAdapter) {
+            return value === 'date'
+              ? 'jYYYY/jMM/jDD'
+              : value === 'datetime'
+                ? 'jYYYY/jMM/jDD HH:mm'
+                : 'HH:mm';
+          }
+          return value === 'date'
+            ? 'YYYY-MM-DD'
+            : value === 'datetime'
+              ? 'YYYY-MM-DD HH:mm'
+              : 'HH:mm';
+        }
+        return value;
+      },
+      defaultInputMaskPattern() {
+        const datePattern =
+          this.activeCalendar === 'jalali' ? 'jYYYY/jMM/jDD' : 'YYYY-MM-DD';
+        return this.type === 'date'
+          ? datePattern
+          : this.type === 'datetime'
+            ? `${datePattern} HH:mm`
+            : 'HH:mm';
+      },
+      inputMaskConfig() {
+        const mask = this.inputMask;
+        if (!mask) {
+          return {
+            pattern: this.defaultInputMaskPattern(),
+            allowedDigits:
+              this.activeCalendar === 'jalali' || this.lang.dir.input === 'rtl'
+                ? 'both'
+                : 'latin',
+            strict: true,
+          };
+        }
+        if (typeof mask === 'string') return { pattern: mask };
+        if ('pattern' in mask || 'allowedDigits' in mask || 'strict' in mask)
+          return mask;
+        const value = mask[this.type];
+        return typeof value === 'string' ? { pattern: value } : value || {};
+      },
+      normalizeInputDigits(value) {
+        return Array.from(value)
+          .map((character) => {
+            const code = character.codePointAt(0) || 0;
+            if (code >= 0x06f0 && code <= 0x06f9) return String(code - 0x06f0);
+            if (code >= 0x0660 && code <= 0x0669) return String(code - 0x0660);
+            return character;
+          })
+          .join('');
+      },
+      sanitizeInput(index, event) {
+        const input = event?.target;
+        const value = input?.value ?? this.displayValue[index];
+        if (!value) return;
+        const sanitized = this.sanitizeInputValue(value);
+        if (sanitized !== value) {
+          if (input) input.value = sanitized;
+          this.displayValue[index] = sanitized;
+        }
+      },
+      sanitizeInputValue(value) {
+        const pattern = this.inputMaskPattern();
+        const allowedDigits = this.inputMaskConfig().allowedDigits || 'latin';
+        const literals = pattern
+          .replace(/j?(YYYY|YY|MMMM|MMM|MM|M|DD|D|HH|H|mm|m|ss|s)/g, '')
+          .split('');
+        const allowsLetters = /MMMM|MMM/.test(pattern);
+        return Array.from(value)
+          .filter((character) => {
+            const isLatinDigit = /[0-9]/.test(character);
+            const isLocaleDigit = /[۰-۹٠-٩]/.test(character);
+            if (
+              (allowedDigits === 'latin' && isLatinDigit) ||
+              (allowedDigits === 'locale' && isLocaleDigit) ||
+              (allowedDigits === 'both' && (isLatinDigit || isLocaleDigit))
+            )
+              return true;
+            if (literals.includes(character) || /\s/.test(character))
+              return true;
+            return allowsLetters && /\p{L}/u.test(character);
+          })
+          .join('');
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       selectInRangeDate(e) {
         const target = e.target;
         if (!target.classList.contains('pdp-day')) return;
-        document.querySelectorAll(`.pdp .pdp-day`).forEach((el) => {
+        const root = this.$refs.root;
+        root.querySelectorAll(`.pdp .pdp-day`).forEach((el) => {
           el.classList.remove('in-range');
         });
         let column = this.getColumn(target);
@@ -4604,7 +5059,7 @@
           .date(target.innerText);
         const selectedDate = this.selectedDates[0].clone().startOf('date');
         const number = hoveredDate.isAfter(selectedDate) ? 1 : -1;
-        const selectedDateDOM = document.querySelector(
+        const selectedDateDOM = root.querySelector(
           '.pdp-day.start-range,.pdp-day.end-range',
         );
         if (selectedDateDOM) {
@@ -4638,7 +5093,7 @@
             this.checkDate(selectedDate, 'date') &&
             !this.isInDisable(selectedDate)
           ) {
-            document
+            root
               .querySelector(
                 `.pdp-column[data-column='${column}'] .pdp-day[value='${selectedDate.date()}']`,
               )
@@ -4674,13 +5129,15 @@
           : this.toDate.clone();
       },
       locate() {
+        const inputs = this.$refs.inputs;
+        if (!inputs?.[0]) return;
         this.pickerPlace = {
           top: false,
           left: false,
           right: false,
         };
         this.$nextTick(() => {
-          const input = this.$refs.inputs[0];
+          const input = inputs[0];
           const inputOffset =
             input.offsetHeight + input.getBoundingClientRect().top;
           const picker = this.$refs.pdpPicker;
@@ -4708,6 +5165,9 @@
         this.onDisplay.calendar(internalCalendar);
         for (const date of this.selectedDates) {
           date.calendar(internalCalendar);
+        }
+        for (const time of this.selectedTimes) {
+          time.calendar(internalCalendar);
         }
         this.submitDate(false);
       },
@@ -4761,7 +5221,16 @@
               timeIndex == 0 ? this.selectedTimes[1] : this.selectedTimes[0],
             );
           }
-          if (!this.isInDisable(time)) {
+          const selectedTime = this.selectedDates[timeIndex]
+            ? this.selectedDates[timeIndex]
+                .clone()
+                .hour(time.hour())
+                .minute(time.minute())
+                .second(time.second())
+                .millisecond(time.millisecond())
+            : time;
+          this.selectedTimes[timeIndex] = time.clone();
+          if (!this.isInDisable(selectedTime)) {
             if (this.type == 'time') {
               this.selectedDates[timeIndex] = time;
             } else if (this.selectedDates[timeIndex]) {
@@ -4770,7 +5239,9 @@
             this.$emit('select', time);
             if (
               this.autoSubmit &&
-              !this.selectedTimes.some((sTime) => this.isInDisable(sTime))
+              !this.selectedTimes.some((_, index) =>
+                this.isSelectedTimeDisabled(index),
+              )
             )
               this.submitDate(false);
           }
@@ -4817,7 +5288,13 @@
 
   const _hoisted_1 = ['for'];
   const _hoisted_2 = ['onClick'];
-  const _hoisted_3 = ['onUpdate:modelValue', 'onFocus'];
+  const _hoisted_3 = [
+    'onUpdate:modelValue',
+    'placeholder',
+    'onFocus',
+    'onInput',
+    'onBlur',
+  ];
   const _hoisted_4 = ['onClick'];
   const _hoisted_5 = { key: 1 };
   const _hoisted_6 = { class: 'pdp-auto' };
@@ -4970,35 +5447,54 @@
                               _hoisted_2,
                             ))
                           : vue.createCommentVNode('v-if', true),
-                        vue.withDirectives(
-                          vue.createElementVNode(
-                            'input',
-                            vue.mergeProps(
-                              {
-                                ref_for: true,
-                                ref: 'inputs',
-                                'onUpdate:modelValue': ($event) =>
-                                  (_ctx.displayValue[index] = $event),
-                                type: 'text',
-                                autocomplete: 'off',
-                              },
-                              { ref_for: true },
-                              _ctx.attrs[input],
-                              {
-                                onFocus: ($event) =>
-                                  _ctx.showPicker('input', index),
-                                onKeydown:
-                                  _cache[0] ||
-                                  (_cache[0] = (...args) =>
-                                    _ctx.selectWithArrow &&
-                                    _ctx.selectWithArrow(...args)),
-                              },
-                            ),
-                            null,
-                            16 /* FULL_PROPS */,
-                            _hoisted_3,
+                        vue.renderSlot(
+                          _ctx.$slots,
+                          'input',
+                          vue.mergeProps(
+                            { ref_for: true },
+                            _ctx.inputSlotProps(index),
                           ),
-                          [[vue.vModelText, _ctx.displayValue[index]]],
+                          () => [
+                            vue.withDirectives(
+                              vue.createElementVNode(
+                                'input',
+                                vue.mergeProps(
+                                  {
+                                    ref_for: true,
+                                    ref: 'inputs',
+                                    'onUpdate:modelValue': ($event) =>
+                                      (_ctx.displayValue[index] = $event),
+                                    type: 'text',
+                                    autocomplete: 'off',
+                                  },
+                                  { ref_for: true },
+                                  _ctx.attrs[input],
+                                  {
+                                    placeholder:
+                                      _ctx.inputMaskConfig().placeholder ||
+                                      _ctx.attrs[input].placeholder,
+                                    onFocus: ($event) =>
+                                      _ctx.showPicker('input', index),
+                                    onInput: ($event) =>
+                                      _ctx.sanitizeInput(index, $event),
+                                    onBlur: ($event) => {
+                                      _ctx.sanitizeInput(index, $event);
+                                      _ctx.commitInput(index);
+                                    },
+                                    onKeydown:
+                                      _cache[0] ||
+                                      (_cache[0] = (...args) =>
+                                        _ctx.selectWithArrow &&
+                                        _ctx.selectWithArrow(...args)),
+                                  },
+                                ),
+                                null,
+                                16 /* FULL_PROPS */,
+                                _hoisted_3,
+                              ),
+                              [[vue.vModelText, _ctx.displayValue[index]]],
+                            ),
+                          ],
                         ),
                         _ctx.clearable
                           ? (vue.openBlock(),
@@ -5040,7 +5536,7 @@
                   key: 0,
                   name: _ctx.attrs.alt.name,
                   format: _ctx.formats.alt,
-                  dates: _ctx.submitedValue,
+                  dates: _ctx.altDates,
                 },
                 null,
                 8 /* PROPS */,
@@ -5124,7 +5620,7 @@
                                               class: vue.normalizeClass({
                                                 selected:
                                                   _ctx.displayYear(
-                                                    _ctx.onDisplay,
+                                                    _ctx.displayDate,
                                                   ) == year,
                                               }),
                                               onClick: ($event) =>
@@ -5188,7 +5684,7 @@
                                     {
                                       disabled: !_ctx.checkDate(
                                         _ctx.calendarMonthDate(
-                                          _ctx.onDisplay,
+                                          _ctx.displayDate,
                                           -1,
                                         ),
                                         'month',
@@ -5255,7 +5751,7 @@
                                                 _ctx.months[
                                                   _ctx.displayMonth(
                                                     _ctx.calendarMonthDate(
-                                                      _ctx.onDisplay,
+                                                      _ctx.displayDate,
                                                       i,
                                                     ),
                                                   )
@@ -5277,7 +5773,7 @@
                                               vue.toDisplayString(
                                                 _ctx.displayYear(
                                                   _ctx.calendarMonthDate(
-                                                    _ctx.onDisplay,
+                                                    _ctx.displayDate,
                                                     i,
                                                   ),
                                                 ),
@@ -5302,7 +5798,7 @@
                                     {
                                       disabled: !_ctx.checkDate(
                                         _ctx.calendarMonthDate(
-                                          _ctx.onDisplay,
+                                          _ctx.displayDate,
                                           1,
                                         ),
                                         'month',
@@ -5477,6 +5973,7 @@
                                                                           (
                                                                             $event,
                                                                           ) =>
+                                                                            day.raw &&
                                                                             _ctx.selectDate(
                                                                               day.raw,
                                                                               'date',
@@ -5568,13 +6065,9 @@
                                                   {
                                                     disabled:
                                                       _ctx.selectedTimes[i] &&
-                                                      (!_ctx.checkDate(
-                                                        _ctx.selectedTimes[i],
-                                                        'time',
-                                                      ) ||
-                                                        _ctx.isInDisable(
-                                                          _ctx.selectedTimes[i],
-                                                        )),
+                                                      _ctx.isSelectedTimeDisabled(
+                                                        i,
+                                                      ),
                                                   }, // FIXME: go to method
                                                 ]),
                                               },
@@ -6163,7 +6656,7 @@
   script.render = render;
   script.__file = 'src/components/DatePicker.vue';
 
-  exports.PersianDate = PersianDate_min;
+  exports.PersianDate = PersianDate;
   exports.default = script;
 
   Object.defineProperty(exports, '__esModule', { value: true });

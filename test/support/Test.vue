@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-  import { reactive, ref } from 'vue';
+  import { computed, reactive, ref } from 'vue';
   import DatePicker, { PersianDate } from '../../src/components/DatePicker.vue';
 
   const myProps = defineProps({
@@ -14,6 +14,9 @@
   });
 
   const { props, slots } = reactive(myProps);
+  const forwardedSlots = computed(() =>
+    Object.entries(slots).filter(([name]) => name !== 'input'),
+  );
 
   const model = ref(null);
   const status = ref('');
@@ -85,7 +88,18 @@
       @select="select"
       @submit="submit"
     >
-      <template v-for="(slot, name) in slots" :key="name" #[name]>
+      <template v-if="slots.input" #input="inputSlot">
+        <input
+          data-custom-input
+          v-bind="inputSlot.inputAttrs"
+          :value="inputSlot.value"
+          @focus="inputSlot.open"
+          @input="inputSlot.onInput"
+          @blur="inputSlot.onBlur"
+          @keydown="inputSlot.onKeydown"
+        />
+      </template>
+      <template v-for="[name, slot] in forwardedSlots" :key="name" #[name]>
         <div v-html="slot"></div>
       </template>
     </DatePicker>

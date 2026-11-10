@@ -75,6 +75,24 @@ export type Formats = {
   display: string;
   alt: string;
 };
+export type InputMaskBlock = {
+  from?: number;
+  to?: number;
+};
+export type InputMaskConfig = {
+  pattern?: string;
+  placeholder?: string;
+  strict?: boolean;
+  /** Insert literal separators while the user types digits. */
+  autoInsert?: boolean;
+  allowedDigits?: 'latin' | 'locale' | 'both';
+  /** Per-token numeric ranges, independent of any external mask library. */
+  blocks?: Record<string, InputMaskBlock>;
+};
+export type InputMask =
+  | string
+  | InputMaskConfig
+  | Partial<Record<'date' | 'time' | 'datetime', string | InputMaskConfig>>;
 export type Shortcuts = Obj<PersianDate[]>;
 export type Langs = {
   [locale: string]: {

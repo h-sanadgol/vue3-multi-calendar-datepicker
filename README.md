@@ -169,6 +169,27 @@ In range mode, `v-model` is an array containing the start and end values.
 </template>
 ```
 
+## Manual input and live synchronization
+
+The input is editable by default. When a complete valid value is entered and
+the field loses focus (or `Enter` is pressed), the component updates
+`v-model`, the selected day, and the visible calendar month together. This
+also works with the non-Jalali adapters; the adapter calendar remains the
+source of truth for parsing, validation, and navigation.
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="hijri"
+  locale="en"
+  input-format="YYYY-MM-DD"
+  @submit="onSubmit"
+/>
+```
+
+Invalid characters are filtered according to the active mask. Invalid dates
+are not committed, so the previous valid selection remains in place.
+
 ## Calendar vs. Locale
 
 `calendar` controls the calendar system used for parsing, displaying, and navigating dates. `locale` controls the language and localized labels. They are independent:
@@ -207,6 +228,8 @@ By default, `modelValue` is serialized using the active calendar. Set `model-cal
 
 Supported values are `active`, `jalali`, `gregorian`, `hijri`, `hebrew`, `buddhist`, and `chinese`.
 
+For Chinese leap months, the model value preserves the leap marker with the `bis` suffix, for example `2023-02bis-01`.
+
 ## Week Configuration
 
 Weekday values use JavaScript numbering: Sunday is `0` and Saturday is `6`.
@@ -224,37 +247,219 @@ Use `week-starts-on="auto"` to use the calendar's default. If `weekend-days` is 
 
 ## Props
 
-| Prop            | Type                                    | Default        | Description                                                                 |
-| --------------- | --------------------------------------- | -------------- | --------------------------------------------------------------------------- |
-| `calendar`      | `Calendar`                              | Locale-based   | `jalali`, `gregorian`, `hijri`, `hebrew`, `buddhist`, or `chinese`          |
-| `modelCalendar` | `Calendar \| 'active'`                  | `'active'`     | Calendar used to serialize `modelValue`                                     |
-| `type`          | `'date' \| 'time' \| 'datetime'`        | `'date'`       | Picker value type                                                           |
-| `mode`          | `'single' \| 'range'`                   | `'range'`      | Single value or range selection                                             |
-| `locale`        | `String`                                | Calendar-aware | UI language, with comma-separated fallback locales supported                |
-| `hijriProvider` | `'ummalqura' \| 'tabular'`              | `'ummalqura'`  | Hijri calculation method                                                    |
-| `format`        | `String`                                | Type-based     | Model value format                                                          |
-| `inputFormat`   | `String`                                | Type-based     | Input parsing format                                                        |
-| `displayFormat` | `String`                                | Type-based     | Footer display format                                                       |
-| `from`          | `String`                                | `'1300'`       | Minimum selectable date/time                                                |
-| `to`            | `String`                                | `'1499'`       | Maximum selectable date/time                                                |
-| `column`        | `Number \| Record<number, number>`      | `{ 576: 1 }`   | Number of visible calendar columns by breakpoint                            |
-| `weekStartsOn`  | `Number \| 'auto'`                      | `'auto'`       | First weekday, from `0` to `6`                                              |
-| `weekendDays`   | `Number[]`                              | Calendar-aware | Weekly holiday weekdays                                                     |
-| `minuteStep`    | `Number`                                | `1`            | Minute increment                                                            |
-| `hourStep`      | `Number`                                | `1`            | Hour increment                                                              |
-| `autoSubmit`    | `Boolean`                               | `true`         | Submit automatically after selection                                        |
-| `clearable`     | `Boolean`                               | `false`        | Show a clear control                                                        |
-| `clickOn`       | `'all' \| 'input' \| 'icon' \| 'none'`  | `'all'`        | Area that opens the picker                                                  |
-| `modal`         | `Boolean`                               | `false`        | Use modal picker presentation                                               |
-| `show`          | `Boolean`                               | `false`        | Control picker visibility                                                   |
-| `label`         | `String`                                | —              | Input label                                                                 |
-| `dualInput`     | `Boolean`                               | `false`        | Render separate inputs for a range                                          |
-| `iconInside`    | `Boolean`                               | `false`        | Render the calendar icon inside the input                                   |
-| `shortcut`      | `Boolean \| Object`                     | `false`        | Enable date/time shortcuts                                                  |
-| `disable`       | `Array \| String \| Function \| RegExp` | —              | Disable dates or times                                                      |
-| `localeConfig`  | `Object`                                | —              | Extend or override locale strings                                           |
-| `styles`        | `Object`                                | —              | Custom component styles                                                     |
-| `color`         | `String`                                | —              | Preset color: `blue`, `red`, `pink`, `orange`, `green`, `purple`, or `gray` |
+| Prop            | Type                                    | Default        | Description                                                                            |
+| --------------- | --------------------------------------- | -------------- | -------------------------------------------------------------------------------------- |
+| `calendar`      | `Calendar`                              | Locale-based   | `jalali`, `gregorian`, `hijri`, `hebrew`, `buddhist`, or `chinese`                     |
+| `modelCalendar` | `Calendar \| 'active'`                  | `'active'`     | Calendar used to serialize `modelValue`                                                |
+| `type`          | `'date' \| 'time' \| 'datetime'`        | `'date'`       | Picker value type                                                                      |
+| `mode`          | `'single' \| 'range'`                   | `'range'`      | Single value or range selection                                                        |
+| `locale`        | `String`                                | Calendar-aware | UI language, with comma-separated fallback locales supported                           |
+| `hijriProvider` | `'ummalqura' \| 'tabular'`              | `'ummalqura'`  | Hijri calculation method                                                               |
+| `format`        | `String`                                | Type-based     | `v-model` serialization format; independent from the input field format                |
+| `inputFormat`   | `String`                                | Type-based     | Input field display and parsing format                                                 |
+| `displayFormat` | `String`                                | Type-based     | Footer display format; does not change `v-model` or input serialization                |
+| `inputMask`     | `String \| Object`                      | Calendar-based | Input mask with `autoInsert`, `strict`, `allowedDigits`, and per-token `blocks` ranges |
+| `from`          | `String`                                | `'1300'`       | Minimum selectable date/time                                                           |
+| `to`            | `String`                                | `'1499'`       | Maximum selectable date/time                                                           |
+| `column`        | `Number \| Record<number, number>`      | `{ 576: 1 }`   | Number of visible calendar columns by breakpoint                                       |
+| `weekStartsOn`  | `Number \| 'auto'`                      | `'auto'`       | First weekday, from `0` to `6`                                                         |
+| `weekendDays`   | `Number[]`                              | Calendar-aware | Weekly holiday weekdays                                                                |
+| `minuteStep`    | `Number`                                | `1`            | Minute increment                                                                       |
+| `hourStep`      | `Number`                                | `1`            | Hour increment                                                                         |
+| `autoSubmit`    | `Boolean`                               | `true`         | Submit automatically after selection                                                   |
+| `clearable`     | `Boolean`                               | `false`        | Show a clear control                                                                   |
+| `clickOn`       | `'all' \| 'input' \| 'icon' \| 'none'`  | `'all'`        | Area that opens the picker                                                             |
+| `modal`         | `Boolean`                               | `false`        | Use modal picker presentation                                                          |
+| `show`          | `Boolean`                               | `false`        | Control picker visibility                                                              |
+| `label`         | `String`                                | —              | Input label                                                                            |
+| `dualInput`     | `Boolean`                               | `false`        | Render separate inputs for a range                                                     |
+| `iconInside`    | `Boolean`                               | `false`        | Render the calendar icon inside the input                                              |
+| `shortcut`      | `Boolean \| Object`                     | `false`        | Enable date/time shortcuts                                                             |
+| `disable`       | `Array \| String \| Function \| RegExp` | —              | Disable dates or times                                                                 |
+| `localeConfig`  | `Object`                                | —              | Extend or override locale strings                                                      |
+| `styles`        | `Object`                                | —              | Custom component styles                                                                |
+| `color`         | `String`                                | —              | Preset color: `blue`, `red`, `pink`, `orange`, `green`, `purple`, or `gray`            |
+
+The demo has a separate **Complete props guide** section with every prop in
+this table, its type, default, purpose, and multiple copyable examples. The
+section is available in English, فارسی, and العربية through the language
+switcher, so the same API can be reviewed without changing the code examples.
+
+**راهنمای فارسی:** در بخش «راهنمای کامل پراپ‌ها» هر پراپ ورودی با نوع، مقدار
+پیش‌فرض، کاربرد و چند مثال توضیح داده شده است. زبان فارسی را از بالای دمو
+انتخاب کنید.
+
+**الدليل العربي:** يعرض قسم «الدليل الكامل للخصائص» كل خاصية مع النوع والقيمة
+الافتراضية والوظيفة وأمثلة متعددة. اختر العربية من أعلى العرض التفاعلي.
+
+### Input mask
+
+`inputMask` accepts a format string or an object. When omitted, a calendar-aware
+default is used. Object configuration can override the pattern per picker type:
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="gregorian"
+  :input-mask="{
+    date: {
+      pattern: 'YYYY/MM/DD',
+      placeholder: 'YYYY/MM/DD',
+      allowedDigits: 'both',
+      strict: true,
+      autoInsert: true,
+      blocks: {
+        YYYY: { from: 1970, to: 2030 },
+        MM: { from: 1, to: 12 },
+        DD: { from: 1, to: 31 },
+      },
+    },
+  }"
+/>
+```
+
+With `autoInsert: true` (the default), users can type only the digits and the
+mask inserts its literals as they go. For example, `050415` becomes
+`05/04-15` for the pattern `jYY/jMM-jDD`. Set `autoInsert: false` when the
+application should filter characters without inserting separators.
+
+Date-like mask blocks behave like date blocks in IMask: month values are
+limited to `01`–`12`, day values to `01`–`31`, hours to `00`–`23`, and minutes
+and seconds to `00`–`59` while typing. With `strict: true`, complete calendar
+dates are also validated on commit, so values such as `2025/02/31` are rejected.
+For example:
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="gregorian"
+  input-format="YYYY/MM/DD"
+  :input-mask="{
+    date: {
+      pattern: 'YYYY/MM/DD',
+      autoInsert: true,
+      strict: true,
+    },
+  }"
+/>
+```
+
+For per-token ranges, use the independent `blocks` configuration. It follows
+the same idea as IMask's `MaskedRange`, but it is implemented inside this
+component and does not install or depend on IMask:
+
+```vue
+<DatePicker
+  v-model="dateTime"
+  calendar="gregorian"
+  input-format="YYYY/MM/DD HH:mm"
+  :input-mask="{
+    pattern: 'YYYY/MM/DD HH:mm',
+    blocks: {
+      YYYY: { from: 1970, to: 2030 },
+      MM: { from: 1, to: 12 },
+      DD: { from: 1, to: 31 },
+      HH: { from: 0, to: 23 },
+      mm: { from: 0, to: 59 },
+    },
+  }"
+/>
+```
+
+The token names in `blocks` must match tokens in `pattern`. `jYYYY` can use
+the `YYYY` block, and omitted ranges keep the built-in calendar-safe defaults.
+The Interactive playground exposes **Custom mask blocks** to try these ranges
+live and includes the generated configuration in its HTML example.
+
+`allowedDigits` can be `latin`, `locale`, or `both`. The `format` prop controls
+the serialized `v-model`; `inputFormat` controls the input representation.
+The `displayFormat` prop controls only the human-readable footer label inside
+the open picker. These three contracts are independent:
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="gregorian"
+  format="YYYY-MM-DD"
+  input-format="DD.MM.YYYY"
+  display-format="D MMMM YYYY"
+/>
+```
+
+### Format token guide
+
+Formats use the Persian Date token convention:
+
+| Token            | Meaning                            | Example         |
+| ---------------- | ---------------------------------- | --------------- |
+| `YYYY` / `jYYYY` | four-digit Gregorian / Jalali year | `2025` / `1404` |
+| `YY` / `jYY`     | two-digit Gregorian / Jalali year  | `25` / `04`     |
+| `MM` / `M`       | month, padded / unpadded           | `01` / `1`      |
+| `DD` / `D`       | day, padded / unpadded             | `05` / `5`      |
+| `HH` / `H`       | hour, padded / unpadded            | `08` / `8`      |
+| `mm` / `m`       | minute, padded / unpadded          | `10` / `10`     |
+
+For example, use `jYY/jMM/jDD` for a short Jalali date and `YY-MM-DD` for a
+Gregorian date. `YY-mm-DD` is different: `mm` means minutes, so it is intended
+for a date-time format such as `YY-MM-DD HH:mm`. `displayFormat` affects only
+the footer shown inside the open calendar; use `inputFormat` for the text field
+and `format` for the serialized `v-model` value.
+
+When `inputMask` is omitted, the component uses a calendar-aware default:
+`jYYYY/jMM/jDD` for Jalali and `YYYY-MM-DD` for the other date calendars.
+Datetime and time inputs add the corresponding `HH:mm` portion. Use
+`input-mask="calendar-default"` to make that choice explicit, or provide an
+object with `date`, `datetime`, and `time` entries to customize each type.
+
+The Interactive playground includes live fields for `inputFormat`, `inputMask`,
+and `displayFormat`. Type directly into the preview input, then blur the field
+to verify that both the selected day and the visible month follow the entered
+value.
+
+#### Quick guide in فارسی و العربية
+
+**فارسی**
+
+- **Input format** (`inputFormat`): قالبی است که متن داخل فیلد ورودی با آن
+  خوانده و parse می‌شود؛ برای جلالی از `jYY/jMM/jDD` استفاده کنید.
+- **Input mask** (`inputMask`): کاراکترها و ترتیب مجاز تایپ را کنترل می‌کند.
+  با `autoInsert: true` جداکننده‌ها هنگام تایپ درج می‌شوند؛ مثلاً `050415`
+  با mask `jYY/jMM-jDD` به `05/04-15` تبدیل می‌شود.
+- **Display format** (`displayFormat`): فقط عنوان خوانای پایین تقویم باز را
+  تغییر می‌دهد و مقدار فیلد ورودی یا `v-model` را تغییر نمی‌دهد.
+
+**العربية**
+
+- **Input format** (`inputFormat`): يحدد تنسيق النص الذي يقرأه الحقل؛ استخدم
+  `jYY/jMM/jDD` للتاريخ الجلالي.
+- **Input mask** (`inputMask`): يقيّد الأحرف وترتيب الإدخال. عند تفعيل
+  `autoInsert: true` تتم إضافة الفواصل أثناء الكتابة؛ فمثلاً تتحول `050415`
+  إلى `05/04-15` مع القناع `jYY/jMM-jDD`.
+- **Display format** (`displayFormat`): يغير تسمية التاريخ أسفل التقويم المفتوح
+  فقط، ولا يغير قيمة الحقل أو `v-model`.
+
+### Custom input field
+
+Use the `input` scoped slot to replace the native field while keeping the
+picker's canonical value and handlers:
+
+```vue
+<DatePicker v-model="date" calendar="gregorian">
+  <template #input="{ value, inputAttrs, open, onInput, onBlur, onKeydown }">
+    <input
+      v-bind="inputAttrs"
+      :value="value"
+      @focus="open"
+      @input="onInput"
+      @blur="onBlur"
+      @keydown="onKeydown"
+    />
+  </template>
+</DatePicker>
+```
+
+The slot also exposes `clear`, which can be connected to a custom clear
+button. The default input remains available when the slot is omitted.
 
 ## Events
 
@@ -268,6 +473,8 @@ Use `week-starts-on="auto"` to use the calendar's default. If `weekend-days` is 
 | `clear`             | —                      | Emitted when the value is cleared       |
 
 ## Nuxt 3
+
+The base Vue package does not install Nuxt tooling. The `/nuxt` entry declares `@nuxt/kit` as an optional peer because Nuxt projects provide it; install `@nuxt/kit` explicitly only when your Nuxt setup does not already include it.
 
 Add the module to `nuxt.config.ts`:
 

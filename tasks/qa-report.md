@@ -1,58 +1,32 @@
-# گزارش بازبینی و QA
+# گزارش QA خط مبنای انتشار
 
-## دامنه‌ی بررسی
+تاریخ اجرا: ۱۴۰۵/۰۸/۱۳ — ۴ نوامبر ۲۰۲۶
 
-- ساختار package و exportها
-- adapterهای Gregorian، Hijri، Hebrew، Buddhist و Chinese
-- منطق locale، week start و weekend
-- مسیرهای parse/format، `from`، `to` و `disable`
-- دمو، gallery، code modal و Advanced Props
-- lint، build، typecheck و Cypress
+## نتایج قابل تکرار
 
-## یافته‌های قطعی
+| بررسی                                       | نتیجه                                                                                                                   |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `pnpm lint`                                 | موفق                                                                                                                    |
+| `pnpm exec vue-tsc --noEmit --skipLibCheck` | موفق                                                                                                                    |
+| `pnpm build:lib`                            | موفق؛ فقط warning مربوط به `eval` داخل `@alireza-ab/persian-date` باقی است                                              |
+| `pnpm build`                                | موفق؛ خروجی Nuxt و ESM/UMD ساخته شد                                                                                     |
+| `pnpm audit`                                | ۰ critical، ۶۲ high، ۳۱ moderate، ۸ low؛ هیچ finding production-facing نیست و موارد باقی‌مانده در زنجیره dev/test هستند |
+| Cypress component test                      | `calendar-adapters.cy.ts`: موفق؛ ۱۳ تست پاس، ۰ شکست                                                                     |
+| Full Cypress component suite (آخرین اجرا)   | موفق؛ ۱۳ spec، ۲۲۵ تست، ۲۲۵ موفق، ۰ شکست                                                                                |
+| Manual local demo                           | موفق؛ Jalali/Gregorian/Chinese، حالت datetime/range و تغییر خروجی `v-model` بررسی شد                                    |
+| Package dry-run                             | موفق؛ package `@h-sanadgol/vue3-multi-calendar-datepicker@2.0.2` با `pnpm pack --dry-run` بررسی شد؛ publish انجام نشد   |
 
-1. قرارداد خروجی مدل با README/specification هم‌خوان نیست و باید قبل از انتشار تثبیت شود.
-2. در `DatePicker.vue` هنوز مسیرهای `disable` برای regex و آرایه به Jalali hard-code هستند.
-3. exportهای Nuxt در ابتدا به فایل‌های حذف‌شده اشاره می‌کردند؛ با اجرای build Nuxt و library خروجی‌ها بازسازی و importهای ESM/CJS تأیید شد.
-4. Chinese adapter فعلی مدل صریحی برای ماه کبیسه ندارد و فقط به شماره‌ی ماه تکیه می‌کند.
-5. فایل‌های `DatePicker.vue` و `App.vue` بیش از حد بزرگ/فشرده شده‌اند و نگهداری و QA آن‌ها پرریسک است.
-6. تست‌های اختصاصی برای دمو، زبان چندباره، modal کد، passive بودن کارت‌ها و popup stacking وجود ندارد.
+## مرز اعتماد
 
-## وضعیت تست
+این پکیج client-side است و backend، authentication یا ذخیره‌سازی حساس ندارد. ورودی‌های اصلی شامل props، متن تاریخ، RegExp مربوط به `disable`، attributeهای DOM و adapterهای تقویمی هستند. hardening فعلی روی prototype pollution، state مربوط به RegExp، ایزوله‌سازی DOM و cleanup منابع متمرکز است.
 
-| بررسی             | نتیجه                                                                        |
-| ----------------- | ---------------------------------------------------------------------------- |
-| ESLint            | موفق                                                                         |
-| Library build     | موفق با warning dependency                                                   |
-| Vue typecheck     | ناموفق؛ خطاهای ناسازگاری dependencyهای Nuxt/Vue و خطاهای type قدیمی در پروژه |
-| Cypress           | مسدود به علت GPU و DevToolsActivePort ویندوز                                 |
-| Browser visual QA | مسدود؛ browser automation در این نشست غیرفعال بود                            |
+## موارد باز
 
-## تست بصری Chrome — ۲ نوامبر ۲۰۲۶
-
-### موفق
-
-- صفحه‌ی دمو در `http://127.0.0.1:5173/` با عنوان `Multi Calendar Datepicker Demo` بارگذاری شد.
-- Hero، زبان‌های English/Farsi/Arabic و بخش Interactive Playground دیده شدند.
-- هر شش کارت Jalali، Gregorian، Hijri، Hebrew، Thai Buddhist و Chinese در صفحه نمایش داده شدند.
-- Advanced Props داخل کنترل playground دیده شد.
-- نمونه‌های Time، Range و Date & time در پایین صفحه وجود داشتند.
-- دکمه‌ی `View code · HTML` برای preview اصلی و کارت‌ها نمایش داده شد.
-- در Console خطای runtime مربوط به Vue یا کامپوننت دیده نشد.
-
-### خطاها و محدودیت‌ها
-
-- درخواست `favicon.ico` با وضعیت 404 ثبت شد؛ باید favicon اضافه شود یا درخواست حذف شود.
-- هنگام تعامل با select تقویم، لایه‌ی کنترل پنجره‌ی Chrome timeout شد و امکان تأیید انتخاب Hebrew/Chinese و تغییر زبان چندباره در همان نشست فراهم نشد.
-- اجرای مجدد تست در نشست بعدی نیز به نتیجه‌ی تعاملی نرسید: پنجره‌ی Chrome قبلی minimized/unusable بود، پنجره‌ی جدید روی profile picker متوقف شد و اجرای Firefox با `GetCursorPos: Access is denied` شکست خورد.
-- بنابراین MC-04 و MC-05 هنوز قابل حذف نیستند و نیاز به یک اجرای تعاملی پایدار دارند.
-
-## اجرای مجدد تست بصری
-
-- سرور دمو فعال بود و پنجره‌ی قبلی Chrome در حالت minimized قرار داشت.
-- پنجره‌ی تازه‌ی Chrome به profile picker رفت؛ کنترل UI نتوانست profile را فعال کند و با خطای `foreground window did not report a process id` متوقف شد.
-- در این اجرای مجدد، هیچ نتیجه‌ی جدیدی برای رفتار تقویم‌ها ثبت نشد و MC-04/MC-05 همچنان باز هستند.
-
-## نتیجه
-
-پروژه از نظر lint، build کتابخانه و build Nuxt در وضعیت قابل ادامه است، اما برای اعلام آمادگی انتشار هنوز MC-01، MC-02 و MC-04 تا MC-05 باید انجام و با تست معتبر تأیید شوند. مهم‌ترین ریسک فعلی، قرارداد نامشخص `modelValue`، باقی‌ماندن منطق hard-coded شمسی در `disable` و ناسازگاری typeهای dependencyهای Nuxt است.
+- اجرای کامل Cypress suite در PowerShell کاربر انجام شد و با ۲۲۵ تست موفق به پایان رسید.
+- browser viewport QA تعاملی مستقل هنوز در این نشست اجرا نشده است؛ با این حال suite component کامل، build و typecheck سبز هستند.
+- بررسی بسته‌ی انتشار با `pnpm pack --dry-run --json` موفق شد؛ فقط فایل‌های build، source، README، LICENSE و manifest در بسته قرار می‌گیرند.
+- advisoryهای dev/test باید در DEP-03 بر اساس مسیر dependency، نسخه‌ی اصلاح‌شده و امکان exploit در release triage شوند.
+- قرارداد کامل `modelValue` و پوشش runtime همه‌ی adapterها هنوز نیازمند تکمیل تست است.
+- regressionهای range و datetime برای Hijri نیز در suite هستند؛ اجرای focused آن‌ها در تست adapter با موفقیت انجام شد.
+- وضعیت blocker: پس از اصلاح دسترسی و Restart، Cypress با Electron 136 اجرا شد؛ خطای `DevToolsActivePort/GPU` دیگر مانع Cypress نیست.
+- اجرای مستقیم Chrome با `about:blank` تا زمان توقف دستی باز می‌ماند که رفتار عادی headless Chrome است.

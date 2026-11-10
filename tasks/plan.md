@@ -1,4 +1,31 @@
-# Implementation Plan: عمومی‌سازی Datepicker و افزودن تقویم‌ها
+# Implementation Plan: اصلاح امنیتی و آماده‌سازی انتشار Datepicker
+
+## Release-hardening objective
+
+گزارش فنی نشان می‌دهد آسیب‌پذیری بحرانی اثبات نشده، اما صحت تقویم‌های Chinese/Hebrew، فرض‌های timezone و PersianDate در navigation، ورودی‌های `mergeObject`/RegExp، ایزوله‌سازی DOM، lifecycle listenerها و زنجیره‌ی dependency هنوز برای انتشار جدی کافی نیستند. مسیر اجرایی باید ابتدا قرارداد خروجی و تست‌های بازتولید را تثبیت کند، سپس اصلاحات P0، سخت‌سازی P1، و در پایان refactor و دروازه‌ی انتشار را انجام دهد.
+
+## Immediate implementation order
+
+1. خط مبنا و threat model: audit، outdated، lint، typecheck، build و ثبت blockerهای محیطی.
+2. تثبیت قرارداد `modelValue` و `modelCalendar`.
+3. اصلاح Chinese leap month، Hebrew variable months، UTC weekday و keyboard navigation.
+4. اصلاح `mergeObject`، RegExp disable، disable/range adapter-aware، selectorهای scoped و cleanup lifecycle.
+5. مهاجرت Rollup pluginها و یکسان‌سازی package manager/lockfile.
+6. benchmark تبدیل تاریخ، refactor تدریجی، تست E2E/browser و release gate.
+
+جزئیات taskهای قابل اجرا، معیار پذیرش و وابستگی‌ها در [tasks/todo.md](todo.md) با شناسه‌های `SEC-*`، `CAL-*`، `DEP-*`، `UI-*`، `PERF-*`، `QA-*` و `REL-*` ثبت شده‌اند.
+
+## Definition of done for this remediation
+
+- هیچ P0 باز نمانده و هر اصلاح تقویمی تست regression مستقل دارد.
+- ورودی‌های کنترل‌شده‌ی کاربر نمی‌توانند prototype objectهای داخلی را تغییر دهند و RegExpهای stateful رفتار ناپایدار ندارند.
+- چند Datepicker هم‌زمان scoped است و listener/timer پس از unmount باقی نمی‌ماند.
+- lockfile، pluginهای build، dependencyهای runtime/dev و advisoryهای audit تصمیم روشن و قابل بازبینی دارند.
+- lint، typecheck، build library/Nuxt و تست‌های قابل اجرای CI در release candidate ثبت شده‌اند.
+
+---
+
+# برنامه‌ی توسعه‌ی محصول: عمومی‌سازی Datepicker و افزودن تقویم‌ها
 
 ## Overview
 
@@ -101,3 +128,86 @@
 - قرارداد خروجی `modelValue` نهایی شد: پیش‌فرض تقویم فعال است و `modelCalendar` تقویم خروجی را تعیین می‌کند.
 - برای قمری، الگوریتم محاسباتی کافی است یا باید ام‌القری/قابل تنظیم باشد؟
 - آیا تقویم چینی فقط برای انتخاب تاریخ لازم است یا مناسبت‌ها و نام سال حیوانی هم باید پشتیبانی شود؟
+
+---
+
+# برنامه‌ی قابلیت‌های ورودی، mask و استقلال adapterها
+
+## تصمیم‌های محصول
+
+- ورود دستی به‌صورت پیش‌فرض فعال است.
+- تاریخ معتبر باید picker و مقدار انتخاب‌شده را همزمان به‌روزرسانی کند.
+- mask برای هر تقویم preset دارد و کاربر می‌تواند آن را override کند.
+- فیلد سفارشی از طریق scoped slot ارائه می‌شود.
+- `format` فرمت `v-model`، `inputFormat` فرمت نمایش/parse input و `displayFormat` فرمت متن نمایشی picker است.
+- adapterهای غیر PersianDate باید منطق مستقل داشته باشند؛ timestamp فقط مرز انتقال است.
+
+## معماری پیشنهادی
+
+1. یک لایه‌ی `InputFormatContract` برای تفکیک model، input و footer format.
+2. یک parser/validator مستقل از Vue که ورودی ناقص، ورودی معتبر و ورودی نامعتبر را به‌صورت سه state جدا برگرداند.
+3. یک `InputMaskConfig` typed با shorthand رشته‌ای و presetهای تقویمی.
+4. یک scoped slot به نام `input` که همان canonical value و commandهای داخلی را دریافت کند.
+5. یک `CalendarAdapter` کامل که برای تقویم‌های غیرشمسی مالک parts، validation، arithmetic و formatting باشد.
+6. مسیر سازگاری فعلی Jalali/PersianDate تا پایان migration حفظ شود.
+
+## ترتیب اجرا
+
+### Phase A — قرارداد و parser
+
+- INPUT-01: نهایی‌سازی semantics فرمت‌ها و typeهای عمومی.
+- INPUT-02: parser/validator مستقل با پشتیبانی از ورودی ناقص.
+- INPUT-03: mask و presetهای هر تقویم.
+
+### Checkpoint A
+
+- parser و mask بدون Vue unit test داشته باشند.
+- روز نامعتبر، رقم locale و ورودی ناقص رفتار مشخص داشته باشند.
+
+### Phase B — اتصال به DatePicker
+
+- INPUT-04: sync پیش‌فرض ورودی معتبر با `selectedDates` و `onDisplay`.
+- INPUT-05: scoped `#input` slot و commandهای open/clear/commit.
+- INPUT-06: regression برای single/range/datetime/dual input و keyboard.
+
+### Checkpoint B
+
+- ورود دستی در Jalali و Gregorian کامل و پایدار باشد.
+- تغییر input، picker و `v-model` را همزمان و بدون loop به‌روزرسانی کند.
+
+### Phase C — استقلال adapterها
+
+- CAL-06.1: تعریف مدل parts/date مستقل و مرز timestamp.
+- CAL-06.2: انتقال parse/format/validation برای Gregorian و یک adapter مرجع.
+- CAL-06.3: انتقال arithmetic و range/disable به قرارداد adapter.
+- CAL-06.4: تکمیل migration برای Hijri، Hebrew، Buddhist و Chinese.
+- CAL-07: حذف tokenهای `PersianDate` و رفع علامت سؤال.
+
+### Checkpoint C
+
+- adapterهای غیرشمسی بدون وابستگی منطقی به `PersianDate` کار کنند.
+- model، input، display، range، disable و leap month برای همه‌ی adapterها regression داشته باشند.
+
+### Phase D — QA و انتشار داخلی
+
+- QA-02: unit/component/E2E و manual responsive QA.
+- بررسی bundle size و backward compatibility.
+- ثبت migration guide و release notes؛ انتشار فقط پس از تأیید صریح کاربر.
+
+## ریسک‌ها و راهکارها
+
+| ریسک                                      | اثر   | راهکار                                                          |
+| ----------------------------------------- | ----- | --------------------------------------------------------------- |
+| تغییر همزمان input و model باعث loop شود  | بالا  | source-of-truth مشخص، guard بر اساس مقدار normalized و تست loop |
+| mask ورودی ناقص را زود invalid کند        | متوسط | state سه‌گانه‌ی incomplete/valid/invalid و commit نهایی         |
+| استقلال adapterها باعث شکستن API فعلی شود | بالا  | migration مرحله‌ای و حفظ facade سازگار برای Jalali              |
+| اختلاف فرمت تقویم‌ها و نام ماه‌ها         | بالا  | formatter متعلق به adapter و تست snapshot/round-trip            |
+| پیچیدگی scoped slot در range/dual input   | متوسط | قرارداد slot واحد با index/inputName و تست هر دو مسیر           |
+
+## معیار پایان
+
+- ورود دستی معتبر به‌صورت پیش‌فرض picker و `v-model` را همزمان به‌روزرسانی کند.
+- mask و validation برای تمام تقویم‌های فعال preset و override داشته باشند.
+- فیلد سفارشی از طریق scoped slot بدون از دست‌دادن keyboard/clear/validation کار کند.
+- هیچ علامت `?` یا token مخصوص PersianDate در خروجی adapterهای دیگر باقی نماند.
+- تست کامل فعلی و تست‌های جدید سبز باشند.

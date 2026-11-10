@@ -1,74 +1,90 @@
-# کارهای باقی‌مانده: vue3-multi-calendar-datepicker
+# کارهای باقی‌مانده پس از hardening و QA
 
-این فهرست بر اساس بازبینی کد، تست‌های اجرایی و QA بصری در ۲ نوامبر ۲۰۲۶ تهیه شده است.
+موارد انجام‌شده‌ی امنیتی، تقویمی، build، dependency و QA از این فهرست حذف شده‌اند. وضعیت فعلی بر اساس اجرای کامل `pnpm test` و تست‌های رگرسیون جدید ثبت شده است: ۱۳ spec و ۲۶۵ تست، همگی موفق.
 
-## اولویت بحرانی
+## کارهای توسعه‌ای باقی‌مانده
 
-- [ ] **MC-01 — یکسان‌سازی قرارداد `modelValue` و مستندات**
-  - رفتار فعلی در صورت فعال‌بودن adapter، مقدار مدل را با تقویم فعال قالب‌بندی می‌کند؛ اما specification و بخشی از README هنوز خروجی میلادی را قرارداد پیش‌فرض معرفی می‌کنند.
-  - تصمیم نهایی (`modelCalendar` یا خروجی تقویم فعال) باید گرفته، API و migration guide اصلاح و برای همه‌ی تقویم‌ها تست شود.
+- [ ] **REF-01 — کوچک‌سازی تدریجی `DatePicker.vue`**
+  - استخراج مرحله‌ای adapter bridge، parsing/constraints، keyboard، calendar grid و time picker به composable/componentهای مستقل.
+  - هر مرحله باید تست‌های فعلی را سبز نگه دارد و بدون تغییر API عمومی انجام شود.
 
-- [ ] **MC-02 — حذف فرض‌های باقی‌مانده‌ی شمسی از `disable`**
-  - مسیرهای `RegExp` و آرایه‌ی تاریخ‌های غیرفعال هنوز از فرمت `jYYYY/jM/jD` و `date.calendar('jalali')` استفاده می‌کنند.
-  - برای Gregorian، Hijri، Hebrew، Buddhist و Chinese باید از adapter فعال و format همان تقویم استفاده شود.
-
-- [x] **MC-03 — سلامت بسته‌ی منتشرشدنی و Nuxt**
-  - `pnpm build:nuxt` و `pnpm build:lib` موفق شدند و importهای ESM/CJS بررسی شدند.
-  - خروجی‌های `dist/nuxt/index.mjs` و `dist/nuxt/index.cjs` اکنون وجود دارند.
-
-## اولویت بالا
-
-- [ ] **MC-04 — تست بصری و رفع مشکلات runtime تقویم‌ها**
-  - Hebrew، Chinese و Buddhist در مرورگر واقعی بررسی شوند؛ مخصوصاً بازشدن popup، ماه/سال جاری، انتخاب روز، تغییر ماه و range.
-  - تست بصری فعلی به علت خطای Cypress GPU/DevTools در ویندوز قابل اجرا نبود و مرورگر داخلی نیز در این نشست غیرفعال بود.
-  - پس از رفع محیط تست، viewportهای 320، 768، 1024 و 1440 پوشش داده شوند.
+- [ ] **MC-04 — تست بصری responsive و runtime تقویم‌ها**
+  - بررسی Hebrew، Chinese و Buddhist در viewportهای ۳۲۰، ۷۶۸، ۱۰۲۴ و ۱۴۴۰.
+  - بررسی popup، ماه/سال جاری، انتخاب روز، range، تغییر ماه و جلوگیری از clipping یا overlap.
 
 - [ ] **MC-05 — تکمیل تست E2E دمو**
-  - زبان صفحه چند بار بین English/Farsi/Arabic تغییر کند و متن‌ها و جهت صفحه درست به‌روزرسانی شوند.
-  - Advanced Props، کد HTML اصلی، modal کپی، time/datetime/range و provider قمری تست شوند.
-  - کارت‌های gallery passive بمانند و حالت active یا انتخاب ناخواسته نداشته باشند.
+  - تغییر چندباره‌ی زبان بین فارسی، انگلیسی و عربی.
+  - بررسی Advanced Props، modal کد، time/datetime/range و provider قمری.
 
-- [ ] **MC-06 — قرارداد و پشتیبانی واقعی Chinese calendar**
-  - ماه کبیسه، نام ماه‌ها، سال مرتبط Gregorian و parse/format باید مدل صریح داشته باشند؛ شماره‌ی ترتیبی ماه به‌تنهایی کافی نیست.
-  - تست سال‌های مرزی و حداقل یک ماه کبیسه اضافه شود.
+- [ ] **MC-07 — fallback کنترل‌شده برای `Intl`**
+  - اگر runtime از Hebrew یا Chinese پشتیبانی نکرد، پیام خطای قابل‌فهم یا adapter جایگزین تزریق‌پذیر ارائه شود.
 
-- [ ] **MC-07 — robust کردن fallback برای `Intl`**
-  - اگر runtime تقویم `hebrew` یا `chinese` را پشتیبانی نکرد، خطای کنترل‌شده و پیام قابل فهم ارائه شود یا adapter جایگزین تزریق‌پذیر باشد.
-  - قابلیت پشتیبانی مرورگرها و اثر آن بر bundle مستند شود.
+- [ ] **MC-08 — تفکیک منطق `DatePicker.vue`**
+  - جداسازی adapter، locale، parsing، calendar view، keyboard و time picker بدون تغییر رفتار.
 
-## اولویت متوسط
+- [ ] **MC-09 — تفکیک `App.vue`**
+  - جداکردن playground، gallery، code modal و i18n به اجزای کوچک‌تر.
+  - بررسی focus، keyboard navigation و aria در modalها.
 
-- [ ] **MC-08 — جداکردن منطق DatePicker از فایل بزرگ فعلی**
-  - `src/components/DatePicker.vue` حدود ۲۰۰۰ خط است و منطق adapter، locale، parsing، UI و keyboard را هم‌زمان نگه می‌دارد.
-  - adapter bridge، locale policy، date parsing و calendar view به ماژول‌های مستقل منتقل شوند؛ رفتار فعلی نباید تغییر کند.
+- [ ] **MC-10 — unit test مستقل برای adapterها**
+  - پوشش leap year/month، مرزهای `from` و `to`، add/subtract، invalid input، timezone و round-trip برای هر adapter.
 
-- [ ] **MC-09 — خواناسازی و تفکیک `src/App.vue`**
-  - template و CSS فعلی بسیار فشرده‌اند؛ playground، gallery، code modal و i18n به اجزای کوچک‌تر منتقل شوند.
-  - label/aria مناسب، focus modal و keyboard navigation بررسی شود.
-
-- [ ] **MC-10 — کامل‌کردن پوشش تست adapterها**
-  - برای هر adapter: leap year/month، مرزهای `from` و `to`، add/subtract، timezone/UTC، invalid input و round-trip.
-  - تست‌های unit مستقل از Vue ایجاد شود؛ تست‌های فعلی Cypress جای unit test را نگیرند.
-
-- [ ] **MC-11 — هماهنگ‌سازی README، specification و release notes**
-  - وضعیت adapterهای متصل‌شده، localeهای پیش‌فرض، weekend/week start، محدودیت Chinese و قرارداد model هماهنگ شدند.
-  - migration guide کامل package/API هنوز بخشی از MC-11 توسعه‌ای باقی‌مانده است و در MC-01/MC-06 تکمیل می‌شود.
-
-## اولویت پایین‌تر / پس از تثبیت
+- [ ] **MC-11 — هماهنگ‌سازی مستندات انتشار**
+  - تکمیل migration guide، release notes و مستندات کامل API برای `calendar`، `modelCalendar`، فرمت‌ها و محدودیت‌های تقویم‌ها.
 
 - [ ] **MC-12 — بررسی bundle size و tree-shaking**
-  - اندازه‌ی ESM/UMD و اثر adapterها اندازه‌گیری شود؛ در صورت نیاز adapterهای تخصصی optional شوند.
+  - اندازه‌گیری خروجی ESM/UMD و بررسی اختیاری‌سازی adapterهای تخصصی.
 
-- [ ] **MC-13 — extension API برای تقویم‌های تخصصی**
-  - registry عمومی، typeهای adapter و نمونه‌ی adapter سفارشی مستند و تست شوند.
+- [ ] **MC-13 — extension API تقویم‌های تخصصی**
+  - مستندسازی registry عمومی، typeهای adapter و نمونه‌ی adapter سفارشی.
 
-## وضعیت آخرین بررسی
+## قابلیت‌های جدید مورد توافق
 
-- ✅ `pnpm lint`
-- ✅ `pnpm build:lib` (با دسترسی لازم به cache محلی؛ فقط warning موجود `eval` در dependency)
-- ⚠️ `pnpm exec vue-tsc --noEmit` — به علت `EPERM` هنگام نوشتن در `node_modules/.vue-global-types` اجرا نشد.
-- ⚠️ Cypress component/E2E — به علت `GPU process isn't usable` و `DevToolsActivePort: Access is denied` اجرا نشد.
-- ⚠️ تست بصری مرورگر — مرورگر داخلی در Work settings غیرفعال است؛ نیازمند اجرای دستی یا فعال‌سازی browser automation.
-- ⚠️ تست بصری Chrome — بارگذاری اولیه موفق بود و همه‌ی کارت‌ها دیده شدند؛ تعامل select به علت timeout کنترل پنجره کامل نشد و خطای 404 برای `favicon.ico` ثبت شد.
-- ⚠️ تلاش مجدد تست بصری — Chrome در وضعیت minimized/unusable و Firefox با خطای دسترسی ویندوز متوقف شد؛ تست تعاملی معتبر حاصل نشد.
-- ⚠️ اجرای مجدد تست بصری — Chrome به profile picker رفت و با خطای `foreground window did not report a process id` قابل تعامل نبود؛ نتیجه‌ی جدیدی ثبت نشد.
+- [x] **INPUT-01 — تثبیت قرارداد فرمت‌های model و input**
+  - `format` به‌عنوان فرمت `v-model` باقی بماند.
+  - `inputFormat` به‌عنوان فرمت نمایش/parse فیلد ورودی مستقل بماند.
+  - قرارداد `displayFormat` برای متن نمایشی picker مستند و regression شود؛ prop جدید فقط در صورت اثبات نیاز اضافه شود.
+
+- [x] **INPUT-02 — همگام‌سازی ورودی دستی با picker**
+  - ورود دستی به‌صورت پیش‌فرض فعال باشد.
+  - مقدار معتبر، `selectedDates` و `onDisplay` را همزمان به‌روزرسانی کند.
+  - ورودی ناقص قابل ادامه‌دادن باشد و مقدار نامعتبر state داخلی را تغییر ندهد.
+  - commit نهایی با `blur`، `Enter` و مسیر submit پوشش داده شود.
+
+- [x] **INPUT-03 — اعتبارسنجی کاراکتر و تاریخ**
+  - کاراکترهای مجاز بر اساس format، locale و تقویم فعال کنترل شوند.
+  - ارقام فارسی/عربی و لاتین طبق تنظیمات پشتیبانی شوند.
+  - محدودیت واقعی سال/ماه/روز و leap month از adapter فعال گرفته شود؛ نمونه‌هایی مانند روز ۸۸ رد شوند.
+
+- [x] **INPUT-04 — موتور mask و preset تقویمی**
+  - `inputMask` با ورودی String برای shorthand و Object/TypeScript برای تنظیمات کامل ارائه شود.
+  - preset پیش‌فرض برای هر تقویم و type وجود داشته باشد.
+  - placeholder، جداکننده، digit policy، strict mode و امکان override مستند و تست شوند.
+
+- [x] **INPUT-05 — scoped slot برای فیلد ورودی سفارشی**
+  - slot استاندارد `#input` با props لازم مانند `value`، `inputAttrs`، `open`، `clear` و handler همگام‌سازی ارائه شود.
+  - فیلد سفارشی و input داخلی از یک `v-model` canonical استفاده کنند.
+  - single/range، dual input، clear، keyboard و validation تست شوند.
+
+- [ ] **CAL-06 — استقلال کامل adapterهای غیر PersianDate**
+  - برای Gregorian، Hijri، Hebrew، Buddhist و Chinese، `PersianDate` از منبع منطق parse/format/compare/add/subtract خارج شود.
+  - adapter فعال مالک parts، validation، month names، leap state، day arithmetic و formatting باشد.
+  - timestamp فقط transport boundary باشد و تبدیل آن به `PersianDate` منطق تقویم را تعیین نکند.
+  - migration مرحله‌ای بدون شکستن Jalali compatibility و با typeهای مستقل انجام شود.
+
+- [x] **CAL-07 — حذف syntax وابسته به PersianDate از formatter adapterها**
+  - `?D`، `?MMMM` و tokenهای مشابه در تقویم‌های غیرشمسی به علامت سؤال یا خروجی ناقص تبدیل نشوند.
+  - formatter عمومی adapter جایگزین tokenهای وابسته به PersianDate شود.
+  - Hebrew، Chinese و Buddhist برای نام ماه، روز و خروجی model regression داشته باشند.
+
+- [ ] **QA-02 — تست کامل قابلیت‌های ورودی و adapter مستقل**
+  - تست unit parser/mask/validation و تست component برای manual sync و scoped input slot اضافه شود.
+  - تست cross-calendar برای date، datetime، range، locale و leap month اجرا شود.
+  - تست دستی responsive و مرورگر واقعی پس از تکمیل قابلیت‌ها تکرار شود.
+
+### Checkpoint قابلیت‌های جدید
+
+- [ ] قرارداد API و نام propها پیش از implementation تأیید شود.
+- [ ] parser/mask بدون UI مستقل تست شود.
+- [ ] حداقل یک مسیر کامل از ورود دستی تا نمایش picker و `v-model` برای Jalali و یک adapter مستقل سبز شود.
+- [ ] پس از CAL-06 هیچ منطق تقویم غیرشمسی در `PersianDate` پنهان نباشد.

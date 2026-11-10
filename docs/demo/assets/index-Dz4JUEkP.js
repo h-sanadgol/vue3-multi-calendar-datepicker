@@ -1,14 +1,14 @@
 (function () {
   const t = document.createElement('link').relList;
   if (t && t.supports && t.supports('modulepreload')) return;
-  for (const n of document.querySelectorAll('link[rel="modulepreload"]')) s(n);
+  for (const n of document.querySelectorAll('link[rel="modulepreload"]')) r(n);
   new MutationObserver((n) => {
     for (const i of n)
       if (i.type === 'childList')
-        for (const o of i.addedNodes)
-          o.tagName === 'LINK' && o.rel === 'modulepreload' && s(o);
+        for (const a of i.addedNodes)
+          a.tagName === 'LINK' && a.rel === 'modulepreload' && r(a);
   }).observe(document, { childList: !0, subtree: !0 });
-  function r(n) {
+  function s(n) {
     const i = {};
     return (
       n.integrity && (i.integrity = n.integrity),
@@ -21,21 +21,17 @@
       i
     );
   }
-  function s(n) {
+  function r(n) {
     if (n.ep) return;
     n.ep = !0;
-    const i = r(n);
+    const i = s(n);
     fetch(n.href, i);
   }
 })();
-/**
- * @vue/shared v3.5.22
- * (c) 2018-present Yuxi (Evan) You and Vue contributors
- * @license MIT
- **/ function makeMap(e) {
+function makeMap(e) {
   const t = Object.create(null);
-  for (const r of e.split(',')) t[r] = 1;
-  return (r) => r in t;
+  for (const s of e.split(',')) t[s] = 1;
+  return (s) => s in t;
 }
 const EMPTY_OBJ = {},
   EMPTY_ARR = [],
@@ -48,8 +44,8 @@ const EMPTY_OBJ = {},
   isModelListener = (e) => e.startsWith('onUpdate:'),
   extend = Object.assign,
   remove = (e, t) => {
-    const r = e.indexOf(t);
-    r > -1 && e.splice(r, 1);
+    const s = e.indexOf(t);
+    s > -1 && e.splice(s, 1);
   },
   hasOwnProperty$1 = Object.prototype.hasOwnProperty,
   hasOwn = (e, t) => hasOwnProperty$1.call(e, t),
@@ -74,7 +70,7 @@ const EMPTY_OBJ = {},
   ),
   cacheStringFunction = (e) => {
     const t = Object.create(null);
-    return (r) => t[r] || (t[r] = e(r));
+    return (s) => t[s] || (t[s] = e(s));
   },
   camelizeRE = /-\w/g,
   camelize = cacheStringFunction((e) =>
@@ -90,14 +86,14 @@ const EMPTY_OBJ = {},
   toHandlerKey = cacheStringFunction((e) => (e ? `on${capitalize(e)}` : '')),
   hasChanged = (e, t) => !Object.is(e, t),
   invokeArrayFns = (e, ...t) => {
-    for (let r = 0; r < e.length; r++) e[r](...t);
+    for (let s = 0; s < e.length; s++) e[s](...t);
   },
-  def = (e, t, r, s = !1) => {
+  def = (e, t, s, r = !1) => {
     Object.defineProperty(e, t, {
       configurable: !0,
       enumerable: !1,
-      writable: s,
-      value: r,
+      writable: r,
+      value: s,
     });
   },
   looseToNumber = (e) => {
@@ -120,9 +116,9 @@ const getGlobalThis = () =>
 function normalizeStyle(e) {
   if (isArray(e)) {
     const t = {};
-    for (let r = 0; r < e.length; r++) {
-      const s = e[r],
-        n = isString(s) ? parseStringStyle(s) : normalizeStyle(s);
+    for (let s = 0; s < e.length; s++) {
+      const r = e[s],
+        n = isString(r) ? parseStringStyle(r) : normalizeStyle(r);
       if (n) for (const i in n) t[i] = n[i];
     }
     return t;
@@ -130,17 +126,18 @@ function normalizeStyle(e) {
 }
 const listDelimiterRE = /;(?![^(]*\))/g,
   propertyDelimiterRE = /:([^]+)/,
-  styleCommentRE = /\/\*[^]*?\*\//g;
+  styleCommentRE =
+    /"(?:[^"\\]|\\[^])*"|'(?:[^'\\]|\\[^])*'|\\[^]|\/\*[^]*?\*\//g;
 function parseStringStyle(e) {
   const t = {};
   return (
     e
-      .replace(styleCommentRE, '')
+      .replace(styleCommentRE, (s) => (s.startsWith('/*') ? '' : s))
       .split(listDelimiterRE)
-      .forEach((r) => {
-        if (r) {
-          const s = r.split(propertyDelimiterRE);
-          s.length > 1 && (t[s[0].trim()] = s[1].trim());
+      .forEach((s) => {
+        if (s) {
+          const r = s.split(propertyDelimiterRE);
+          r.length > 1 && (t[r[0].trim()] = r[1].trim());
         }
       }),
     t
@@ -150,57 +147,101 @@ function normalizeClass(e) {
   let t = '';
   if (isString(e)) t = e;
   else if (isArray(e))
-    for (let r = 0; r < e.length; r++) {
-      const s = normalizeClass(e[r]);
-      s && (t += s + ' ');
+    for (let s = 0; s < e.length; s++) {
+      const r = normalizeClass(e[s]);
+      r && (t += r + ' ');
     }
-  else if (isObject(e)) for (const r in e) e[r] && (t += r + ' ');
+  else if (isObject(e)) for (const s in e) e[s] && (t += s + ' ');
   return t.trim();
 }
 function normalizeProps(e) {
   if (!e) return null;
-  let { class: t, style: r } = e;
+  let { class: t, style: s } = e;
   return (
     t && !isString(t) && (e.class = normalizeClass(t)),
-    r && (e.style = normalizeStyle(r)),
+    s && (e.style = normalizeStyle(s)),
     e
   );
 }
 const specialBooleanAttrs =
-    'itemscope,allowfullscreen,formnovalidate,ismap,nomodule,novalidate,readonly',
+    'itemscope,allowfullscreen,formnovalidate,ismap,nomodule,novalidate,playsinline,readonly',
   isSpecialBooleanAttr = makeMap(specialBooleanAttrs);
 function includeBooleanAttr(e) {
   return !!e || e === '';
 }
-function looseCompareArrays(e, t) {
+function looseCompareArrays(e, t, s) {
   if (e.length !== t.length) return !1;
   let r = !0;
-  for (let s = 0; r && s < e.length; s++) r = looseEqual(e[s], t[s]);
+  for (let n = 0; r && n < e.length; n++) r = looseEqual(e[n], t[n], s);
   return r;
 }
-function looseEqual(e, t) {
-  if (e === t) return !0;
-  let r = isDate(e),
-    s = isDate(t);
-  if (r || s) return r && s ? e.getTime() === t.getTime() : !1;
-  if (((r = isSymbol(e)), (s = isSymbol(t)), r || s)) return e === t;
-  if (((r = isArray(e)), (s = isArray(t)), r || s))
-    return r && s ? looseCompareArrays(e, t) : !1;
-  if (((r = isObject(e)), (s = isObject(t)), r || s)) {
-    if (!r || !s) return !1;
-    const n = Object.keys(e).length,
-      i = Object.keys(t).length;
-    if (n !== i) return !1;
-    for (const o in e) {
-      const a = e.hasOwnProperty(o),
-        l = t.hasOwnProperty(o);
-      if ((a && !l) || (!a && l) || !looseEqual(e[o], t[o])) return !1;
-    }
+function looseCompareCollections(e, t, s) {
+  if (e.size !== t.size) return !1;
+  const r = Array.from(t),
+    n = new Uint8Array(r.length);
+  for (const i of e) {
+    let a = -1;
+    for (let o = 0; o < r.length; o++)
+      if (!n[o] && looseEqual(i, r[o], s)) {
+        a = o;
+        break;
+      }
+    if (a < 0) return !1;
+    n[a] = 1;
+  }
+  return !0;
+}
+function looseCompareObjects(e, t, s) {
+  let r = isMap(e),
+    n = isMap(t);
+  if (r || n || ((r = isSet(e)), (n = isSet(t)), r || n))
+    return r && n ? looseCompareCollections(e, t, s) : !1;
+  const i = Object.keys(e).length,
+    a = Object.keys(t).length;
+  if (i !== a) return !1;
+  for (const o in e) {
+    const l = e.hasOwnProperty(o),
+      d = t.hasOwnProperty(o);
+    if ((l && !d) || (!l && d) || !looseEqual(e[o], t[o], s)) return !1;
   }
   return String(e) === String(t);
 }
+function looseCompareNested(e, t, s, r) {
+  s || (s = [new Map(), new Map()]);
+  const [n, i] = s;
+  if (n.has(e) || i.has(t)) return n.get(e) === t && i.get(t) === e;
+  (n.set(e, t), i.set(t, e));
+  const a = r(e, t, s);
+  return (n.delete(e), i.delete(t), a);
+}
+function looseEqual(e, t, s) {
+  if (e === t) return !0;
+  let r = isDate(e),
+    n = isDate(t);
+  return r || n
+    ? r && n
+      ? e.getTime() === t.getTime()
+      : !1
+    : ((r = isSymbol(e)),
+      (n = isSymbol(t)),
+      r || n
+        ? e === t
+        : ((r = isArray(e)),
+          (n = isArray(t)),
+          r || n
+            ? r && n
+              ? looseCompareNested(e, t, s, looseCompareArrays)
+              : !1
+            : ((r = isObject(e)),
+              (n = isObject(t)),
+              r || n
+                ? !r || !n
+                  ? !1
+                  : looseCompareNested(e, t, s, looseCompareObjects)
+                : String(e) === String(t))));
+}
 function looseIndexOf(e, t) {
-  return e.findIndex((r) => looseEqual(r, t));
+  return e.findIndex((s) => looseEqual(s, t));
 }
 const isRef$1 = (e) => !!(e && e.__v_isRef === !0),
   toDisplayString = (e) =>
@@ -221,14 +262,14 @@ const isRef$1 = (e) => !!(e && e.__v_isRef === !0),
       : isMap(t)
         ? {
             [`Map(${t.size})`]: [...t.entries()].reduce(
-              (r, [s, n], i) => ((r[stringifySymbol(s, i) + ' =>'] = n), r),
+              (s, [r, n], i) => ((s[stringifySymbol(r, i) + ' =>'] = n), s),
               {},
             ),
           }
         : isSet(t)
           ? {
-              [`Set(${t.size})`]: [...t.values()].map((r) =>
-                stringifySymbol(r),
+              [`Set(${t.size})`]: [...t.values()].map((s) =>
+                stringifySymbol(s),
               ),
             }
           : isSymbol(t)
@@ -237,14 +278,10 @@ const isRef$1 = (e) => !!(e && e.__v_isRef === !0),
               ? String(t)
               : t,
   stringifySymbol = (e, t = '') => {
-    var r;
-    return isSymbol(e) ? `Symbol(${(r = e.description) != null ? r : t})` : e;
+    var s;
+    return isSymbol(e) ? `Symbol(${(s = e.description) != null ? s : t})` : e;
   };
-/**
- * @vue/reactivity v3.5.22
- * (c) 2018-present Yuxi (Evan) You and Vue contributors
- * @license MIT
- **/ let activeEffectScope;
+let activeEffectScope;
 class EffectScope {
   constructor(t = !1) {
     ((this.detached = t),
@@ -253,13 +290,17 @@ class EffectScope {
       (this.effects = []),
       (this.cleanups = []),
       (this._isPaused = !1),
-      (this.parent = activeEffectScope),
+      (this._warnOnRun = !0),
+      (this.__v_skip = !0),
       !t &&
         activeEffectScope &&
-        (this.index =
-          (activeEffectScope.scopes || (activeEffectScope.scopes = [])).push(
-            this,
-          ) - 1));
+        (activeEffectScope.active
+          ? ((this.parent = activeEffectScope),
+            (this.index =
+              (
+                activeEffectScope.scopes || (activeEffectScope.scopes = [])
+              ).push(this) - 1))
+          : ((this._active = !1), (this._warnOnRun = !1))));
   }
   get active() {
     return this._active;
@@ -267,28 +308,33 @@ class EffectScope {
   pause() {
     if (this._active) {
       this._isPaused = !0;
-      let t, r;
-      if (this.scopes)
-        for (t = 0, r = this.scopes.length; t < r; t++) this.scopes[t].pause();
-      for (t = 0, r = this.effects.length; t < r; t++) this.effects[t].pause();
+      let t, s;
+      if (this.scopes) {
+        const r = this.scopes.slice();
+        for (t = 0, s = r.length; t < s; t++) r[t].pause();
+      }
+      for (t = 0, s = this.effects.length; t < s; t++) this.effects[t].pause();
     }
   }
   resume() {
     if (this._active && this._isPaused) {
       this._isPaused = !1;
-      let t, r;
-      if (this.scopes)
-        for (t = 0, r = this.scopes.length; t < r; t++) this.scopes[t].resume();
-      for (t = 0, r = this.effects.length; t < r; t++) this.effects[t].resume();
+      let t, s;
+      if (this.scopes) {
+        const n = this.scopes.slice();
+        for (t = 0, s = n.length; t < s; t++) n[t].resume();
+      }
+      const r = this.effects.slice();
+      for (t = 0, s = r.length; t < s; t++) r[t].resume();
     }
   }
   run(t) {
     if (this._active) {
-      const r = activeEffectScope;
+      const s = activeEffectScope;
       try {
         return ((activeEffectScope = this), t());
       } finally {
-        activeEffectScope = r;
+        activeEffectScope = s;
       }
     }
   }
@@ -297,19 +343,31 @@ class EffectScope {
       ((this.prevScope = activeEffectScope), (activeEffectScope = this));
   }
   off() {
-    this._on > 0 &&
-      --this._on === 0 &&
-      ((activeEffectScope = this.prevScope), (this.prevScope = void 0));
+    if (this._on > 0 && --this._on === 0) {
+      if (activeEffectScope === this) activeEffectScope = this.prevScope;
+      else {
+        let t = activeEffectScope;
+        for (; t; ) {
+          if (t.prevScope === this) {
+            t.prevScope = this.prevScope;
+            break;
+          }
+          t = t.prevScope;
+        }
+      }
+      this.prevScope = void 0;
+    }
   }
   stop(t) {
     if (this._active) {
       this._active = !1;
-      let r, s;
-      for (r = 0, s = this.effects.length; r < s; r++) this.effects[r].stop();
-      for (this.effects.length = 0, r = 0, s = this.cleanups.length; r < s; r++)
-        this.cleanups[r]();
+      let s, r;
+      for (s = 0, r = this.effects.length; s < r; s++) this.effects[s].stop();
+      for (this.effects.length = 0, s = 0, r = this.cleanups.length; s < r; s++)
+        this.cleanups[s]();
       if (((this.cleanups.length = 0), this.scopes)) {
-        for (r = 0, s = this.scopes.length; r < s; r++) this.scopes[r].stop(!0);
+        const n = this.scopes.slice();
+        for (s = 0, r = n.length; s < r; s++) n[s].stop(!0);
         this.scopes.length = 0;
       }
       if (!this.detached && this.parent && !t) {
@@ -337,8 +395,9 @@ class ReactiveEffect {
       (this.cleanup = void 0),
       (this.scheduler = void 0),
       activeEffectScope &&
-        activeEffectScope.active &&
-        activeEffectScope.effects.push(this));
+        (activeEffectScope.active
+          ? activeEffectScope.effects.push(this)
+          : (this.flags &= -2)));
   }
   pause() {
     this.flags |= 64;
@@ -356,14 +415,14 @@ class ReactiveEffect {
     if (!(this.flags & 1)) return this.fn();
     ((this.flags |= 2), cleanupEffect(this), prepareDeps(this));
     const t = activeSub,
-      r = shouldTrack;
+      s = shouldTrack;
     ((activeSub = this), (shouldTrack = !0));
     try {
       return this.fn();
     } finally {
       (cleanupDeps(this),
         (activeSub = t),
-        (shouldTrack = r),
+        (shouldTrack = s),
         (this.flags &= -3));
     }
   }
@@ -408,22 +467,22 @@ function endBatch() {
   if (batchedComputed) {
     let t = batchedComputed;
     for (batchedComputed = void 0; t; ) {
-      const r = t.next;
-      ((t.next = void 0), (t.flags &= -9), (t = r));
+      const s = t.next;
+      ((t.next = void 0), (t.flags &= -9), (t = s));
     }
   }
   let e;
   for (; batchedSub; ) {
     let t = batchedSub;
     for (batchedSub = void 0; t; ) {
-      const r = t.next;
+      const s = t.next;
       if (((t.next = void 0), (t.flags &= -9), t.flags & 1))
         try {
           t.trigger();
-        } catch (s) {
-          e || (e = s);
+        } catch (r) {
+          e || (e = r);
         }
-      t = r;
+      t = s;
     }
   }
   if (e) throw e;
@@ -436,18 +495,18 @@ function prepareDeps(e) {
 }
 function cleanupDeps(e) {
   let t,
-    r = e.depsTail,
-    s = r;
-  for (; s; ) {
-    const n = s.prevDep;
-    (s.version === -1
-      ? (s === r && (r = n), removeSub(s), removeDep(s))
-      : (t = s),
-      (s.dep.activeLink = s.prevActiveLink),
-      (s.prevActiveLink = void 0),
-      (s = n));
+    s = e.depsTail,
+    r = s;
+  for (; r; ) {
+    const n = r.prevDep;
+    (r.version === -1
+      ? (r === s && (s = n), removeSub(r), removeDep(r))
+      : (t = r),
+      (r.dep.activeLink = r.prevActiveLink),
+      (r.prevActiveLink = void 0),
+      (r = n));
   }
-  ((e.deps = t), (e.depsTail = r));
+  ((e.deps = t), (e.depsTail = s));
 }
 function isDirty(e) {
   for (let t = e.deps; t; t = t.nextDep)
@@ -469,8 +528,8 @@ function refreshComputed(e) {
     return;
   e.flags |= 2;
   const t = e.dep,
-    r = activeSub,
-    s = shouldTrack;
+    s = activeSub,
+    r = shouldTrack;
   ((activeSub = e), (shouldTrack = !0));
   try {
     prepareDeps(e);
@@ -480,25 +539,25 @@ function refreshComputed(e) {
   } catch (n) {
     throw (t.version++, n);
   } finally {
-    ((activeSub = r), (shouldTrack = s), cleanupDeps(e), (e.flags &= -3));
+    ((activeSub = s), (shouldTrack = r), cleanupDeps(e), (e.flags &= -3));
   }
 }
 function removeSub(e, t = !1) {
-  const { dep: r, prevSub: s, nextSub: n } = e;
+  const { dep: s, prevSub: r, nextSub: n } = e;
   if (
-    (s && ((s.nextSub = n), (e.prevSub = void 0)),
-    n && ((n.prevSub = s), (e.nextSub = void 0)),
-    r.subs === e && ((r.subs = s), !s && r.computed))
+    (r && ((r.nextSub = n), (e.prevSub = void 0)),
+    n && ((n.prevSub = r), (e.nextSub = void 0)),
+    s.subs === e && ((s.subs = r), !r && s.computed))
   ) {
-    r.computed.flags &= -5;
-    for (let i = r.computed.deps; i; i = i.nextDep) removeSub(i, !0);
+    s.computed.flags &= -5;
+    for (let i = s.computed.deps; i; i = i.nextDep) removeSub(i, !0);
   }
-  !t && !--r.sc && r.map && r.map.delete(r.key);
+  !t && !--s.sc && s.map && s.map.delete(s.key);
 }
 function removeDep(e) {
-  const { prevDep: t, nextDep: r } = e;
-  (t && ((t.nextDep = r), (e.prevDep = void 0)),
-    r && ((r.prevDep = t), (e.nextDep = void 0)));
+  const { prevDep: t, nextDep: s } = e;
+  (t && ((t.nextDep = s), (e.prevDep = void 0)),
+    s && ((s.prevDep = t), (e.nextDep = void 0)));
 }
 let shouldTrack = !0;
 const trackStack = [];
@@ -512,21 +571,21 @@ function resetTracking() {
 function cleanupEffect(e) {
   const { cleanup: t } = e;
   if (((e.cleanup = void 0), t)) {
-    const r = activeSub;
+    const s = activeSub;
     activeSub = void 0;
     try {
       t();
     } finally {
-      activeSub = r;
+      activeSub = s;
     }
   }
 }
 let globalVersion = 0;
 class Link {
-  constructor(t, r) {
+  constructor(t, s) {
     ((this.sub = t),
-      (this.dep = r),
-      (this.version = r.version),
+      (this.dep = s),
+      (this.version = s.version),
       (this.nextDep =
         this.prevDep =
         this.nextSub =
@@ -548,26 +607,26 @@ class Dep {
   }
   track(t) {
     if (!activeSub || !shouldTrack || activeSub === this.computed) return;
-    let r = this.activeLink;
-    if (r === void 0 || r.sub !== activeSub)
-      ((r = this.activeLink = new Link(activeSub, this)),
+    let s = this.activeLink;
+    if (s === void 0 || s.sub !== activeSub)
+      ((s = this.activeLink = new Link(activeSub, this)),
         activeSub.deps
-          ? ((r.prevDep = activeSub.depsTail),
-            (activeSub.depsTail.nextDep = r),
-            (activeSub.depsTail = r))
-          : (activeSub.deps = activeSub.depsTail = r),
-        addSub(r));
-    else if (r.version === -1 && ((r.version = this.version), r.nextDep)) {
-      const s = r.nextDep;
-      ((s.prevDep = r.prevDep),
-        r.prevDep && (r.prevDep.nextDep = s),
-        (r.prevDep = activeSub.depsTail),
-        (r.nextDep = void 0),
-        (activeSub.depsTail.nextDep = r),
-        (activeSub.depsTail = r),
-        activeSub.deps === r && (activeSub.deps = s));
+          ? ((s.prevDep = activeSub.depsTail),
+            (activeSub.depsTail.nextDep = s),
+            (activeSub.depsTail = s))
+          : (activeSub.deps = activeSub.depsTail = s),
+        addSub(s));
+    else if (s.version === -1 && ((s.version = this.version), s.nextDep)) {
+      const r = s.nextDep;
+      ((r.prevDep = s.prevDep),
+        s.prevDep && (s.prevDep.nextDep = r),
+        (s.prevDep = activeSub.depsTail),
+        (s.nextDep = void 0),
+        (activeSub.depsTail.nextDep = s),
+        (activeSub.depsTail = s),
+        activeSub.deps === s && (activeSub.deps = r));
     }
-    return r;
+    return s;
   }
   trigger(t) {
     (this.version++, globalVersion++, this.notify(t));
@@ -575,8 +634,8 @@ class Dep {
   notify(t) {
     startBatch();
     try {
-      for (let r = this.subs; r; r = r.prevSub)
-        r.sub.notify() && r.sub.dep.notify();
+      for (let s = this.subs; s; s = s.prevSub)
+        s.sub.notify() && s.sub.dep.notify();
     } finally {
       endBatch();
     }
@@ -587,86 +646,94 @@ function addSub(e) {
     const t = e.dep.computed;
     if (t && !e.dep.subs) {
       t.flags |= 20;
-      for (let s = t.deps; s; s = s.nextDep) addSub(s);
+      for (let r = t.deps; r; r = r.nextDep) addSub(r);
     }
-    const r = e.dep.subs;
-    (r !== e && ((e.prevSub = r), r && (r.nextSub = e)), (e.dep.subs = e));
+    const s = e.dep.subs;
+    (s !== e && ((e.prevSub = s), s && (s.nextSub = e)), (e.dep.subs = e));
   }
 }
 const targetMap = new WeakMap(),
   ITERATE_KEY = Symbol(''),
   MAP_KEY_ITERATE_KEY = Symbol(''),
   ARRAY_ITERATE_KEY = Symbol('');
-function track(e, t, r) {
+function track(e, t, s) {
   if (shouldTrack && activeSub) {
-    let s = targetMap.get(e);
-    s || targetMap.set(e, (s = new Map()));
-    let n = s.get(r);
-    (n || (s.set(r, (n = new Dep())), (n.map = s), (n.key = r)), n.track());
+    let r = targetMap.get(e);
+    r || targetMap.set(e, (r = new Map()));
+    let n = r.get(s);
+    (n || (r.set(s, (n = new Dep())), (n.map = r), (n.key = s)), n.track());
   }
 }
-function trigger(e, t, r, s, n, i) {
-  const o = targetMap.get(e);
-  if (!o) {
+function trigger(e, t, s, r, n, i) {
+  const a = targetMap.get(e);
+  if (!a) {
     globalVersion++;
     return;
   }
-  const a = (l) => {
+  const o = (l) => {
     l && l.trigger();
   };
-  if ((startBatch(), t === 'clear')) o.forEach(a);
+  if ((startBatch(), t === 'clear')) a.forEach(o);
   else {
     const l = isArray(e),
-      d = l && isIntegerKey(r);
-    if (l && r === 'length') {
-      const c = Number(s);
-      o.forEach((f, w) => {
-        (w === 'length' ||
-          w === ARRAY_ITERATE_KEY ||
-          (!isSymbol(w) && w >= c)) &&
-          a(f);
+      d = l && isIntegerKey(s);
+    if (l && s === 'length') {
+      const c = Number(r);
+      a.forEach((f, v) => {
+        (v === 'length' ||
+          v === ARRAY_ITERATE_KEY ||
+          (!isSymbol(v) && v >= c)) &&
+          o(f);
       });
     } else
       switch (
-        ((r !== void 0 || o.has(void 0)) && a(o.get(r)),
-        d && a(o.get(ARRAY_ITERATE_KEY)),
+        ((s !== void 0 || a.has(void 0)) && o(a.get(s)),
+        d && o(a.get(ARRAY_ITERATE_KEY)),
         t)
       ) {
         case 'add':
           l
-            ? d && a(o.get('length'))
-            : (a(o.get(ITERATE_KEY)),
-              isMap(e) && a(o.get(MAP_KEY_ITERATE_KEY)));
+            ? d && o(a.get('length'))
+            : (o(a.get(ITERATE_KEY)),
+              isMap(e) && o(a.get(MAP_KEY_ITERATE_KEY)));
           break;
         case 'delete':
           l ||
-            (a(o.get(ITERATE_KEY)), isMap(e) && a(o.get(MAP_KEY_ITERATE_KEY)));
+            (o(a.get(ITERATE_KEY)), isMap(e) && o(a.get(MAP_KEY_ITERATE_KEY)));
           break;
         case 'set':
-          isMap(e) && a(o.get(ITERATE_KEY));
+          isMap(e) && o(a.get(ITERATE_KEY));
           break;
       }
   }
   endBatch();
 }
 function getDepFromReactive(e, t) {
-  const r = targetMap.get(e);
-  return r && r.get(t);
+  const s = targetMap.get(e);
+  return s && s.get(t);
 }
 function reactiveReadArray(e) {
   const t = toRaw(e);
-  return t === e
+  return t === e || (track(t, 'iterate', ARRAY_ITERATE_KEY), isShallow(e))
     ? t
-    : (track(t, 'iterate', ARRAY_ITERATE_KEY),
-      isShallow(e) ? t : t.map(toReactive));
+    : isReadonly(e)
+      ? isReactive(e)
+        ? t.map((s) => toReadonly(toReactive(s)))
+        : t.map(toReadonly)
+      : t.map(toReactive);
 }
 function shallowReadArray(e) {
   return (track((e = toRaw(e)), 'iterate', ARRAY_ITERATE_KEY), e);
 }
+function toWrapped(e, t) {
+  return isReadonly(e)
+    ? toReadonly(isReactive(e) ? toReactive(t) : t)
+    : toReactive(t);
+}
 const arrayInstrumentations = {
   __proto__: null,
   [Symbol.iterator]() {
-    return iterator(this, Symbol.iterator, toReactive);
+    return iterator(this, Symbol.iterator, (e) => toWrapped(this, e));
   },
   concat(...e) {
     return reactiveReadArray(this).concat(
@@ -674,22 +741,33 @@ const arrayInstrumentations = {
     );
   },
   entries() {
-    return iterator(this, 'entries', (e) => ((e[1] = toReactive(e[1])), e));
+    return iterator(
+      this,
+      'entries',
+      (e) => ((e[1] = toWrapped(this, e[1])), e),
+    );
   },
   every(e, t) {
     return apply(this, 'every', e, t, void 0, arguments);
   },
   filter(e, t) {
-    return apply(this, 'filter', e, t, (r) => r.map(toReactive), arguments);
+    return apply(
+      this,
+      'filter',
+      e,
+      t,
+      (s) => s.map((r) => toWrapped(this, r)),
+      arguments,
+    );
   },
   find(e, t) {
-    return apply(this, 'find', e, t, toReactive, arguments);
+    return apply(this, 'find', e, t, (s) => toWrapped(this, s), arguments);
   },
   findIndex(e, t) {
     return apply(this, 'findIndex', e, t, void 0, arguments);
   },
   findLast(e, t) {
-    return apply(this, 'findLast', e, t, toReactive, arguments);
+    return apply(this, 'findLast', e, t, (s) => toWrapped(this, s), arguments);
   },
   findLastIndex(e, t) {
     return apply(this, 'findLastIndex', e, t, void 0, arguments);
@@ -746,73 +824,98 @@ const arrayInstrumentations = {
     return noTracking(this, 'unshift', e);
   },
   values() {
-    return iterator(this, 'values', toReactive);
+    return iterator(this, 'values', (e) => toWrapped(this, e));
   },
 };
-function iterator(e, t, r) {
-  const s = shallowReadArray(e),
-    n = s[t]();
-  return (
-    s !== e &&
-      !isShallow(e) &&
-      ((n._next = n.next),
-      (n.next = () => {
-        const i = n._next();
-        return (i.done || (i.value = r(i.value)), i);
-      })),
-    n
-  );
+function iterator(e, t, s) {
+  const r = shallowReadArray(e),
+    n = r[t],
+    i = n.call(r);
+  if (r !== e && !isShallow(e)) {
+    if (i[Symbol.toStringTag] === 'Array Iterator') {
+      const a = Object.create(Object.getPrototypeOf(i));
+      return (
+        (a.next = () => wrapResult(i.next(), s)),
+        n !== arrayProto[t] &&
+          Object.defineProperties(a, {
+            return: {
+              get() {
+                const o = i.return;
+                return typeof o == 'function' ? o.bind(i) : o;
+              },
+            },
+            throw: {
+              get() {
+                const o = i.throw;
+                return typeof o == 'function' ? o.bind(i) : o;
+              },
+            },
+          }),
+        a
+      );
+    }
+    ((i._next = i.next), (i.next = () => wrapResult(i._next(), s)));
+  }
+  return i;
+}
+function wrapResult(e, t) {
+  return (e.done || (e.value = t(e.value)), e);
 }
 const arrayProto = Array.prototype;
-function apply(e, t, r, s, n, i) {
-  const o = shallowReadArray(e),
-    a = o !== e && !isShallow(e),
-    l = o[t];
+function apply(e, t, s, r, n, i) {
+  const a = shallowReadArray(e),
+    o = a !== e && !isShallow(e),
+    l = a[t];
   if (l !== arrayProto[t]) {
     const f = l.apply(e, i);
-    return a ? toReactive(f) : f;
+    return o ? toReactive(f) : f;
   }
-  let d = r;
-  o !== e &&
-    (a
-      ? (d = function (f, w) {
-          return r.call(this, toReactive(f), w, e);
+  let d = s;
+  a !== e &&
+    (o
+      ? (d = function (f, v) {
+          return s.call(this, toWrapped(e, f), v, e);
         })
-      : r.length > 2 &&
-        (d = function (f, w) {
-          return r.call(this, f, w, e);
+      : s.length > 2 &&
+        (d = function (f, v) {
+          return s.call(this, f, v, e);
         }));
-  const c = l.call(o, d, s);
-  return a && n ? n(c) : c;
+  const c = l.call(a, d, r);
+  return o && n ? n(c) : c;
 }
-function reduce(e, t, r, s) {
-  const n = shallowReadArray(e);
-  let i = r;
-  return (
-    n !== e &&
-      (isShallow(e)
-        ? r.length > 3 &&
-          (i = function (o, a, l) {
-            return r.call(this, o, a, l, e);
-          })
-        : (i = function (o, a, l) {
-            return r.call(this, o, toReactive(a), l, e);
-          })),
-    n[t](i, ...s)
-  );
+function reduce(e, t, s, r) {
+  const n = shallowReadArray(e),
+    i = n !== e && !isShallow(e);
+  let a = s,
+    o = !1;
+  n !== e &&
+    (i
+      ? ((o = r.length === 0),
+        (a = function (d, c, f) {
+          return (
+            o && ((o = !1), (d = toWrapped(e, d))),
+            s.call(this, d, toWrapped(e, c), f, e)
+          );
+        }))
+      : s.length > 3 &&
+        (a = function (d, c, f) {
+          return s.call(this, d, c, f, e);
+        }));
+  const l = n[t](a, ...r);
+  return o ? toWrapped(e, l) : l;
 }
-function searchProxy(e, t, r) {
-  const s = toRaw(e);
-  track(s, 'iterate', ARRAY_ITERATE_KEY);
-  const n = s[t](...r);
-  return (n === -1 || n === !1) && isProxy(r[0])
-    ? ((r[0] = toRaw(r[0])), s[t](...r))
+function searchProxy(e, t, s) {
+  const r = toRaw(e);
+  track(r, 'iterate', ARRAY_ITERATE_KEY);
+  const n = r[t](...s);
+  return (n === -1 || n === !1) && isProxy(s[0])
+    ? ((s[0] = toRaw(s[0])), r[t](...s))
     : n;
 }
-function noTracking(e, t, r = []) {
+function noTracking(e, t, s = []) {
   (pauseTracking(), startBatch());
-  const s = toRaw(e)[t].apply(e, r);
-  return (endBatch(), resetTracking(), s);
+  const r = toRaw(e)[t].apply(e, s);
+  return (endBatch(), resetTracking(), r);
 }
 const isNonTrackableKeys = makeMap('__proto__,__v_isRef,__isVue'),
   builtInSymbols = new Set(
@@ -827,18 +930,18 @@ function hasOwnProperty(e) {
   return (track(t, 'has', e), t.hasOwnProperty(e));
 }
 class BaseReactiveHandler {
-  constructor(t = !1, r = !1) {
-    ((this._isReadonly = t), (this._isShallow = r));
+  constructor(t = !1, s = !1) {
+    ((this._isReadonly = t), (this._isShallow = s));
   }
-  get(t, r, s) {
-    if (r === '__v_skip') return t.__v_skip;
+  get(t, s, r) {
+    if (s === '__v_skip') return t.__v_skip;
     const n = this._isReadonly,
       i = this._isShallow;
-    if (r === '__v_isReactive') return !n;
-    if (r === '__v_isReadonly') return n;
-    if (r === '__v_isShallow') return i;
-    if (r === '__v_raw')
-      return s ===
+    if (s === '__v_isReactive') return !n;
+    if (s === '__v_isReadonly') return n;
+    if (s === '__v_isShallow') return i;
+    if (s === '__v_raw')
+      return r ===
         (n
           ? i
             ? shallowReadonlyMap
@@ -846,62 +949,63 @@ class BaseReactiveHandler {
           : i
             ? shallowReactiveMap
             : reactiveMap
-        ).get(t) || Object.getPrototypeOf(t) === Object.getPrototypeOf(s)
+        ).get(t) || Object.getPrototypeOf(t) === Object.getPrototypeOf(r)
         ? t
         : void 0;
-    const o = isArray(t);
+    const a = isArray(t);
     if (!n) {
       let l;
-      if (o && (l = arrayInstrumentations[r])) return l;
-      if (r === 'hasOwnProperty') return hasOwnProperty;
+      if (a && (l = arrayInstrumentations[s])) return l;
+      if (s === 'hasOwnProperty') return hasOwnProperty;
     }
-    const a = Reflect.get(t, r, isRef(t) ? t : s);
+    const o = Reflect.get(t, s, isRef(t) ? t : r);
     if (
-      (isSymbol(r) ? builtInSymbols.has(r) : isNonTrackableKeys(r)) ||
-      (n || track(t, 'get', r), i)
+      (isSymbol(s) ? builtInSymbols.has(s) : isNonTrackableKeys(s)) ||
+      (n || track(t, 'get', s), i)
     )
-      return a;
-    if (isRef(a)) {
-      const l = o && isIntegerKey(r) ? a : a.value;
+      return o;
+    if (isRef(o)) {
+      const l = a && isIntegerKey(s) ? o : o.value;
       return n && isObject(l) ? readonly(l) : l;
     }
-    return isObject(a) ? (n ? readonly(a) : reactive(a)) : a;
+    return isObject(o) ? (n ? readonly(o) : reactive(o)) : o;
   }
 }
 class MutableReactiveHandler extends BaseReactiveHandler {
   constructor(t = !1) {
     super(!1, t);
   }
-  set(t, r, s, n) {
-    let i = t[r];
+  set(t, s, r, n) {
+    let i = t[s];
+    const a = isArray(t) && isIntegerKey(s);
     if (!this._isShallow) {
-      const l = isReadonly(i);
+      const d = isReadonly(i);
       if (
-        (!isShallow(s) && !isReadonly(s) && ((i = toRaw(i)), (s = toRaw(s))),
-        !isArray(t) && isRef(i) && !isRef(s))
+        (!isShallow(r) && !isReadonly(r) && ((i = toRaw(i)), (r = toRaw(r))),
+        !a && isRef(i) && !isRef(r))
       )
-        return (l || (i.value = s), !0);
+        return (d || (i.value = r), !0);
     }
-    const o =
-        isArray(t) && isIntegerKey(r) ? Number(r) < t.length : hasOwn(t, r),
-      a = Reflect.set(t, r, s, isRef(t) ? t : n);
+    const o = a ? Number(s) < t.length : hasOwn(t, s),
+      l = Reflect.set(t, s, r, isRef(t) ? t : n);
     return (
       t === toRaw(n) &&
+        l &&
         (o
-          ? hasChanged(s, i) && trigger(t, 'set', r, s)
-          : trigger(t, 'add', r, s)),
-      a
+          ? hasChanged(r, i) && trigger(t, 'set', s, r)
+          : trigger(t, 'add', s, r)),
+      l
     );
   }
-  deleteProperty(t, r) {
-    const s = hasOwn(t, r);
-    t[r];
-    const n = Reflect.deleteProperty(t, r);
-    return (n && s && trigger(t, 'delete', r, void 0), n);
+  deleteProperty(t, s) {
+    const r = hasOwn(t, s);
+    t[s];
+    const n = Reflect.deleteProperty(t, s);
+    return (n && r && trigger(t, 'delete', s, void 0), n);
   }
-  has(t, r) {
-    const s = Reflect.has(t, r);
-    return ((!isSymbol(r) || !builtInSymbols.has(r)) && track(t, 'has', r), s);
+  has(t, s) {
+    const r = Reflect.has(t, s);
+    return ((!isSymbol(s) || !builtInSymbols.has(s)) && track(t, 'has', s), r);
   }
   ownKeys(t) {
     return (
@@ -914,10 +1018,10 @@ class ReadonlyReactiveHandler extends BaseReactiveHandler {
   constructor(t = !1) {
     super(!0, t);
   }
-  set(t, r) {
+  set(t, s) {
     return !0;
   }
-  deleteProperty(t, r) {
+  deleteProperty(t, s) {
     return !0;
   }
 }
@@ -927,28 +1031,25 @@ const mutableHandlers = new MutableReactiveHandler(),
   shallowReadonlyHandlers = new ReadonlyReactiveHandler(!0),
   toShallow = (e) => e,
   getProto = (e) => Reflect.getPrototypeOf(e);
-function createIterableMethod(e, t, r) {
-  return function (...s) {
+function createIterableMethod(e, t, s) {
+  return function (...r) {
     const n = this.__v_raw,
       i = toRaw(n),
-      o = isMap(i),
-      a = e === 'entries' || (e === Symbol.iterator && o),
-      l = e === 'keys' && o,
-      d = n[e](...s),
-      c = r ? toShallow : t ? toReadonly : toReactive;
+      a = isMap(i),
+      o = e === 'entries' || (e === Symbol.iterator && a),
+      l = e === 'keys' && a,
+      d = n[e](...r),
+      c = s ? toShallow : t ? toReadonly : toReactive;
     return (
       !t && track(i, 'iterate', l ? MAP_KEY_ITERATE_KEY : ITERATE_KEY),
-      {
+      extend(Object.create(d), {
         next() {
-          const { value: f, done: w } = d.next();
-          return w
-            ? { value: f, done: w }
-            : { value: a ? [c(f[0]), c(f[1])] : c(f), done: w };
+          const { value: f, done: v } = d.next();
+          return v
+            ? { value: f, done: v }
+            : { value: o ? [c(f[0]), c(f[1])] : c(f), done: v };
         },
-        [Symbol.iterator]() {
-          return this;
-        },
-      }
+      })
     );
   };
 }
@@ -958,17 +1059,17 @@ function createReadonlyMethod(e) {
   };
 }
 function createInstrumentations(e, t) {
-  const r = {
+  const s = {
     get(n) {
       const i = this.__v_raw,
-        o = toRaw(i),
-        a = toRaw(n);
-      e || (hasChanged(n, a) && track(o, 'get', n), track(o, 'get', a));
-      const { has: l } = getProto(o),
+        a = toRaw(i),
+        o = toRaw(n);
+      e || (hasChanged(n, o) && track(a, 'get', n), track(a, 'get', o));
+      const { has: l } = getProto(a),
         d = t ? toShallow : e ? toReadonly : toReactive;
-      if (l.call(o, n)) return d(i.get(n));
-      if (l.call(o, a)) return d(i.get(a));
-      i !== o && i.get(n);
+      if (l.call(a, n)) return d(i.get(n));
+      if (l.call(a, o)) return d(i.get(o));
+      i !== a && i.get(n);
     },
     get size() {
       const n = this.__v_raw;
@@ -976,27 +1077,27 @@ function createInstrumentations(e, t) {
     },
     has(n) {
       const i = this.__v_raw,
-        o = toRaw(i),
-        a = toRaw(n);
+        a = toRaw(i),
+        o = toRaw(n);
       return (
-        e || (hasChanged(n, a) && track(o, 'has', n), track(o, 'has', a)),
-        n === a ? i.has(n) : i.has(n) || i.has(a)
+        e || (hasChanged(n, o) && track(a, 'has', n), track(a, 'has', o)),
+        n === o ? i.has(n) : i.has(n) || i.has(o)
       );
     },
     forEach(n, i) {
-      const o = this,
-        a = o.__v_raw,
-        l = toRaw(a),
+      const a = this,
+        o = a.__v_raw,
+        l = toRaw(o),
         d = t ? toShallow : e ? toReadonly : toReactive;
       return (
         !e && track(l, 'iterate', ITERATE_KEY),
-        a.forEach((c, f) => n.call(i, d(c), d(f), o))
+        o.forEach((c, f) => n.call(i, d(c), d(f), a))
       );
     },
   };
   return (
     extend(
-      r,
+      s,
       e
         ? {
             add: createReadonlyMethod('add'),
@@ -1006,61 +1107,67 @@ function createInstrumentations(e, t) {
           }
         : {
             add(n) {
-              !t && !isShallow(n) && !isReadonly(n) && (n = toRaw(n));
-              const i = toRaw(this);
+              const i = toRaw(this),
+                a = getProto(i),
+                o = toRaw(n),
+                l = !t && !isShallow(n) && !isReadonly(n) ? o : n;
               return (
-                getProto(i).has.call(i, n) ||
-                  (i.add(n), trigger(i, 'add', n, n)),
+                a.has.call(i, l) ||
+                  (hasChanged(n, l) && a.has.call(i, n)) ||
+                  (hasChanged(o, l) && a.has.call(i, o)) ||
+                  (i.add(l), trigger(i, 'add', l, l)),
                 this
               );
             },
             set(n, i) {
               !t && !isShallow(i) && !isReadonly(i) && (i = toRaw(i));
-              const o = toRaw(this),
-                { has: a, get: l } = getProto(o);
-              let d = a.call(o, n);
-              d || ((n = toRaw(n)), (d = a.call(o, n)));
-              const c = l.call(o, n);
+              const a = toRaw(this),
+                { has: o, get: l } = getProto(a);
+              let d = o.call(a, n);
+              d || ((n = toRaw(n)), (d = o.call(a, n)));
+              const c = l.call(a, n);
               return (
-                o.set(n, i),
+                a.set(n, i),
                 d
-                  ? hasChanged(i, c) && trigger(o, 'set', n, i)
-                  : trigger(o, 'add', n, i),
+                  ? hasChanged(i, c) && trigger(a, 'set', n, i)
+                  : trigger(a, 'add', n, i),
                 this
               );
             },
             delete(n) {
               const i = toRaw(this),
-                { has: o, get: a } = getProto(i);
-              let l = o.call(i, n);
-              (l || ((n = toRaw(n)), (l = o.call(i, n))), a && a.call(i, n));
+                { has: a, get: o } = getProto(i);
+              let l = a.call(i, n);
+              (l || ((n = toRaw(n)), (l = a.call(i, n))), o && o.call(i, n));
               const d = i.delete(n);
               return (l && trigger(i, 'delete', n, void 0), d);
             },
             clear() {
               const n = toRaw(this),
                 i = n.size !== 0,
-                o = n.clear();
-              return (i && trigger(n, 'clear', void 0, void 0), o);
+                a = n.clear();
+              return (i && trigger(n, 'clear', void 0, void 0), a);
             },
           },
     ),
     ['keys', 'values', 'entries', Symbol.iterator].forEach((n) => {
-      r[n] = createIterableMethod(n, e, t);
+      s[n] = createIterableMethod(n, e, t);
     }),
-    r
+    s
   );
 }
 function createInstrumentationGetter(e, t) {
-  const r = createInstrumentations(e, t);
-  return (s, n, i) =>
+  const s = createInstrumentations(e, t);
+  return (r, n, i) =>
     n === '__v_isReactive'
       ? !e
       : n === '__v_isReadonly'
         ? e
-        : n === '__v_raw'
-          ? s
-          : Reflect.get(hasOwn(r, n) && n in s ? r : s, n, i);
+        : n === '__v_isShallow'
+          ? t
+          : n === '__v_raw'
+            ? r
+            : Reflect.get(hasOwn(s, n) && n in r ? s : r, n, i);
 }
 const mutableCollectionHandlers = { get: createInstrumentationGetter(!1, !1) },
   shallowCollectionHandlers = { get: createInstrumentationGetter(!1, !0) },
@@ -1085,11 +1192,6 @@ function targetTypeMap(e) {
     default:
       return 0;
   }
-}
-function getTargetType(e) {
-  return e.__v_skip || !Object.isExtensible(e)
-    ? 0
-    : targetTypeMap(toRawType(e));
 }
 function reactive(e) {
   return isReadonly(e)
@@ -1129,14 +1231,20 @@ function shallowReadonly(e) {
     shallowReadonlyMap,
   );
 }
-function createReactiveObject(e, t, r, s, n) {
-  if (!isObject(e) || (e.__v_raw && !(t && e.__v_isReactive))) return e;
-  const i = getTargetType(e);
-  if (i === 0) return e;
-  const o = n.get(e);
-  if (o) return o;
-  const a = new Proxy(e, i === 2 ? s : r);
-  return (n.set(e, a), a);
+function createReactiveObject(e, t, s, r, n) {
+  if (
+    !isObject(e) ||
+    (e.__v_raw && !(t && e.__v_isReactive)) ||
+    e.__v_skip ||
+    !Object.isExtensible(e)
+  )
+    return e;
+  const i = n.get(e);
+  if (i) return i;
+  const a = targetTypeMap(toRawType(e));
+  if (a === 0) return e;
+  const o = new Proxy(e, a === 2 ? r : s);
+  return (n.set(e, o), o);
 }
 function isReactive(e) {
   return isReadonly(e) ? isReactive(e.__v_raw) : !!(e && e.__v_isReactive);
@@ -1172,24 +1280,24 @@ function createRef(e, t) {
   return isRef(e) ? e : new RefImpl(e, t);
 }
 class RefImpl {
-  constructor(t, r) {
+  constructor(t, s) {
     ((this.dep = new Dep()),
       (this.__v_isRef = !0),
       (this.__v_isShallow = !1),
-      (this._rawValue = r ? t : toRaw(t)),
-      (this._value = r ? t : toReactive(t)),
-      (this.__v_isShallow = r));
+      (this._rawValue = s ? t : toRaw(t)),
+      (this._value = s ? t : toReactive(t)),
+      (this.__v_isShallow = s));
   }
   get value() {
     return (this.dep.track(), this._value);
   }
   set value(t) {
-    const r = this._rawValue,
-      s = this.__v_isShallow || isShallow(t) || isReadonly(t);
-    ((t = s ? t : toRaw(t)),
-      hasChanged(t, r) &&
+    const s = this._rawValue,
+      r = this.__v_isShallow || isShallow(t) || isReadonly(t);
+    ((t = r ? t : toRaw(t)),
+      hasChanged(t, s) &&
         ((this._rawValue = t),
-        (this._value = s ? t : toReactive(t)),
+        (this._value = r ? t : toReactive(t)),
         this.dep.trigger()));
   }
 }
@@ -1197,12 +1305,12 @@ function unref(e) {
   return isRef(e) ? e.value : e;
 }
 const shallowUnwrapHandlers = {
-  get: (e, t, r) => (t === '__v_raw' ? e : unref(Reflect.get(e, t, r))),
-  set: (e, t, r, s) => {
+  get: (e, t, s) => (t === '__v_raw' ? e : unref(Reflect.get(e, t, s))),
+  set: (e, t, s, r) => {
     const n = e[t];
-    return isRef(n) && !isRef(r)
-      ? ((n.value = r), !0)
-      : Reflect.set(e, t, r, s);
+    return isRef(n) && !isRef(s)
+      ? ((n.value = s), !0)
+      : Reflect.set(e, t, s, r);
   },
 };
 function proxyRefs(e) {
@@ -1210,36 +1318,52 @@ function proxyRefs(e) {
 }
 function toRefs(e) {
   const t = isArray(e) ? new Array(e.length) : {};
-  for (const r in e) t[r] = propertyToRef(e, r);
+  for (const s in e) t[s] = propertyToRef(e, s);
   return t;
 }
 class ObjectRefImpl {
-  constructor(t, r, s) {
+  constructor(t, s, r) {
     ((this._object = t),
-      (this._key = r),
-      (this._defaultValue = s),
+      (this._defaultValue = r),
       (this.__v_isRef = !0),
-      (this._value = void 0));
+      (this._value = void 0),
+      (this._key = isSymbol(s) ? s : String(s)),
+      (this._raw = toRaw(t)));
+    let n = !0,
+      i = t;
+    if (!isArray(t) || isSymbol(this._key) || !isIntegerKey(this._key))
+      do n = !isProxy(i) || isShallow(i);
+      while (n && (i = i.__v_raw));
+    this._shallow = n;
   }
   get value() {
-    const t = this._object[this._key];
-    return (this._value = t === void 0 ? this._defaultValue : t);
+    let t = this._object[this._key];
+    return (
+      this._shallow && (t = unref(t)),
+      (this._value = t === void 0 ? this._defaultValue : t)
+    );
   }
   set value(t) {
+    if (this._shallow && isRef(this._raw[this._key])) {
+      const s = this._object[this._key];
+      if (isRef(s)) {
+        s.value = t;
+        return;
+      }
+    }
     this._object[this._key] = t;
   }
   get dep() {
-    return getDepFromReactive(toRaw(this._object), this._key);
+    return getDepFromReactive(this._raw, this._key);
   }
 }
-function propertyToRef(e, t, r) {
-  const s = e[t];
-  return isRef(s) ? s : new ObjectRefImpl(e, t, r);
+function propertyToRef(e, t, s) {
+  return new ObjectRefImpl(e, t, s);
 }
 class ComputedRefImpl {
-  constructor(t, r, s) {
+  constructor(t, s, r) {
     ((this.fn = t),
-      (this.setter = r),
+      (this.setter = s),
       (this._value = void 0),
       (this.dep = new Dep(this)),
       (this.__v_isRef = !0),
@@ -1249,8 +1373,8 @@ class ComputedRefImpl {
       (this.globalVersion = globalVersion - 1),
       (this.next = void 0),
       (this.effect = this),
-      (this.__v_isReadonly = !r),
-      (this.isSSR = s));
+      (this.__v_isReadonly = !s),
+      (this.isSSR = r));
   }
   notify() {
     if (((this.flags |= 16), !(this.flags & 8) && activeSub !== this))
@@ -1268,193 +1392,194 @@ class ComputedRefImpl {
     this.setter && this.setter(t);
   }
 }
-function computed$1(e, t, r = !1) {
-  let s, n;
+function computed$1(e, t, s = !1) {
+  let r, n;
   return (
-    isFunction(e) ? (s = e) : ((s = e.get), (n = e.set)),
-    new ComputedRefImpl(s, n, r)
+    isFunction(e) ? (r = e) : ((r = e.get), (n = e.set)),
+    new ComputedRefImpl(r, n, s)
   );
 }
 const INITIAL_WATCHER_VALUE = {},
   cleanupMap = new WeakMap();
 let activeWatcher;
-function onWatcherCleanup(e, t = !1, r = activeWatcher) {
-  if (r) {
-    let s = cleanupMap.get(r);
-    (s || cleanupMap.set(r, (s = [])), s.push(e));
+function onWatcherCleanup(e, t = !1, s = activeWatcher) {
+  if (s) {
+    let r = cleanupMap.get(s);
+    (r || cleanupMap.set(s, (r = [])), r.push(e));
   }
 }
-function watch$1(e, t, r = EMPTY_OBJ) {
+function watch$1(e, t, s = EMPTY_OBJ) {
   const {
-      immediate: s,
+      immediate: r,
       deep: n,
       once: i,
-      scheduler: o,
-      augmentJob: a,
+      scheduler: a,
+      augmentJob: o,
       call: l,
-    } = r,
-    d = (V) =>
+    } = s,
+    d = (E) =>
       n
-        ? V
-        : isShallow(V) || n === !1 || n === 0
-          ? traverse(V, 1)
-          : traverse(V);
+        ? E
+        : isShallow(E) || n === !1 || n === 0
+          ? traverse(E, 1)
+          : traverse(E);
   let c,
     f,
-    w,
-    k,
-    N = !1,
-    R = !1;
+    v,
+    M,
+    P = !1,
+    B = !1;
   if (
     (isRef(e)
-      ? ((f = () => e.value), (N = isShallow(e)))
+      ? ((f = () => e.value), (P = isShallow(e)))
       : isReactive(e)
-        ? ((f = () => d(e)), (N = !0))
+        ? ((f = () => d(e)), (P = !0))
         : isArray(e)
-          ? ((R = !0),
-            (N = e.some((V) => isReactive(V) || isShallow(V))),
+          ? ((B = !0),
+            (P = e.some((E) => isReactive(E) || isShallow(E))),
             (f = () =>
-              e.map((V) => {
-                if (isRef(V)) return V.value;
-                if (isReactive(V)) return d(V);
-                if (isFunction(V)) return l ? l(V, 2) : V();
+              e.map((E) => {
+                if (isRef(E)) return E.value;
+                if (isReactive(E)) return d(E);
+                if (isFunction(E)) return l ? l(E, 2) : E();
               })))
           : isFunction(e)
             ? t
               ? (f = l ? () => l(e, 2) : e)
               : (f = () => {
-                  if (w) {
+                  if (v) {
                     pauseTracking();
                     try {
-                      w();
+                      v();
                     } finally {
                       resetTracking();
                     }
                   }
-                  const V = activeWatcher;
+                  const E = activeWatcher;
                   activeWatcher = c;
                   try {
-                    return l ? l(e, 3, [k]) : e(k);
+                    return l ? l(e, 3, [M]) : e(M);
                   } finally {
-                    activeWatcher = V;
+                    activeWatcher = E;
                   }
                 })
             : (f = NOOP),
     t && n)
   ) {
-    const V = f,
-      Y = n === !0 ? 1 / 0 : n;
-    f = () => traverse(V(), Y);
+    const E = f,
+      F = n === !0 ? 1 / 0 : n;
+    f = () => traverse(E(), F);
   }
-  const K = getCurrentScope(),
-    O = () => {
-      (c.stop(), K && K.active && remove(K.effects, c));
+  const $ = getCurrentScope(),
+    I = () => {
+      (c.stop(), $ && $.active && remove($.effects, c));
     };
   if (i && t) {
-    const V = t;
-    t = (...Y) => {
-      (V(...Y), O());
+    const E = t;
+    t = (...F) => {
+      try {
+        return E(...F);
+      } finally {
+        I();
+      }
     };
   }
-  let j = R
+  let O = B
     ? new Array(e.length).fill(INITIAL_WATCHER_VALUE)
     : INITIAL_WATCHER_VALUE;
-  const W = (V) => {
-    if (!(!(c.flags & 1) || (!c.dirty && !V)))
+  const j = (E) => {
+    if (!(!(c.flags & 1) || (!c.dirty && !E)))
       if (t) {
-        const Y = c.run();
+        const F = c.run();
         if (
+          E ||
           n ||
-          N ||
-          (R ? Y.some((G, U) => hasChanged(G, j[U])) : hasChanged(Y, j))
+          P ||
+          (B ? F.some((q, z) => hasChanged(q, O[z])) : hasChanged(F, O))
         ) {
-          w && w();
-          const G = activeWatcher;
-          activeWatcher = c;
+          const q = activeWatcher;
+          pauseTracking();
           try {
-            const U = [
-              Y,
-              j === INITIAL_WATCHER_VALUE
+            (v && v(), (activeWatcher = c));
+            const z = [
+              F,
+              O === INITIAL_WATCHER_VALUE
                 ? void 0
-                : R && j[0] === INITIAL_WATCHER_VALUE
+                : B && O[0] === INITIAL_WATCHER_VALUE
                   ? []
-                  : j,
-              k,
+                  : O,
+              M,
             ];
-            ((j = Y), l ? l(t, 3, U) : t(...U));
+            ((O = F), l ? l(t, 3, z) : t(...z));
           } finally {
-            activeWatcher = G;
+            ((activeWatcher = q), resetTracking());
           }
         }
       } else c.run();
   };
   return (
-    a && a(W),
+    o && o(j),
     (c = new ReactiveEffect(f)),
-    (c.scheduler = o ? () => o(W, !1) : W),
-    (k = (V) => onWatcherCleanup(V, !1, c)),
-    (w = c.onStop =
+    (c.scheduler = a ? () => a(j, !1) : j),
+    (M = (E) => onWatcherCleanup(E, !1, c)),
+    (v = c.onStop =
       () => {
-        const V = cleanupMap.get(c);
-        if (V) {
-          if (l) l(V, 4);
-          else for (const Y of V) Y();
+        const E = cleanupMap.get(c);
+        if (E) {
+          if (l) l(E, 4);
+          else for (const F of E) F();
           cleanupMap.delete(c);
         }
       }),
-    t ? (s ? W(!0) : (j = c.run())) : o ? o(W.bind(null, !0), !0) : c.run(),
-    (O.pause = c.pause.bind(c)),
-    (O.resume = c.resume.bind(c)),
-    (O.stop = O),
-    O
+    t ? (r ? j(!0) : (O = c.run())) : a ? a(j.bind(null, !0), !0) : c.run(),
+    (I.pause = c.pause.bind(c)),
+    (I.resume = c.resume.bind(c)),
+    (I.stop = I),
+    I
   );
 }
-function traverse(e, t = 1 / 0, r) {
+function traverse(e, t = 1 / 0, s) {
   if (
     t <= 0 ||
     !isObject(e) ||
     e.__v_skip ||
-    ((r = r || new Map()), (r.get(e) || 0) >= t)
+    ((s = s || new Map()), (s.get(e) || 0) >= t)
   )
     return e;
-  if ((r.set(e, t), t--, isRef(e))) traverse(e.value, t, r);
-  else if (isArray(e)) for (let s = 0; s < e.length; s++) traverse(e[s], t, r);
+  if ((s.set(e, t), t--, isRef(e))) traverse(e.value, t, s);
+  else if (isArray(e)) for (let r = 0; r < e.length; r++) traverse(e[r], t, s);
   else if (isSet(e) || isMap(e))
-    e.forEach((s) => {
-      traverse(s, t, r);
+    e.forEach((r) => {
+      traverse(r, t, s);
     });
   else if (isPlainObject(e)) {
-    for (const s in e) traverse(e[s], t, r);
-    for (const s of Object.getOwnPropertySymbols(e))
-      Object.prototype.propertyIsEnumerable.call(e, s) && traverse(e[s], t, r);
+    for (const r in e) traverse(e[r], t, s);
+    for (const r of Object.getOwnPropertySymbols(e))
+      Object.prototype.propertyIsEnumerable.call(e, r) && traverse(e[r], t, s);
   }
   return e;
 }
-/**
- * @vue/runtime-core v3.5.22
- * (c) 2018-present Yuxi (Evan) You and Vue contributors
- * @license MIT
- **/ const stack = [];
+const stack = [];
 let isWarning = !1;
 function warn$1(e, ...t) {
   if (isWarning) return;
   ((isWarning = !0), pauseTracking());
-  const r = stack.length ? stack[stack.length - 1].component : null,
-    s = r && r.appContext.config.warnHandler,
+  const s = stack.length ? stack[stack.length - 1].component : null,
+    r = s && s.appContext.config.warnHandler,
     n = getComponentTrace();
-  if (s)
-    callWithErrorHandling(s, r, 11, [
+  if (r)
+    callWithErrorHandling(r, s, 11, [
       e +
         t
           .map((i) => {
-            var o, a;
-            return (a = (o = i.toString) == null ? void 0 : o.call(i)) != null
-              ? a
+            var a, o;
+            return (o = (a = i.toString) == null ? void 0 : a.call(i)) != null
+              ? o
               : JSON.stringify(i);
           })
           .join(''),
-      r && r.proxy,
-      n.map(({ vnode: i }) => `at <${formatComponentName(r, i.type)}>`).join(`
+      s && s.proxy,
+      n.map(({ vnode: i }) => `at <${formatComponentName(s, i.type)}>`).join(`
 `),
       n,
     ]);
@@ -1475,79 +1600,79 @@ function getComponentTrace() {
   if (!e) return [];
   const t = [];
   for (; e; ) {
-    const r = t[0];
-    r && r.vnode === e
-      ? r.recurseCount++
+    const s = t[0];
+    s && s.vnode === e
+      ? s.recurseCount++
       : t.push({ vnode: e, recurseCount: 0 });
-    const s = e.component && e.component.parent;
-    e = s && s.vnode;
+    const r = e.component && e.component.parent;
+    e = r && r.vnode;
   }
   return t;
 }
 function formatTrace(e) {
   const t = [];
   return (
-    e.forEach((r, s) => {
+    e.forEach((s, r) => {
       t.push(
-        ...(s === 0
+        ...(r === 0
           ? []
           : [
               `
 `,
             ]),
-        ...formatTraceEntry(r),
+        ...formatTraceEntry(s),
       );
     }),
     t
   );
 }
 function formatTraceEntry({ vnode: e, recurseCount: t }) {
-  const r = t > 0 ? `... (${t} recursive calls)` : '',
-    s = e.component ? e.component.parent == null : !1,
-    n = ` at <${formatComponentName(e.component, e.type, s)}`,
-    i = '>' + r;
+  const s = t > 0 ? `... (${t} recursive calls)` : '',
+    r = e.component ? e.component.parent == null : !1,
+    n = ` at <${formatComponentName(e.component, e.type, r)}`,
+    i = '>' + s;
   return e.props ? [n, ...formatProps(e.props), i] : [n + i];
 }
 function formatProps(e) {
   const t = [],
-    r = Object.keys(e);
+    s = Object.keys(e);
   return (
-    r.slice(0, 3).forEach((s) => {
-      t.push(...formatProp(s, e[s]));
+    s.slice(0, 3).forEach((r) => {
+      t.push(...formatProp(r, e[r]));
     }),
-    r.length > 3 && t.push(' ...'),
+    s.length > 3 && t.push(' ...'),
     t
   );
 }
-function formatProp(e, t, r) {
+function formatProp(e, t, s) {
   return isString(t)
-    ? ((t = JSON.stringify(t)), r ? t : [`${e}=${t}`])
+    ? ((t = JSON.stringify(t)), s ? t : [`${e}=${t}`])
     : typeof t == 'number' || typeof t == 'boolean' || t == null
-      ? r
+      ? s
         ? t
         : [`${e}=${t}`]
       : isRef(t)
         ? ((t = formatProp(e, toRaw(t.value), !0)),
-          r ? t : [`${e}=Ref<`, t, '>'])
+          s ? t : [`${e}=Ref<`, t, '>'])
         : isFunction(t)
           ? [`${e}=fn${t.name ? `<${t.name}>` : ''}`]
-          : ((t = toRaw(t)), r ? t : [`${e}=`, t]);
+          : ((t = toRaw(t)), s ? t : [`${e}=`, t]);
 }
-function callWithErrorHandling(e, t, r, s) {
+function callWithErrorHandling(e, t, s, r) {
   try {
-    return s ? e(...s) : e();
+    return r ? e(...r) : e();
   } catch (n) {
-    handleError(n, t, r);
+    handleError(n, t, s);
   }
 }
-function callWithAsyncErrorHandling(e, t, r, s) {
+function callWithAsyncErrorHandling(e, t, s, r) {
   if (isFunction(e)) {
-    const n = callWithErrorHandling(e, t, r, s);
+    const n = callWithErrorHandling(e, t, s, r);
     return (
       n &&
         isPromise(n) &&
         n.catch((i) => {
-          handleError(i, t, r);
+          handleError(i, t, s);
         }),
       n
     );
@@ -1555,24 +1680,24 @@ function callWithAsyncErrorHandling(e, t, r, s) {
   if (isArray(e)) {
     const n = [];
     for (let i = 0; i < e.length; i++)
-      n.push(callWithAsyncErrorHandling(e[i], t, r, s));
+      n.push(callWithAsyncErrorHandling(e[i], t, s, r));
     return n;
   }
 }
-function handleError(e, t, r, s = !0) {
+function handleError(e, t, s, r = !0) {
   const n = t ? t.vnode : null,
-    { errorHandler: i, throwUnhandledErrorInProduction: o } =
+    { errorHandler: i, throwUnhandledErrorInProduction: a } =
       (t && t.appContext.config) || EMPTY_OBJ;
   if (t) {
-    let a = t.parent;
+    let o = t.parent;
     const l = t.proxy,
-      d = `https://vuejs.org/error-reference/#runtime-${r}`;
-    for (; a; ) {
-      const c = a.ec;
+      d = `https://vuejs.org/error-reference/#runtime-${s}`;
+    for (; o; ) {
+      const c = o.ec;
       if (c) {
         for (let f = 0; f < c.length; f++) if (c[f](e, l, d) === !1) return;
       }
-      a = a.parent;
+      o = o.parent;
     }
     if (i) {
       (pauseTracking(),
@@ -1581,9 +1706,9 @@ function handleError(e, t, r, s = !0) {
       return;
     }
   }
-  logError(e, r, n, s, o);
+  logError(e, s, n, r, a);
 }
-function logError(e, t, r, s = !0, n = !1) {
+function logError(e, t, s, r = !0, n = !1) {
   if (n) throw e;
   console.error(e);
 }
@@ -1600,20 +1725,20 @@ function nextTick(e) {
 }
 function findInsertionIndex(e) {
   let t = flushIndex + 1,
-    r = queue.length;
-  for (; t < r; ) {
-    const s = (t + r) >>> 1,
-      n = queue[s],
+    s = queue.length;
+  for (; t < s; ) {
+    const r = (t + s) >>> 1,
+      n = queue[r],
       i = getId(n);
-    i < e || (i === e && n.flags & 2) ? (t = s + 1) : (r = s);
+    i < e || (i === e && n.flags & 2) ? (t = r + 1) : (s = r);
   }
   return t;
 }
 function queueJob(e) {
   if (!(e.flags & 1)) {
     const t = getId(e),
-      r = queue[queue.length - 1];
-    (!r || (!(e.flags & 2) && t >= getId(r))
+      s = queue[queue.length - 1];
+    (!s || (!(e.flags & 2) && t >= getId(s))
       ? queue.push(e)
       : queue.splice(findInsertionIndex(t), 0, e),
       (e.flags |= 1),
@@ -1625,44 +1750,67 @@ function queueFlush() {
     (currentFlushPromise = resolvedPromise.then(flushJobs));
 }
 function queuePostFlushCb(e) {
-  (isArray(e)
-    ? pendingPostFlushCbs.push(...e)
-    : activePostFlushCbs && e.id === -1
+  if (!isArray(e))
+    activePostFlushCbs && e.id === -1
       ? activePostFlushCbs.splice(postFlushIndex + 1, 0, e)
-      : e.flags & 1 || (pendingPostFlushCbs.push(e), (e.flags |= 1)),
-    queueFlush());
+      : e.flags & 1 || (pendingPostFlushCbs.push(e), (e.flags |= 1));
+  else for (let t = 0; t < e.length; t++) pendingPostFlushCbs.push(e[t]);
+  queueFlush();
 }
-function flushPreFlushCbs(e, t, r = flushIndex + 1) {
+function flushPreFlushCbs(e, t, s, r = flushIndex + 1) {
   for (; r < queue.length; r++) {
-    const s = queue[r];
-    if (s && s.flags & 2) {
-      if (e && s.id !== e.uid) continue;
+    const n = queue[r];
+    if (n && n.flags & 2) {
+      if ((e && n.id !== e.uid) || (t !== void 0 && !(n.id >= t))) continue;
       (queue.splice(r, 1),
-        r--,
-        s.flags & 4 && (s.flags &= -2),
-        s(),
-        s.flags & 4 || (s.flags &= -2));
+        (r = e ? r - 1 : flushIndex),
+        n.flags & 4 && (n.flags &= -2),
+        n(),
+        n.flags & 4 || (n.flags &= -2));
     }
   }
 }
-function flushPostFlushCbs(e) {
+function flushPostFlushCbs(e, t, s = 0) {
   if (pendingPostFlushCbs.length) {
-    const t = [...new Set(pendingPostFlushCbs)].sort(
-      (r, s) => getId(r) - getId(s),
-    );
-    if (((pendingPostFlushCbs.length = 0), activePostFlushCbs)) {
-      activePostFlushCbs.push(...t);
+    let r = pendingPostFlushCbs,
+      n = 0;
+    if (t) {
+      r = [];
+      for (let a = 0; a < pendingPostFlushCbs.length; a++) {
+        const o = pendingPostFlushCbs[a];
+        (o.i !== void 0 ? !o.i || o.i.uid < s : t.has(o))
+          ? (pendingPostFlushCbs[n++] = o)
+          : r.push(o);
+      }
+    }
+    const i = [...new Set(r)].sort((a, o) => getId(a) - getId(o));
+    if (((pendingPostFlushCbs.length = n), activePostFlushCbs)) {
+      for (let a = 0; a < i.length; a++) activePostFlushCbs.push(i[a]);
       return;
     }
     for (
-      activePostFlushCbs = t, postFlushIndex = 0;
+      activePostFlushCbs = i, postFlushIndex = 0;
       postFlushIndex < activePostFlushCbs.length;
       postFlushIndex++
     ) {
-      const r = activePostFlushCbs[postFlushIndex];
-      (r.flags & 4 && (r.flags &= -2), r.flags & 8 || r(), (r.flags &= -2));
+      const a = activePostFlushCbs[postFlushIndex];
+      (a.flags & 4 && (a.flags &= -2), a.flags & 8 || a(), (a.flags &= -2));
     }
     ((activePostFlushCbs = null), (postFlushIndex = 0));
+  }
+}
+let isFlushing = !1;
+function flushOnAppMount(e, t) {
+  if (isFlushing) {
+    e();
+    return;
+  }
+  const s = t === void 0 ? void 0 : new Set(pendingPostFlushCbs);
+  (e(), (isFlushing = !0));
+  try {
+    (flushPreFlushCbs(void 0, t), flushPostFlushCbs(void 0, s, t));
+  } finally {
+    isFlushing = !1;
   }
 }
 const getId = (e) => (e.id == null ? (e.flags & 2 ? -1 : 1 / 0) : e.id);
@@ -1698,64 +1846,183 @@ function setCurrentRenderingInstance(e) {
     t
   );
 }
-function withCtx(e, t = currentRenderingInstance, r) {
+function withCtx(e, t = currentRenderingInstance, s) {
   if (!t || e._n) return e;
-  const s = (...n) => {
-    s._d && setBlockTracking(-1);
-    const i = setCurrentRenderingInstance(t);
+  const r = (...n) => {
+    r._d && setBlockTracking(-1);
+    const i = setCurrentRenderingInstance(t),
+      a = blockStack.length;
     let o;
     try {
       o = e(...n);
     } finally {
-      (setCurrentRenderingInstance(i), s._d && setBlockTracking(1));
+      for (let l = blockStack.length; l > a; l--) closeBlock();
+      (setCurrentRenderingInstance(i), r._d && setBlockTracking(1));
     }
     return o;
   };
-  return ((s._n = !0), (s._c = !0), (s._d = !0), s);
+  return ((r._n = !0), (r._c = !0), (r._d = !0), r);
 }
 function withDirectives(e, t) {
   if (currentRenderingInstance === null) return e;
-  const r = getComponentPublicInstance(currentRenderingInstance),
-    s = e.dirs || (e.dirs = []);
+  const s = getComponentPublicInstance(currentRenderingInstance),
+    r = e.dirs || (e.dirs = []);
   for (let n = 0; n < t.length; n++) {
-    let [i, o, a, l = EMPTY_OBJ] = t[n];
+    let [i, a, o, l = EMPTY_OBJ] = t[n];
     i &&
       (isFunction(i) && (i = { mounted: i, updated: i }),
-      i.deep && traverse(o),
-      s.push({
+      i.deep && traverse(a),
+      r.push({
         dir: i,
-        instance: r,
-        value: o,
+        instance: s,
+        value: a,
         oldValue: void 0,
-        arg: a,
+        arg: o,
         modifiers: l,
       }));
   }
   return e;
 }
-function invokeDirectiveHook(e, t, r, s) {
+function invokeDirectiveHook(e, t, s, r) {
   const n = e.dirs,
     i = t && t.dirs;
-  for (let o = 0; o < n.length; o++) {
-    const a = n[o];
-    i && (a.oldValue = i[o].value);
-    let l = a.dir[s];
+  for (let a = 0; a < n.length; a++) {
+    const o = n[a];
+    i && (o.oldValue = i[a].value);
+    let l = o.dir[r];
     l &&
       (pauseTracking(),
-      callWithAsyncErrorHandling(l, r, 8, [e.el, a, e, t]),
+      callWithAsyncErrorHandling(l, s, 8, [e.el, o, e, t]),
       resetTracking());
   }
+}
+function provide(e, t) {
+  if (currentInstance) {
+    let s = currentInstance.provides;
+    const r = currentInstance.parent && currentInstance.parent.provides;
+    (r === s && (s = currentInstance.provides = Object.create(r)), (s[e] = t));
+  }
+}
+function inject(e, t, s = !1) {
+  const r = getCurrentInstance();
+  if (r || currentApp) {
+    let n = currentApp
+      ? currentApp._context.provides
+      : r
+        ? r.parent == null || r.ce
+          ? r.vnode.appContext && r.vnode.appContext.provides
+          : r.parent.provides
+        : void 0;
+    if (n && e in n) return n[e];
+    if (arguments.length > 1)
+      return s && isFunction(t) ? t.call(r && r.proxy) : t;
+  }
+}
+const ssrContextKey = Symbol.for('v-scx'),
+  useSSRContext = () => inject(ssrContextKey);
+function watch(e, t, s) {
+  return doWatch(e, t, s);
+}
+function doWatch(e, t, s = EMPTY_OBJ) {
+  const { immediate: r, deep: n, flush: i, once: a } = s,
+    o = extend({}, s),
+    l = (t && r) || (!t && i !== 'post');
+  let d;
+  if (isInSSRComponentSetup) {
+    if (i === 'sync') {
+      const M = useSSRContext();
+      d = M.__watcherHandles || (M.__watcherHandles = []);
+    } else if (!l) {
+      const M = () => {};
+      return ((M.stop = NOOP), (M.resume = NOOP), (M.pause = NOOP), M);
+    }
+  }
+  const c = currentInstance;
+  o.call = (M, P, B) => callWithAsyncErrorHandling(M, c, P, B);
+  let f = !1;
+  (i === 'post'
+    ? (o.scheduler = (M) => {
+        ((M.i = c), queuePostRenderEffect(M, c && c.suspense));
+      })
+    : i !== 'sync' &&
+      ((f = !0),
+      (o.scheduler = (M, P) => {
+        P ? M() : queueJob(M);
+      })),
+    (o.augmentJob = (M) => {
+      (t && (M.flags |= 4),
+        f && ((M.flags |= 2), c && ((M.id = c.uid), (M.i = c))));
+    }));
+  const v = watch$1(e, t, o);
+  return (isInSSRComponentSetup && (d ? d.push(v) : l && v()), v);
+}
+function instanceWatch(e, t, s) {
+  const r = this.proxy,
+    n = isString(e)
+      ? e.includes('.')
+        ? createPathGetter(r, e)
+        : () => r[e]
+      : e.bind(r, r);
+  let i;
+  isFunction(t) ? (i = t) : ((i = t.handler), (s = t));
+  const a = setCurrentInstance(this),
+    o = doWatch(n, i.bind(r), s);
+  return (a(), o);
+}
+function createPathGetter(e, t) {
+  const s = t.split('.');
+  return () => {
+    let r = e;
+    for (let n = 0; n < s.length && r; n++) r = r[s[n]];
+    return r;
+  };
 }
 const TeleportEndKey = Symbol('_vte'),
   isTeleport = (e) => e.__isTeleport,
   leaveCbKey = Symbol('_leaveCb');
+function findNonCommentChild(e) {
+  let t = e[0];
+  if (e.length > 1) {
+    for (const s of e)
+      if (s.type !== Comment) {
+        t = s;
+        break;
+      }
+  }
+  return t;
+}
+function getInnerChild$1(e) {
+  if (!isKeepAlive(e))
+    return isTeleport(e.type) && e.children
+      ? findNonCommentChild(e.children)
+      : e;
+  if (e.component) return e.component.subTree;
+  const { shapeFlag: t, children: s } = e;
+  if (s) {
+    if (t & 16) return s[0];
+    if (t & 32 && isFunction(s.default)) return s.default();
+  }
+}
 function setTransitionHooks(e, t) {
-  e.shapeFlag & 6 && e.component
-    ? ((e.transition = t), setTransitionHooks(e.component.subTree, t))
-    : e.shapeFlag & 128
-      ? ((e.ssContent.transition = t.clone(e.ssContent)),
-        (e.ssFallback.transition = t.clone(e.ssFallback)))
-      : (e.transition = t);
+  if (e.shapeFlag & 6 && e.component) {
+    e.transition = t;
+    const s = e.component.subTree;
+    setTransitionHooks((isTeleport(s.type) && getInnerChild$1(s)) || s, t);
+  } else if (e.shapeFlag & 128)
+    ((e.ssContent.transition = t.clone(e.ssContent)),
+      (e.ssFallback.transition = t.clone(e.ssFallback)));
+  else if (((e.transition = t), e.type === Fragment && isArray(e.children))) {
+    const s = filterSingleRoot(e.children, !1);
+    s && setTransitionHooks(s, t);
+  }
+}
+function getTransitionRoot(e) {
+  if (e.component) return getTransitionRoot(e.component.subTree);
+  if (e.type === Fragment) {
+    const t = isArray(e.children) && filterSingleRoot(e.children, !1);
+    return t ? getTransitionRoot(t) : void 0;
+  }
+  if (e.type !== Comment) return e;
 }
 function defineComponent(e, t) {
   return isFunction(e) ? extend({ name: e.name }, t, { setup: e }) : e;
@@ -1763,62 +2030,69 @@ function defineComponent(e, t) {
 function markAsyncBoundary(e) {
   e.ids = [e.ids[0] + e.ids[2]++ + '-', 0, 0];
 }
+function isTemplateRefKey(e, t) {
+  let s;
+  return !!((s = Object.getOwnPropertyDescriptor(e, t)) && !s.configurable);
+}
 const pendingSetRefMap = new WeakMap();
-function setRef(e, t, r, s, n = !1) {
+function setRef(e, t, s, r, n = !1) {
   if (isArray(e)) {
-    e.forEach((N, R) => setRef(N, t && (isArray(t) ? t[R] : t), r, s, n));
+    e.forEach((B, $) => setRef(B, t && (isArray(t) ? t[$] : t), s, r, n));
     return;
   }
-  if (isAsyncWrapper(s) && !n) {
-    s.shapeFlag & 512 &&
-      s.type.__asyncResolved &&
-      s.component.subTree.component &&
-      setRef(e, t, r, s.component.subTree);
+  if (isAsyncWrapper(r) && !n) {
+    r.shapeFlag & 512 &&
+      r.type.__asyncResolved &&
+      r.component.subTree.component &&
+      setRef(e, t, s, r.component.subTree);
     return;
   }
-  const i = s.shapeFlag & 4 ? getComponentPublicInstance(s.component) : s.el,
-    o = n ? null : i,
-    { i: a, r: l } = e,
+  const i = r.shapeFlag & 4 ? getComponentPublicInstance(r.component) : r.el,
+    a = n ? null : i,
+    { i: o, r: l } = e,
     d = t && t.r,
-    c = a.refs === EMPTY_OBJ ? (a.refs = {}) : a.refs,
-    f = a.setupState,
-    w = toRaw(f),
-    k = f === EMPTY_OBJ ? NO : (N) => hasOwn(w, N);
+    c = o.refs === EMPTY_OBJ ? (o.refs = {}) : o.refs,
+    f = o.setupState,
+    v = toRaw(f),
+    M =
+      f === EMPTY_OBJ
+        ? NO
+        : (B) => (isTemplateRefKey(c, B) ? !1 : hasOwn(v, B)),
+    P = (B, $) => !($ && isTemplateRefKey(c, $));
   if (d != null && d !== l) {
     if ((invalidatePendingSetRef(t), isString(d)))
-      ((c[d] = null), k(d) && (f[d] = null));
+      ((c[d] = null), M(d) && (f[d] = null));
     else if (isRef(d)) {
-      d.value = null;
-      const N = t;
-      N.k && (c[N.k] = null);
+      const B = t;
+      (P(d, B.k) && (d.value = null), B.k && (c[B.k] = null));
     }
   }
-  if (isFunction(l)) callWithErrorHandling(l, a, 12, [o, c]);
+  if (isFunction(l)) callWithErrorHandling(l, o, 12, [a, c]);
   else {
-    const N = isString(l),
-      R = isRef(l);
-    if (N || R) {
-      const K = () => {
+    const B = isString(l),
+      $ = isRef(l);
+    if (B || $) {
+      const I = () => {
         if (e.f) {
-          const O = N ? (k(l) ? f[l] : c[l]) : l.value;
+          const O = B ? (M(l) ? f[l] : c[l]) : P() || !e.k ? l.value : c[e.k];
           if (n) isArray(O) && remove(O, i);
           else if (isArray(O)) O.includes(i) || O.push(i);
-          else if (N) ((c[l] = [i]), k(l) && (f[l] = c[l]));
+          else if (B) ((c[l] = [i]), M(l) && (f[l] = c[l]));
           else {
             const j = [i];
-            ((l.value = j), e.k && (c[e.k] = j));
+            (P(l, e.k) && (l.value = j), e.k && (c[e.k] = j));
           }
         } else
-          N
-            ? ((c[l] = o), k(l) && (f[l] = o))
-            : R && ((l.value = o), e.k && (c[e.k] = o));
+          B
+            ? ((c[l] = a), M(l) && (f[l] = a))
+            : $ && (P(l, e.k) && (l.value = a), e.k && (c[e.k] = a));
       };
-      if (o) {
+      if (a) {
         const O = () => {
-          (K(), pendingSetRefMap.delete(e));
+          (I(), pendingSetRefMap.delete(e));
         };
-        ((O.id = -1), pendingSetRefMap.set(e, O), queuePostRenderEffect(O, r));
-      } else (invalidatePendingSetRef(e), K());
+        ((O.id = -1), pendingSetRefMap.set(e, O), queuePostRenderEffect(O, s));
+      } else (invalidatePendingSetRef(e), I());
     }
   }
 }
@@ -1836,49 +2110,49 @@ function onActivated(e, t) {
 function onDeactivated(e, t) {
   registerKeepAliveHook(e, 'da', t);
 }
-function registerKeepAliveHook(e, t, r = currentInstance) {
-  const s =
+function registerKeepAliveHook(e, t, s = currentInstance) {
+  const r =
     e.__wdc ||
     (e.__wdc = () => {
-      let n = r;
+      let n = s;
       for (; n; ) {
         if (n.isDeactivated) return;
         n = n.parent;
       }
       return e();
     });
-  if ((injectHook(t, s, r), r)) {
-    let n = r.parent;
+  if ((injectHook(t, r, s), s)) {
+    let n = s.parent;
     for (; n && n.parent; )
-      (isKeepAlive(n.parent.vnode) && injectToKeepAliveRoot(s, t, r, n),
+      (isKeepAlive(n.parent.vnode) && injectToKeepAliveRoot(r, t, s, n),
         (n = n.parent));
   }
 }
-function injectToKeepAliveRoot(e, t, r, s) {
-  const n = injectHook(t, e, s, !0);
+function injectToKeepAliveRoot(e, t, s, r) {
+  const n = injectHook(t, e, r, !0);
   onUnmounted(() => {
-    remove(s[t], n);
-  }, r);
+    remove(r[t], n);
+  }, s);
 }
-function injectHook(e, t, r = currentInstance, s = !1) {
-  if (r) {
-    const n = r[e] || (r[e] = []),
+function injectHook(e, t, s = currentInstance, r = !1) {
+  if (s) {
+    const n = s[e] || (s[e] = []),
       i =
         t.__weh ||
-        (t.__weh = (...o) => {
+        (t.__weh = (...a) => {
           pauseTracking();
-          const a = setCurrentInstance(r),
-            l = callWithAsyncErrorHandling(t, r, e, o);
-          return (a(), resetTracking(), l);
+          const o = setCurrentInstance(s),
+            l = callWithAsyncErrorHandling(t, s, e, a);
+          return (o(), resetTracking(), l);
         });
-    return (s ? n.unshift(i) : n.push(i), i);
+    return (r ? n.unshift(i) : n.push(i), i);
   }
 }
 const createHook =
     (e) =>
-    (t, r = currentInstance) => {
+    (t, s = currentInstance) => {
       (!isInSSRComponentSetup || e === 'sp') &&
-        injectHook(e, (...s) => t(...s), r);
+        injectHook(e, (...r) => t(...r), s);
     },
   onBeforeMount = createHook('bm'),
   onMounted = createHook('m'),
@@ -1897,31 +2171,31 @@ function resolveComponent(e, t) {
   return resolveAsset(COMPONENTS, e, !0, t) || e;
 }
 const NULL_DYNAMIC_COMPONENT = Symbol.for('v-ndc');
-function resolveAsset(e, t, r = !0, s = !1) {
+function resolveAsset(e, t, s = !0, r = !1) {
   const n = currentRenderingInstance || currentInstance;
   if (n) {
     const i = n.type;
     {
-      const a = getComponentName(i, !1);
-      if (a && (a === t || a === camelize(t) || a === capitalize(camelize(t))))
+      const o = getComponentName(i, !1);
+      if (o && (o === t || o === camelize(t) || o === capitalize(camelize(t))))
         return i;
     }
-    const o = resolve(n[e] || i[e], t) || resolve(n.appContext[e], t);
-    return !o && s ? i : o;
+    const a = resolve(n[e] || i[e], t) || resolve(n.appContext[e], t);
+    return !a && r ? i : a;
   }
 }
 function resolve(e, t) {
   return e && (e[t] || e[camelize(t)] || e[capitalize(camelize(t))]);
 }
-function renderList(e, t, r, s) {
+function renderList(e, t, s, r) {
   let n;
-  const i = r,
-    o = isArray(e);
-  if (o || isString(e)) {
-    const a = o && isReactive(e);
+  const i = s,
+    a = isArray(e);
+  if (a || isString(e)) {
+    const o = a && isReactive(e);
     let l = !1,
       d = !1;
-    (a && ((l = !isShallow(e)), (d = isReadonly(e)), (e = shallowReadArray(e))),
+    (o && ((l = !isShallow(e)), (d = isReadonly(e)), (e = shallowReadArray(e))),
       (n = new Array(e.length)));
     for (let c = 0, f = e.length; c < f; c++)
       n[c] = t(
@@ -1930,56 +2204,67 @@ function renderList(e, t, r, s) {
         void 0,
         i,
       );
-  } else if (typeof e == 'number') {
-    n = new Array(e);
-    for (let a = 0; a < e; a++) n[a] = t(a + 1, a, void 0, i);
-  } else if (isObject(e))
-    if (e[Symbol.iterator]) n = Array.from(e, (a, l) => t(a, l, void 0, i));
+  } else if (typeof e == 'number')
+    if (!Number.isInteger(e) || e < 0) n = [];
     else {
-      const a = Object.keys(e);
-      n = new Array(a.length);
-      for (let l = 0, d = a.length; l < d; l++) {
-        const c = a[l];
+      n = new Array(e);
+      for (let o = 0; o < e; o++) n[o] = t(o + 1, o, void 0, i);
+    }
+  else if (isObject(e))
+    if (e[Symbol.iterator]) n = Array.from(e, (o, l) => t(o, l, void 0, i));
+    else {
+      const o = Object.keys(e);
+      n = new Array(o.length);
+      for (let l = 0, d = o.length; l < d; l++) {
+        const c = o[l];
         n[l] = t(e[c], c, l, i);
       }
     }
   else n = [];
   return n;
 }
-function renderSlot(e, t, r = {}, s, n) {
+function renderSlot(e, t, s, r, n, i) {
   if (
+    (s == null && (s = {}),
     currentRenderingInstance.ce ||
-    (currentRenderingInstance.parent &&
-      isAsyncWrapper(currentRenderingInstance.parent) &&
-      currentRenderingInstance.parent.ce)
+      (currentRenderingInstance.parent &&
+        isAsyncWrapper(currentRenderingInstance.parent) &&
+        currentRenderingInstance.parent.ce))
   ) {
-    const d = Object.keys(r).length > 0;
+    const d = s,
+      c = Object.keys(d).length > 0;
     return (
-      t !== 'default' && (r.name = t),
+      t !== 'default' && (d.name = t),
       openBlock(),
       createBlock(
         Fragment,
         null,
-        [createVNode('slot', r, s && s())],
-        d ? -2 : 64,
+        [createVNode('slot', d, r && r())],
+        c ? -2 : 64,
       )
     );
   }
-  let i = e[t];
-  (i && i._c && (i._d = !1), openBlock());
-  const o = i && ensureValidVNode(i(r)),
-    a = r.key || (o && o.key),
+  let a = e[t];
+  a && a._c && (a._d = !1);
+  const o = blockStack.length;
+  openBlock();
+  let l;
+  try {
+    const d = a && ensureValidVNode(a(s)),
+      c = s.key || i || (d && d.key);
     l = createBlock(
       Fragment,
-      { key: (a && !isSymbol(a) ? a : `_${t}`) + (!o && s ? '_fb' : '') },
-      o || (s ? s() : []),
-      o && e._ === 1 ? 64 : -2,
+      { key: (c && !isSymbol(c) ? c : `_${t}`) + (!d && r ? '_fb' : '') },
+      d || (r ? r() : []),
+      d && e._ === 1 ? 64 : -2,
     );
-  return (
-    l.scopeId && (l.slotScopeIds = [l.scopeId + '-s']),
-    i && i._c && (i._d = !0),
-    l
-  );
+  } catch (d) {
+    for (let c = blockStack.length; c > o; c--) closeBlock();
+    throw d;
+  } finally {
+    a && a._c && (a._d = !0);
+  }
+  return (l.scopeId && (l.slotScopeIds = [l.scopeId + '-s']), l);
 }
 function ensureValidVNode(e) {
   return e.some((t) =>
@@ -2026,266 +2311,264 @@ const getPublicInstance = (e) =>
     get({ _: e }, t) {
       if (t === '__v_skip') return !0;
       const {
-        ctx: r,
-        setupState: s,
+        ctx: s,
+        setupState: r,
         data: n,
         props: i,
-        accessCache: o,
-        type: a,
+        accessCache: a,
+        type: o,
         appContext: l,
       } = e;
-      let d;
       if (t[0] !== '$') {
-        const k = o[t];
-        if (k !== void 0)
-          switch (k) {
+        const v = a[t];
+        if (v !== void 0)
+          switch (v) {
             case 1:
-              return s[t];
+              return r[t];
             case 2:
               return n[t];
             case 4:
-              return r[t];
+              return s[t];
             case 3:
               return i[t];
           }
         else {
-          if (hasSetupBinding(s, t)) return ((o[t] = 1), s[t]);
-          if (n !== EMPTY_OBJ && hasOwn(n, t)) return ((o[t] = 2), n[t]);
-          if ((d = e.propsOptions[0]) && hasOwn(d, t))
-            return ((o[t] = 3), i[t]);
-          if (r !== EMPTY_OBJ && hasOwn(r, t)) return ((o[t] = 4), r[t]);
-          shouldCacheAccess && (o[t] = 0);
+          if (hasSetupBinding(r, t)) return ((a[t] = 1), r[t]);
+          if (n !== EMPTY_OBJ && hasOwn(n, t)) return ((a[t] = 2), n[t]);
+          if (hasOwn(i, t)) return ((a[t] = 3), i[t]);
+          if (s !== EMPTY_OBJ && hasOwn(s, t)) return ((a[t] = 4), s[t]);
+          shouldCacheAccess && (a[t] = 0);
         }
       }
-      const c = publicPropertiesMap[t];
-      let f, w;
-      if (c) return (t === '$attrs' && track(e.attrs, 'get', ''), c(e));
-      if ((f = a.__cssModules) && (f = f[t])) return f;
-      if (r !== EMPTY_OBJ && hasOwn(r, t)) return ((o[t] = 4), r[t]);
-      if (((w = l.config.globalProperties), hasOwn(w, t))) return w[t];
+      const d = publicPropertiesMap[t];
+      let c, f;
+      if (d) return (t === '$attrs' && track(e.attrs, 'get', ''), d(e));
+      if ((c = o.__cssModules) && (c = c[t])) return c;
+      if (s !== EMPTY_OBJ && hasOwn(s, t)) return ((a[t] = 4), s[t]);
+      if (((f = l.config.globalProperties), hasOwn(f, t))) return f[t];
     },
-    set({ _: e }, t, r) {
-      const { data: s, setupState: n, ctx: i } = e;
+    set({ _: e }, t, s) {
+      const { data: r, setupState: n, ctx: i } = e;
       return hasSetupBinding(n, t)
-        ? ((n[t] = r), !0)
-        : s !== EMPTY_OBJ && hasOwn(s, t)
-          ? ((s[t] = r), !0)
+        ? ((n[t] = s), !0)
+        : r !== EMPTY_OBJ && hasOwn(r, t)
+          ? ((r[t] = s), !0)
           : hasOwn(e.props, t) || (t[0] === '$' && t.slice(1) in e)
             ? !1
-            : ((i[t] = r), !0);
+            : ((i[t] = s), !0);
     },
     has(
       {
         _: {
           data: e,
           setupState: t,
-          accessCache: r,
-          ctx: s,
+          accessCache: s,
+          ctx: r,
           appContext: n,
-          propsOptions: i,
-          type: o,
+          props: i,
+          type: a,
         },
       },
-      a,
+      o,
     ) {
-      let l, d;
+      let l;
       return !!(
-        r[a] ||
-        (e !== EMPTY_OBJ && a[0] !== '$' && hasOwn(e, a)) ||
-        hasSetupBinding(t, a) ||
-        ((l = i[0]) && hasOwn(l, a)) ||
-        hasOwn(s, a) ||
-        hasOwn(publicPropertiesMap, a) ||
-        hasOwn(n.config.globalProperties, a) ||
-        ((d = o.__cssModules) && d[a])
+        s[o] ||
+        (e !== EMPTY_OBJ && o[0] !== '$' && hasOwn(e, o)) ||
+        hasSetupBinding(t, o) ||
+        hasOwn(i, o) ||
+        hasOwn(r, o) ||
+        hasOwn(publicPropertiesMap, o) ||
+        hasOwn(n.config.globalProperties, o) ||
+        ((l = a.__cssModules) && l[o])
       );
     },
-    defineProperty(e, t, r) {
+    defineProperty(e, t, s) {
       return (
-        r.get != null
+        s.get != null
           ? (e._.accessCache[t] = 0)
-          : hasOwn(r, 'value') && this.set(e, t, r.value, null),
-        Reflect.defineProperty(e, t, r)
+          : hasOwn(s, 'value') && this.set(e, t, s.value, null),
+        Reflect.defineProperty(e, t, s)
       );
     },
   };
 function normalizePropsOrEmits(e) {
-  return isArray(e) ? e.reduce((t, r) => ((t[r] = null), t), {}) : e;
+  return isArray(e) ? e.reduce((t, s) => ((t[s] = null), t), {}) : e;
 }
 let shouldCacheAccess = !0;
 function applyOptions(e) {
   const t = resolveMergedOptions(e),
-    r = e.proxy,
-    s = e.ctx;
+    s = e.proxy,
+    r = e.ctx;
   ((shouldCacheAccess = !1),
     t.beforeCreate && callHook(t.beforeCreate, e, 'bc'));
   const {
     data: n,
     computed: i,
-    methods: o,
-    watch: a,
+    methods: a,
+    watch: o,
     provide: l,
     inject: d,
     created: c,
     beforeMount: f,
-    mounted: w,
-    beforeUpdate: k,
-    updated: N,
-    activated: R,
-    deactivated: K,
-    beforeDestroy: O,
-    beforeUnmount: j,
-    destroyed: W,
-    unmounted: V,
-    render: Y,
-    renderTracked: G,
-    renderTriggered: U,
-    errorCaptured: J,
-    serverPrefetch: se,
-    expose: Z,
-    inheritAttrs: re,
-    components: P,
-    directives: q,
-    filters: de,
+    mounted: v,
+    beforeUpdate: M,
+    updated: P,
+    activated: B,
+    deactivated: $,
+    beforeDestroy: I,
+    beforeUnmount: O,
+    destroyed: j,
+    unmounted: E,
+    render: F,
+    renderTracked: q,
+    renderTriggered: z,
+    errorCaptured: G,
+    serverPrefetch: ee,
+    expose: J,
+    inheritAttrs: te,
+    components: ne,
+    directives: ie,
+    filters: ce,
   } = t;
-  if ((d && resolveInjections(d, s, null), o))
-    for (const L in o) {
-      const x = o[L];
-      isFunction(x) && (s[L] = x.bind(r));
+  if ((d && resolveInjections(d, r, null), a))
+    for (const H in a) {
+      const x = a[H];
+      isFunction(x) && (r[H] = x.bind(s));
     }
   if (n) {
-    const L = n.call(r, r);
-    isObject(L) && (e.data = reactive(L));
+    const H = n.call(s, s);
+    isObject(H) && (e.data = reactive(H));
   }
   if (((shouldCacheAccess = !0), i))
-    for (const L in i) {
-      const x = i[L],
-        ae = isFunction(x)
-          ? x.bind(r, r)
+    for (const H in i) {
+      const x = i[H],
+        X = isFunction(x)
+          ? x.bind(s, s)
           : isFunction(x.get)
-            ? x.get.bind(r, r)
+            ? x.get.bind(s, s)
             : NOOP,
-        ce = !isFunction(x) && isFunction(x.set) ? x.set.bind(r) : NOOP,
-        le = computed({ get: ae, set: ce });
-      Object.defineProperty(s, L, {
+        se = !isFunction(x) && isFunction(x.set) ? x.set.bind(s) : NOOP,
+        Q = computed({ get: X, set: se });
+      Object.defineProperty(r, H, {
         enumerable: !0,
         configurable: !0,
-        get: () => le.value,
-        set: (ee) => (le.value = ee),
+        get: () => Q.value,
+        set: (K) => (Q.value = K),
       });
     }
-  if (a) for (const L in a) createWatcher(a[L], s, r, L);
+  if (o) for (const H in o) createWatcher(o[H], r, s, H);
   if (l) {
-    const L = isFunction(l) ? l.call(r) : l;
-    Reflect.ownKeys(L).forEach((x) => {
-      provide(x, L[x]);
+    const H = isFunction(l) ? l.call(s) : l;
+    Reflect.ownKeys(H).forEach((x) => {
+      provide(x, H[x]);
     });
   }
   c && callHook(c, e, 'c');
-  function z(L, x) {
-    isArray(x) ? x.forEach((ae) => L(ae.bind(r))) : x && L(x.bind(r));
+  function L(H, x) {
+    isArray(x) ? x.forEach((X) => H(X.bind(s))) : x && H(x.bind(s));
   }
   if (
-    (z(onBeforeMount, f),
-    z(onMounted, w),
-    z(onBeforeUpdate, k),
-    z(onUpdated, N),
-    z(onActivated, R),
-    z(onDeactivated, K),
-    z(onErrorCaptured, J),
-    z(onRenderTracked, G),
-    z(onRenderTriggered, U),
-    z(onBeforeUnmount, j),
-    z(onUnmounted, V),
-    z(onServerPrefetch, se),
-    isArray(Z))
+    (L(onBeforeMount, f),
+    L(onMounted, v),
+    L(onBeforeUpdate, M),
+    L(onUpdated, P),
+    L(onActivated, B),
+    L(onDeactivated, $),
+    L(onErrorCaptured, G),
+    L(onRenderTracked, q),
+    L(onRenderTriggered, z),
+    L(onBeforeUnmount, O),
+    L(onUnmounted, E),
+    L(onServerPrefetch, ee),
+    isArray(J))
   )
-    if (Z.length) {
-      const L = e.exposed || (e.exposed = {});
-      Z.forEach((x) => {
-        Object.defineProperty(L, x, {
-          get: () => r[x],
-          set: (ae) => (r[x] = ae),
+    if (J.length) {
+      const H = e.exposed || (e.exposed = {});
+      J.forEach((x) => {
+        Object.defineProperty(H, x, {
+          get: () => s[x],
+          set: (X) => (s[x] = X),
           enumerable: !0,
         });
       });
     } else e.exposed || (e.exposed = {});
-  (Y && e.render === NOOP && (e.render = Y),
-    re != null && (e.inheritAttrs = re),
-    P && (e.components = P),
-    q && (e.directives = q),
-    se && markAsyncBoundary(e));
+  (F && e.render === NOOP && (e.render = F),
+    te != null && (e.inheritAttrs = te),
+    ne && (e.components = ne),
+    ie && (e.directives = ie),
+    ee && markAsyncBoundary(e));
 }
-function resolveInjections(e, t, r = NOOP) {
+function resolveInjections(e, t, s = NOOP) {
   isArray(e) && (e = normalizeInject(e));
-  for (const s in e) {
-    const n = e[s];
+  for (const r in e) {
+    const n = e[r];
     let i;
     (isObject(n)
       ? 'default' in n
-        ? (i = inject(n.from || s, n.default, !0))
-        : (i = inject(n.from || s))
+        ? (i = inject(n.from || r, n.default, !0))
+        : (i = inject(n.from || r))
       : (i = inject(n)),
       isRef(i)
-        ? Object.defineProperty(t, s, {
+        ? Object.defineProperty(t, r, {
             enumerable: !0,
             configurable: !0,
             get: () => i.value,
-            set: (o) => (i.value = o),
+            set: (a) => (i.value = a),
           })
-        : (t[s] = i));
+        : (t[r] = i));
   }
 }
-function callHook(e, t, r) {
+function callHook(e, t, s) {
   callWithAsyncErrorHandling(
-    isArray(e) ? e.map((s) => s.bind(t.proxy)) : e.bind(t.proxy),
+    isArray(e) ? e.map((r) => r.bind(t.proxy)) : e.bind(t.proxy),
     t,
-    r,
+    s,
   );
 }
-function createWatcher(e, t, r, s) {
-  let n = s.includes('.') ? createPathGetter(r, s) : () => r[s];
+function createWatcher(e, t, s, r) {
+  let n = r.includes('.') ? createPathGetter(s, r) : () => s[r];
   if (isString(e)) {
     const i = t[e];
     isFunction(i) && watch(n, i);
-  } else if (isFunction(e)) watch(n, e.bind(r));
+  } else if (isFunction(e)) watch(n, e.bind(s));
   else if (isObject(e))
-    if (isArray(e)) e.forEach((i) => createWatcher(i, t, r, s));
+    if (isArray(e)) e.forEach((i) => createWatcher(i, t, s, r));
     else {
-      const i = isFunction(e.handler) ? e.handler.bind(r) : t[e.handler];
+      const i = isFunction(e.handler) ? e.handler.bind(s) : t[e.handler];
       isFunction(i) && watch(n, i, e);
     }
 }
 function resolveMergedOptions(e) {
   const t = e.type,
-    { mixins: r, extends: s } = t,
+    { mixins: s, extends: r } = t,
     {
       mixins: n,
       optionsCache: i,
-      config: { optionMergeStrategies: o },
+      config: { optionMergeStrategies: a },
     } = e.appContext,
-    a = i.get(t);
+    o = i.get(t);
   let l;
   return (
-    a
-      ? (l = a)
-      : !n.length && !r && !s
+    o
+      ? (l = o)
+      : !n.length && !s && !r
         ? (l = t)
         : ((l = {}),
-          n.length && n.forEach((d) => mergeOptions(l, d, o, !0)),
-          mergeOptions(l, t, o)),
+          n.length && n.forEach((d) => mergeOptions(l, d, a, !0)),
+          mergeOptions(l, t, a)),
     isObject(t) && i.set(t, l),
     l
   );
 }
-function mergeOptions(e, t, r, s = !1) {
+function mergeOptions(e, t, s, r = !1) {
   const { mixins: n, extends: i } = t;
-  (i && mergeOptions(e, i, r, !0),
-    n && n.forEach((o) => mergeOptions(e, o, r, !0)));
-  for (const o in t)
-    if (!(s && o === 'expose')) {
-      const a = internalOptionMergeStrats[o] || (r && r[o]);
-      e[o] = a ? a(e[o], t[o]) : t[o];
+  (i && mergeOptions(e, i, s, !0),
+    n && n.forEach((a) => mergeOptions(e, a, s, !0)));
+  for (const a in t)
+    if (!(r && a === 'expose')) {
+      const o = internalOptionMergeStrats[a] || (s && s[a]);
+      e[a] = o ? o(e[a], t[a]) : t[a];
     }
   return e;
 }
@@ -2333,7 +2616,7 @@ function mergeInject(e, t) {
 function normalizeInject(e) {
   if (isArray(e)) {
     const t = {};
-    for (let r = 0; r < e.length; r++) t[e[r]] = e[r];
+    for (let s = 0; s < e.length; s++) t[e[s]] = e[s];
     return t;
   }
   return e;
@@ -2358,9 +2641,9 @@ function mergeEmitsOrPropsOptions(e, t) {
 function mergeWatchOptions(e, t) {
   if (!e) return t;
   if (!t) return e;
-  const r = extend(Object.create(null), e);
-  for (const s in t) r[s] = mergeAsArray(e[s], t[s]);
-  return r;
+  const s = extend(Object.create(null), e);
+  for (const r in t) s[r] = mergeAsArray(e[r], t[r]);
+  return s;
 }
 function createAppContext() {
   return {
@@ -2385,16 +2668,16 @@ function createAppContext() {
 }
 let uid$1 = 0;
 function createAppAPI(e, t) {
-  return function (s, n = null) {
-    (isFunction(s) || (s = extend({}, s)),
+  return function (r, n = null) {
+    (isFunction(r) || (r = extend({}, r)),
       n != null && !isObject(n) && (n = null));
     const i = createAppContext(),
-      o = new WeakSet(),
-      a = [];
+      a = new WeakSet(),
+      o = [];
     let l = !1;
     const d = (i.app = {
       _uid: uid$1++,
-      _component: s,
+      _component: r,
       _props: n,
       _container: null,
       _context: i,
@@ -2406,10 +2689,10 @@ function createAppAPI(e, t) {
       set config(c) {},
       use(c, ...f) {
         return (
-          o.has(c) ||
+          a.has(c) ||
             (c && isFunction(c.install)
-              ? (o.add(c), c.install(d, ...f))
-              : isFunction(c) && (o.add(c), c(d, ...f))),
+              ? (a.add(c), c.install(d, ...f))
+              : isFunction(c) && (a.add(c), c(d, ...f))),
           d
         );
       },
@@ -2422,26 +2705,26 @@ function createAppAPI(e, t) {
       directive(c, f) {
         return f ? ((i.directives[c] = f), d) : i.directives[c];
       },
-      mount(c, f, w) {
+      mount(c, f, v) {
         if (!l) {
-          const k = d._ceVNode || createVNode(s, n);
+          const M = d._ceVNode || createVNode(r, n);
           return (
-            (k.appContext = i),
-            w === !0 ? (w = 'svg') : w === !1 && (w = void 0),
-            e(k, c, w),
+            (M.appContext = i),
+            v === !0 ? (v = 'svg') : v === !1 && (v = void 0),
+            e(M, c, v),
             (l = !0),
             (d._container = c),
             (c.__vue_app__ = d),
-            getComponentPublicInstance(k.component)
+            getComponentPublicInstance(M.component)
           );
         }
       },
       onUnmount(c) {
-        a.push(c);
+        o.push(c);
       },
       unmount() {
         l &&
-          (callWithAsyncErrorHandling(a, d._instance, 16),
+          (callWithAsyncErrorHandling(o, d._instance, 16),
           e(null, d._container),
           delete d._container.__vue_app__);
       },
@@ -2462,87 +2745,266 @@ function createAppAPI(e, t) {
   };
 }
 let currentApp = null;
-function provide(e, t) {
-  if (currentInstance) {
-    let r = currentInstance.provides;
-    const s = currentInstance.parent && currentInstance.parent.provides;
-    (s === r && (r = currentInstance.provides = Object.create(s)), (r[e] = t));
+const getModelModifiers = (e, t) =>
+  t === 'modelValue' || t === 'model-value'
+    ? e.modelModifiers
+    : e[`${t}Modifiers`] ||
+      e[`${camelize(t)}Modifiers`] ||
+      e[`${hyphenate(t)}Modifiers`];
+function emit(e, t, ...s) {
+  if (e.isUnmounted) return;
+  const r = e.vnode.props || EMPTY_OBJ;
+  let n = s;
+  const i = t.startsWith('update:'),
+    a = i && getModelModifiers(r, t.slice(7));
+  a &&
+    (a.trim && (n = s.map((c) => (isString(c) ? c.trim() : c))),
+    a.number && (n = n.map(looseToNumber)));
+  let o,
+    l = r[(o = toHandlerKey(t))] || r[(o = toHandlerKey(camelize(t)))];
+  (!l && i && (l = r[(o = toHandlerKey(hyphenate(t)))]),
+    l && callWithAsyncErrorHandling(l, e, 6, n));
+  const d = r[o + 'Once'];
+  if (d) {
+    if (!e.emitted) e.emitted = {};
+    else if (e.emitted[o]) return;
+    ((e.emitted[o] = !0), callWithAsyncErrorHandling(d, e, 6, n));
   }
 }
-function inject(e, t, r = !1) {
-  const s = getCurrentInstance();
-  if (s || currentApp) {
-    let n = currentApp
-      ? currentApp._context.provides
-      : s
-        ? s.parent == null || s.ce
-          ? s.vnode.appContext && s.vnode.appContext.provides
-          : s.parent.provides
-        : void 0;
-    if (n && e in n) return n[e];
-    if (arguments.length > 1)
-      return r && isFunction(t) ? t.call(s && s.proxy) : t;
+const mixinEmitsCache = new WeakMap();
+function normalizeEmitsOptions(e, t, s = !1) {
+  const r = s ? mixinEmitsCache : t.emitsCache,
+    n = r.get(e);
+  if (n !== void 0) return n;
+  const i = e.emits;
+  let a = {},
+    o = !1;
+  if (!isFunction(e)) {
+    const l = (d) => {
+      const c = normalizeEmitsOptions(d, t, !0);
+      c && ((o = !0), extend(a, c));
+    };
+    (!s && t.mixins.length && t.mixins.forEach(l),
+      e.extends && l(e.extends),
+      e.mixins && e.mixins.forEach(l));
   }
+  return !i && !o
+    ? (isObject(e) && r.set(e, null), null)
+    : (isArray(i) ? i.forEach((l) => (a[l] = null)) : extend(a, i),
+      isObject(e) && r.set(e, a),
+      a);
+}
+function isEmitListener(e, t) {
+  return !e || !isOn(t)
+    ? !1
+    : ((t = t.slice(2)),
+      (t = t === 'Once' ? t : t.replace(/Once$/, '')),
+      hasOwn(e, t[0].toLowerCase() + t.slice(1)) ||
+        hasOwn(e, hyphenate(t)) ||
+        hasOwn(e, t));
+}
+function markAttrsAccessed() {}
+function renderComponentRoot(e) {
+  const {
+      type: t,
+      vnode: s,
+      proxy: r,
+      withProxy: n,
+      propsOptions: [i],
+      slots: a,
+      attrs: o,
+      emit: l,
+      render: d,
+      renderCache: c,
+      props: f,
+      data: v,
+      setupState: M,
+      ctx: P,
+      inheritAttrs: B,
+    } = e,
+    $ = setCurrentRenderingInstance(e);
+  let I, O;
+  try {
+    if (s.shapeFlag & 4) {
+      const E = n || r,
+        F = E;
+      ((I = normalizeVNode(d.call(F, E, c, f, M, v, P))), (O = o));
+    } else {
+      const E = t;
+      ((I = normalizeVNode(
+        E.length > 1 ? E(f, { attrs: o, slots: a, emit: l }) : E(f, null),
+      )),
+        (O = t.props ? o : getFunctionalFallthrough(o)));
+    }
+  } catch (E) {
+    ((blockStack.length = 0), handleError(E, e, 1), (I = createVNode(Comment)));
+  }
+  let j = I;
+  if (O && B !== !1) {
+    const E = Object.keys(O),
+      { shapeFlag: F } = j;
+    E.length &&
+      F & 7 &&
+      (i && E.some(isModelListener) && (O = filterModelListeners(O, i)),
+      (j = cloneVNode(j, O, !1, !0)));
+  }
+  if (
+    (s.dirs &&
+      ((j = cloneVNode(j, null, !1, !0)),
+      (j.dirs = j.dirs ? j.dirs.concat(s.dirs) : s.dirs)),
+    s.transition)
+  ) {
+    const E = (isTeleport(j.type) && getInnerChild$1(j)) || j;
+    setTransitionHooks(E, s.transition);
+  }
+  return ((I = j), setCurrentRenderingInstance($), I);
+}
+function filterSingleRoot(e, t = !0) {
+  let s;
+  for (let r = 0; r < e.length; r++) {
+    const n = e[r];
+    if (isVNode(n)) {
+      if (n.type !== Comment || n.children === 'v-if') {
+        if (s) return;
+        s = n;
+      }
+    } else return;
+  }
+  return s;
+}
+const getFunctionalFallthrough = (e) => {
+    let t;
+    for (const s in e)
+      (s === 'class' || s === 'style' || isOn(s)) &&
+        ((t || (t = {}))[s] = e[s]);
+    return t;
+  },
+  filterModelListeners = (e, t) => {
+    const s = {};
+    for (const r in e)
+      (!isModelListener(r) || !(r.slice(9) in t)) && (s[r] = e[r]);
+    return s;
+  };
+function shouldUpdateComponent(e, t, s) {
+  const { props: r, children: n, component: i } = e,
+    { props: a, children: o, patchFlag: l } = t,
+    d = i.emitsOptions;
+  if (t.dirs || t.transition) return !0;
+  if (s && l >= 0) {
+    if (l & 1024) return !0;
+    if (l & 16) return r ? hasPropsChanged(r, a, d) : !!a;
+    if (l & 8) {
+      const c = t.dynamicProps;
+      for (let f = 0; f < c.length; f++) {
+        const v = c[f];
+        if (hasPropValueChanged(a, r, v) && !isEmitListener(d, v)) return !0;
+      }
+    }
+  } else
+    return (n || o) && (!o || !o.$stable)
+      ? !0
+      : r === a
+        ? !1
+        : r
+          ? a
+            ? hasPropsChanged(r, a, d)
+            : !0
+          : !!a;
+  return !1;
+}
+function hasPropsChanged(e, t, s) {
+  const r = Object.keys(t);
+  if (r.length !== Object.keys(e).length) return !0;
+  for (let n = 0; n < r.length; n++) {
+    const i = r[n];
+    if (
+      !hasOwn(e, i) ||
+      (hasPropValueChanged(t, e, i) && !isEmitListener(s, i))
+    )
+      return !0;
+  }
+  return !1;
+}
+function hasPropValueChanged(e, t, s) {
+  const r = e[s],
+    n = t[s];
+  return s === 'style' && isObject(r) && isObject(n)
+    ? !looseEqual(r, n)
+    : r !== n;
+}
+function updateHOCHostEl({ vnode: e, parent: t, suspense: s }, r) {
+  for (; t; ) {
+    const n = t.subTree;
+    if (
+      (n.suspense &&
+        n.suspense.activeBranch === e &&
+        ((n.suspense.vnode.el = n.el = r), (e = n)),
+      n === e)
+    )
+      (((e = t.vnode).el = r), (t = t.parent));
+    else break;
+  }
+  s && s.activeBranch === e && (s.vnode.el = r);
 }
 const internalObjectProto = {},
   createInternalObject = () => Object.create(internalObjectProto),
   isInternalObject = (e) => Object.getPrototypeOf(e) === internalObjectProto;
-function initProps(e, t, r, s = !1) {
+function initProps(e, t, s, r = !1) {
   const n = {},
     i = createInternalObject();
   ((e.propsDefaults = Object.create(null)), setFullProps(e, t, n, i));
-  for (const o in e.propsOptions[0]) o in n || (n[o] = void 0);
-  (r
-    ? (e.props = s ? n : shallowReactive(n))
+  for (const a in e.propsOptions[0]) a in n || (n[a] = void 0);
+  (s
+    ? (e.props = r ? n : shallowReactive(n))
     : e.type.props
       ? (e.props = n)
       : (e.props = i),
     (e.attrs = i));
 }
-function updateProps(e, t, r, s) {
+function updateProps(e, t, s, r) {
   const {
       props: n,
       attrs: i,
-      vnode: { patchFlag: o },
+      vnode: { patchFlag: a },
     } = e,
-    a = toRaw(n),
+    o = toRaw(n),
     [l] = e.propsOptions;
   let d = !1;
-  if ((s || o > 0) && !(o & 16)) {
-    if (o & 8) {
+  if ((r || a > 0) && !(a & 16)) {
+    if (a & 8) {
       const c = e.vnode.dynamicProps;
       for (let f = 0; f < c.length; f++) {
-        let w = c[f];
-        if (isEmitListener(e.emitsOptions, w)) continue;
-        const k = t[w];
+        let v = c[f];
+        if (isEmitListener(e.emitsOptions, v)) continue;
+        const M = t[v];
         if (l)
-          if (hasOwn(i, w)) k !== i[w] && ((i[w] = k), (d = !0));
+          if (hasOwn(i, v)) M !== i[v] && ((i[v] = M), (d = !0));
           else {
-            const N = camelize(w);
-            n[N] = resolvePropValue(l, a, N, k, e, !1);
+            const P = camelize(v);
+            n[P] = resolvePropValue(l, o, P, M, e, !1);
           }
-        else k !== i[w] && ((i[w] = k), (d = !0));
+        else M !== i[v] && ((i[v] = M), (d = !0));
       }
     }
   } else {
     setFullProps(e, t, n, i) && (d = !0);
     let c;
-    for (const f in a)
+    for (const f in o)
       (!t || (!hasOwn(t, f) && ((c = hyphenate(f)) === f || !hasOwn(t, c)))) &&
         (l
-          ? r &&
-            (r[f] !== void 0 || r[c] !== void 0) &&
-            (n[f] = resolvePropValue(l, a, f, void 0, e, !0))
+          ? s &&
+            (s[f] !== void 0 || s[c] !== void 0) &&
+            (n[f] = resolvePropValue(l, o, f, void 0, e, !0))
           : delete n[f]);
-    if (i !== a)
+    if (i !== o)
       for (const f in i) (!t || !hasOwn(t, f)) && (delete i[f], (d = !0));
   }
   d && trigger(e.attrs, 'set', '');
 }
-function setFullProps(e, t, r, s) {
+function setFullProps(e, t, s, r) {
   const [n, i] = e.propsOptions;
-  let o = !1,
-    a;
+  let a = !1,
+    o;
   if (t)
     for (let l in t) {
       if (isReservedProp(l)) continue;
@@ -2550,94 +3012,94 @@ function setFullProps(e, t, r, s) {
       let c;
       n && hasOwn(n, (c = camelize(l)))
         ? !i || !i.includes(c)
-          ? (r[c] = d)
-          : ((a || (a = {}))[c] = d)
+          ? (s[c] = d)
+          : ((o || (o = {}))[c] = d)
         : isEmitListener(e.emitsOptions, l) ||
-          ((!(l in s) || d !== s[l]) && ((s[l] = d), (o = !0)));
+          ((!(l in r) || d !== r[l]) && ((r[l] = d), (a = !0)));
     }
   if (i) {
-    const l = toRaw(r),
-      d = a || EMPTY_OBJ;
+    const l = toRaw(s),
+      d = o || EMPTY_OBJ;
     for (let c = 0; c < i.length; c++) {
       const f = i[c];
-      r[f] = resolvePropValue(n, l, f, d[f], e, !hasOwn(d, f));
+      s[f] = resolvePropValue(n, l, f, d[f], e, !hasOwn(d, f));
     }
   }
-  return o;
+  return a;
 }
-function resolvePropValue(e, t, r, s, n, i) {
-  const o = e[r];
-  if (o != null) {
-    const a = hasOwn(o, 'default');
-    if (a && s === void 0) {
-      const l = o.default;
-      if (o.type !== Function && !o.skipFactory && isFunction(l)) {
+function resolvePropValue(e, t, s, r, n, i) {
+  const a = e[s];
+  if (a != null) {
+    const o = hasOwn(a, 'default');
+    if (o && r === void 0) {
+      const l = a.default;
+      if (a.type !== Function && !a.skipFactory && isFunction(l)) {
         const { propsDefaults: d } = n;
-        if (r in d) s = d[r];
+        if (s in d) r = d[s];
         else {
           const c = setCurrentInstance(n);
-          ((s = d[r] = l.call(null, t)), c());
+          ((r = d[s] = l.call(null, t)), c());
         }
-      } else s = l;
-      n.ce && n.ce._setProp(r, s);
+      } else r = l;
+      n.ce && n.ce._setProp(s, r);
     }
-    o[0] &&
-      (i && !a
-        ? (s = !1)
-        : o[1] && (s === '' || s === hyphenate(r)) && (s = !0));
+    a[0] &&
+      (i && !o
+        ? (r = !1)
+        : a[1] && (r === '' || r === hyphenate(s)) && (r = !0));
   }
-  return s;
+  return r;
 }
 const mixinPropsCache = new WeakMap();
-function normalizePropsOptions(e, t, r = !1) {
-  const s = r ? mixinPropsCache : t.propsCache,
-    n = s.get(e);
+function normalizePropsOptions(e, t, s = !1) {
+  const r = s ? mixinPropsCache : t.propsCache,
+    n = r.get(e);
   if (n) return n;
   const i = e.props,
-    o = {},
-    a = [];
+    a = {},
+    o = [];
   let l = !1;
   if (!isFunction(e)) {
     const c = (f) => {
       l = !0;
-      const [w, k] = normalizePropsOptions(f, t, !0);
-      (extend(o, w), k && a.push(...k));
+      const [v, M] = normalizePropsOptions(f, t, !0);
+      (extend(a, v), M && o.push(...M));
     };
-    (!r && t.mixins.length && t.mixins.forEach(c),
+    (!s && t.mixins.length && t.mixins.forEach(c),
       e.extends && c(e.extends),
       e.mixins && e.mixins.forEach(c));
   }
-  if (!i && !l) return (isObject(e) && s.set(e, EMPTY_ARR), EMPTY_ARR);
+  if (!i && !l) return (isObject(e) && r.set(e, EMPTY_ARR), EMPTY_ARR);
   if (isArray(i))
     for (let c = 0; c < i.length; c++) {
       const f = camelize(i[c]);
-      validatePropName(f) && (o[f] = EMPTY_OBJ);
+      validatePropName(f) && (a[f] = EMPTY_OBJ);
     }
   else if (i)
     for (const c in i) {
       const f = camelize(c);
       if (validatePropName(f)) {
-        const w = i[c],
-          k = (o[f] =
-            isArray(w) || isFunction(w) ? { type: w } : extend({}, w)),
-          N = k.type;
-        let R = !1,
-          K = !0;
-        if (isArray(N))
-          for (let O = 0; O < N.length; ++O) {
-            const j = N[O],
-              W = isFunction(j) && j.name;
-            if (W === 'Boolean') {
-              R = !0;
+        const v = i[c],
+          M = (a[f] =
+            isArray(v) || isFunction(v) ? { type: v } : extend({}, v)),
+          P = M.type;
+        let B = !1,
+          $ = !0;
+        if (isArray(P))
+          for (let I = 0; I < P.length; ++I) {
+            const O = P[I],
+              j = isFunction(O) && O.name;
+            if (j === 'Boolean') {
+              B = !0;
               break;
-            } else W === 'String' && (K = !1);
+            } else j === 'String' && ($ = !1);
           }
-        else R = isFunction(N) && N.name === 'Boolean';
-        ((k[0] = R), (k[1] = K), (R || hasOwn(k, 'default')) && a.push(f));
+        else B = isFunction(P) && P.name === 'Boolean';
+        ((M[0] = B), (M[1] = $), (B || hasOwn(M, 'default')) && o.push(f));
       }
     }
-  const d = [o, a];
-  return (isObject(e) && s.set(e, d), d);
+  const d = [a, o];
+  return (isObject(e) && r.set(e, d), d);
 }
 function validatePropName(e) {
   return e[0] !== '$' && !isReservedProp(e);
@@ -2645,714 +3107,755 @@ function validatePropName(e) {
 const isInternalKey = (e) => e === '_' || e === '_ctx' || e === '$stable',
   normalizeSlotValue = (e) =>
     isArray(e) ? e.map(normalizeVNode) : [normalizeVNode(e)],
-  normalizeSlot = (e, t, r) => {
+  normalizeSlot = (e, t, s) => {
     if (t._n) return t;
-    const s = withCtx((...n) => normalizeSlotValue(t(...n)), r);
-    return ((s._c = !1), s);
+    const r = withCtx((...n) => normalizeSlotValue(t(...n)), s);
+    return ((r._c = !1), r);
   },
-  normalizeObjectSlots = (e, t, r) => {
-    const s = e._ctx;
+  normalizeObjectSlots = (e, t, s) => {
+    const r = e._ctx;
     for (const n in e) {
       if (isInternalKey(n)) continue;
       const i = e[n];
-      if (isFunction(i)) t[n] = normalizeSlot(n, i, s);
+      if (isFunction(i)) t[n] = normalizeSlot(n, i, r);
       else if (i != null) {
-        const o = normalizeSlotValue(i);
-        t[n] = () => o;
+        const a = normalizeSlotValue(i);
+        t[n] = () => a;
       }
     }
   },
   normalizeVNodeSlots = (e, t) => {
-    const r = normalizeSlotValue(t);
-    e.slots.default = () => r;
+    const s = normalizeSlotValue(t);
+    e.slots.default = () => s;
   },
-  assignSlots = (e, t, r) => {
-    for (const s in t) (r || !isInternalKey(s)) && (e[s] = t[s]);
+  assignSlots = (e, t, s) => {
+    for (const r in t) (s || !isInternalKey(r)) && (e[r] = t[r]);
   },
-  initSlots = (e, t, r) => {
-    const s = (e.slots = createInternalObject());
+  initSlots = (e, t, s) => {
+    const r = (e.slots = createInternalObject());
     if (e.vnode.shapeFlag & 32) {
       const n = t._;
       n
-        ? (assignSlots(s, t, r), r && def(s, '_', n, !0))
-        : normalizeObjectSlots(t, s);
+        ? (assignSlots(r, t, s), s && def(r, '_', n, !0))
+        : normalizeObjectSlots(t, r);
     } else t && normalizeVNodeSlots(e, t);
   },
-  updateSlots = (e, t, r) => {
-    const { vnode: s, slots: n } = e;
+  updateSlots = (e, t, s) => {
+    const { vnode: r, slots: n } = e;
     let i = !0,
-      o = EMPTY_OBJ;
-    if (s.shapeFlag & 32) {
-      const a = t._;
-      (a
-        ? r && a === 1
+      a = EMPTY_OBJ;
+    if (r.shapeFlag & 32) {
+      const o = t._;
+      (o
+        ? s && o === 1
           ? (i = !1)
-          : assignSlots(n, t, r)
+          : assignSlots(n, t, s)
         : ((i = !t.$stable), normalizeObjectSlots(t, n)),
-        (o = t));
-    } else t && (normalizeVNodeSlots(e, t), (o = { default: 1 }));
-    if (i) for (const a in n) !isInternalKey(a) && o[a] == null && delete n[a];
+        (a = t));
+    } else t && (normalizeVNodeSlots(e, t), (a = { default: 1 }));
+    if (i) for (const o in n) !isInternalKey(o) && a[o] == null && delete n[o];
   },
   queuePostRenderEffect = queueEffectWithSuspense;
 function createRenderer(e) {
   return baseCreateRenderer(e);
 }
 function baseCreateRenderer(e, t) {
-  const r = getGlobalThis();
-  r.__VUE__ = !0;
+  const s = getGlobalThis();
+  s.__VUE__ = !0;
   const {
-      insert: s,
+      insert: r,
       remove: n,
       patchProp: i,
-      createElement: o,
-      createText: a,
+      createElement: a,
+      createText: o,
       createComment: l,
       setText: d,
       setElementText: c,
       parentNode: f,
-      nextSibling: w,
-      setScopeId: k = NOOP,
-      insertStaticContent: N,
+      nextSibling: v,
+      setScopeId: M = NOOP,
+      insertStaticContent: P,
     } = e,
-    R = (
+    B = (
       u,
-      h,
-      g,
+      m,
+      y,
+      S = null,
       D = null,
-      v = null,
-      b = null,
-      C = void 0,
-      _ = null,
-      M = !!h.dynamicChildren,
+      k = null,
+      V = void 0,
+      w = null,
+      _ = !!m.dynamicChildren,
     ) => {
-      if (u === h) return;
-      (u && !isSameVNodeType(u, h) && ((D = y(u)), ee(u, v, b, !0), (u = null)),
-        h.patchFlag === -2 && ((M = !1), (h.dynamicChildren = null)));
-      const { type: S, ref: E, shapeFlag: T } = h;
-      switch (S) {
+      if (u === m) return;
+      (u && !isSameVNodeType(u, m) && ((S = T(u)), K(u, D, k, !0), (u = null)),
+        m.patchFlag === -2 && ((_ = !1), (m.dynamicChildren = null)),
+        m.dynamicChildren &&
+          u &&
+          u.dynamicChildren &&
+          u.dynamicChildren.hasOnce &&
+          (m.dynamicChildren === EMPTY_ARR && (m.dynamicChildren = []),
+          (m.dynamicChildren.hasOnce = !0)));
+      const { type: b, ref: A, shapeFlag: N } = m;
+      switch (b) {
         case Text:
-          K(u, h, g, D);
+          $(u, m, y, S);
           break;
         case Comment:
-          O(u, h, g, D);
+          I(u, m, y, S);
           break;
         case Static:
-          u == null && j(h, g, D, C);
+          u == null && O(m, y, S, V);
           break;
         case Fragment:
-          P(u, h, g, D, v, b, C, _, M);
+          ne(u, m, y, S, D, k, V, w, _);
           break;
         default:
-          T & 1
-            ? Y(u, h, g, D, v, b, C, _, M)
-            : T & 6
-              ? q(u, h, g, D, v, b, C, _, M)
-              : (T & 64 || T & 128) && S.process(u, h, g, D, v, b, C, _, M, he);
+          N & 1
+            ? F(u, m, y, S, D, k, V, w, _)
+            : N & 6
+              ? ie(u, m, y, S, D, k, V, w, _)
+              : (N & 64 || N & 128) && b.process(u, m, y, S, D, k, V, w, _, pe);
       }
-      E != null && v
-        ? setRef(E, u && u.ref, b, h || u, !h)
-        : E == null && u && u.ref != null && setRef(u.ref, null, b, u, !0);
+      A != null && D
+        ? setRef(A, u && u.ref, k, m || u, !m)
+        : A == null && u && u.ref != null && setRef(u.ref, null, k, u, !0);
     },
-    K = (u, h, g, D) => {
-      if (u == null) s((h.el = a(h.children)), g, D);
+    $ = (u, m, y, S) => {
+      if (u == null) r((m.el = o(m.children)), y, S);
       else {
-        const v = (h.el = u.el);
-        h.children !== u.children && d(v, h.children);
+        const D = (m.el = u.el);
+        m.children !== u.children && d(D, m.children);
       }
     },
-    O = (u, h, g, D) => {
-      u == null ? s((h.el = l(h.children || '')), g, D) : (h.el = u.el);
+    I = (u, m, y, S) => {
+      u == null ? r((m.el = l(m.children || '')), y, S) : (m.el = u.el);
     },
-    j = (u, h, g, D) => {
-      [u.el, u.anchor] = N(u.children, h, g, D, u.el, u.anchor);
+    O = (u, m, y, S) => {
+      [u.el, u.anchor] = P(u.children, m, y, S, u.el, u.anchor);
     },
-    W = ({ el: u, anchor: h }, g, D) => {
-      let v;
-      for (; u && u !== h; ) ((v = w(u)), s(u, g, D), (u = v));
-      s(h, g, D);
+    j = ({ el: u, anchor: m }, y, S) => {
+      let D;
+      for (; u && u !== m; ) ((D = v(u)), r(u, y, S), (u = D));
+      r(m, y, S);
     },
-    V = ({ el: u, anchor: h }) => {
-      let g;
-      for (; u && u !== h; ) ((g = w(u)), n(u), (u = g));
-      n(h);
+    E = ({ el: u, anchor: m }) => {
+      let y;
+      for (; u && u !== m; ) ((y = v(u)), n(u), (u = y));
+      n(m);
     },
-    Y = (u, h, g, D, v, b, C, _, M) => {
-      (h.type === 'svg' ? (C = 'svg') : h.type === 'math' && (C = 'mathml'),
-        u == null ? G(h, g, D, v, b, C, _, M) : se(u, h, v, b, C, _, M));
-    },
-    G = (u, h, g, D, v, b, C, _) => {
-      let M, S;
-      const { props: E, shapeFlag: T, transition: A, dirs: B } = u;
+    F = (u, m, y, S, D, k, V, w, _) => {
       if (
-        ((M = u.el = o(u.type, b, E && E.is, E)),
-        T & 8
-          ? c(M, u.children)
-          : T & 16 &&
-            J(u.children, M, null, D, v, resolveChildrenNamespace(u, b), C, _),
-        B && invokeDirectiveHook(u, null, D, 'created'),
-        U(M, u, u.scopeId, C, D),
-        E)
-      ) {
-        for (const F in E)
-          F !== 'value' && !isReservedProp(F) && i(M, F, null, E[F], b, D);
-        ('value' in E && i(M, 'value', null, E.value, b),
-          (S = E.onVnodeBeforeMount) && invokeVNodeHook(S, D, u));
-      }
-      B && invokeDirectiveHook(u, null, D, 'beforeMount');
-      const I = needTransition(v, A);
-      (I && A.beforeEnter(M),
-        s(M, h, g),
-        ((S = E && E.onVnodeMounted) || I || B) &&
-          queuePostRenderEffect(() => {
-            (S && invokeVNodeHook(S, D, u),
-              I && A.enter(M),
-              B && invokeDirectiveHook(u, null, D, 'mounted'));
-          }, v));
-    },
-    U = (u, h, g, D, v) => {
-      if ((g && k(u, g), D)) for (let b = 0; b < D.length; b++) k(u, D[b]);
-      if (v) {
-        let b = v.subTree;
-        if (
-          h === b ||
-          (isSuspense(b.type) && (b.ssContent === h || b.ssFallback === h))
-        ) {
-          const C = v.vnode;
-          U(u, C, C.scopeId, C.slotScopeIds, v.parent);
+        (m.type === 'svg' ? (V = 'svg') : m.type === 'math' && (V = 'mathml'),
+        u == null)
+      )
+        q(m, y, S, D, k, V, w, _);
+      else {
+        const b = u.el && u.el._isVueCE ? u.el : null;
+        try {
+          (b && b._beginPatch(), ee(u, m, D, k, V, w, _));
+        } finally {
+          b && b._endPatch();
         }
       }
     },
-    J = (u, h, g, D, v, b, C, _, M = 0) => {
-      for (let S = M; S < u.length; S++) {
-        const E = (u[S] = _ ? cloneIfMounted(u[S]) : normalizeVNode(u[S]));
-        R(null, E, h, g, D, v, b, C, _);
+    q = (u, m, y, S, D, k, V, w) => {
+      let _, b;
+      const { props: A, shapeFlag: N, transition: C, dirs: h } = u;
+      if (
+        ((_ = u.el = a(u.type, k, A && A.is, A)),
+        N & 8
+          ? c(_, u.children)
+          : N & 16 &&
+            G(u.children, _, null, S, D, resolveChildrenNamespace(u, k), V, w),
+        h && invokeDirectiveHook(u, null, S, 'created'),
+        z(_, u, u.scopeId, V, S),
+        A)
+      ) {
+        for (const R in A)
+          R !== 'value' && !isReservedProp(R) && i(_, R, null, A[R], k, S);
+        ('value' in A && i(_, 'value', null, A.value, k),
+          (b = A.onVnodeBeforeMount) && invokeVNodeHook(b, S, u));
+      }
+      h && invokeDirectiveHook(u, null, S, 'beforeMount');
+      const g = needTransition(D, C);
+      (g && C.beforeEnter(_),
+        r(_, m, y),
+        ((b = A && A.onVnodeMounted) || g || h) &&
+          queuePostRenderEffect(() => {
+            (b && invokeVNodeHook(b, S, u),
+              g && C.enter(_),
+              h && invokeDirectiveHook(u, null, S, 'mounted'));
+          }, D));
+    },
+    z = (u, m, y, S, D) => {
+      if ((y && M(u, y), S)) for (let k = 0; k < S.length; k++) M(u, S[k]);
+      if (D) {
+        let k = D.subTree;
+        if (
+          m === k ||
+          (isSuspense(k.type) && (k.ssContent === m || k.ssFallback === m))
+        ) {
+          const V = D.vnode;
+          z(u, V, V.scopeId, V.slotScopeIds, D.parent);
+        }
       }
     },
-    se = (u, h, g, D, v, b, C) => {
-      const _ = (h.el = u.el);
-      let { patchFlag: M, dynamicChildren: S, dirs: E } = h;
-      M |= u.patchFlag & 16;
-      const T = u.props || EMPTY_OBJ,
-        A = h.props || EMPTY_OBJ;
-      let B;
+    G = (u, m, y, S, D, k, V, w, _ = 0) => {
+      for (let b = _; b < u.length; b++) {
+        const A = (u[b] = w ? cloneIfMounted(u[b]) : normalizeVNode(u[b]));
+        B(null, A, m, y, S, D, k, V, w);
+      }
+    },
+    ee = (u, m, y, S, D, k, V) => {
+      const w = (m.el = u.el);
+      let { patchFlag: _, dynamicChildren: b, dirs: A } = m;
+      _ |= u.patchFlag & 16;
+      const N = u.props || EMPTY_OBJ,
+        C = m.props || EMPTY_OBJ;
+      let h;
       if (
-        (g && toggleRecurse(g, !1),
-        (B = A.onVnodeBeforeUpdate) && invokeVNodeHook(B, g, h, u),
-        E && invokeDirectiveHook(h, u, g, 'beforeUpdate'),
-        g && toggleRecurse(g, !0),
-        ((T.innerHTML && A.innerHTML == null) ||
-          (T.textContent && A.textContent == null)) &&
-          c(_, ''),
-        S
-          ? Z(u.dynamicChildren, S, _, g, D, resolveChildrenNamespace(h, v), b)
-          : C || x(u, h, _, null, g, D, resolveChildrenNamespace(h, v), b, !1),
-        M > 0)
+        (y && toggleRecurse(y, !1),
+        (h = C.onVnodeBeforeUpdate) && invokeVNodeHook(h, y, m, u),
+        A && invokeDirectiveHook(m, u, y, 'beforeUpdate'),
+        y && toggleRecurse(y, !0),
+        b &&
+          (!u.dynamicChildren || u.dynamicChildren.length !== b.length) &&
+          ((_ = 0), (V = !1), (b = null)),
+        ((N.innerHTML && C.innerHTML == null) ||
+          (N.textContent && C.textContent == null)) &&
+          c(w, ''),
+        b
+          ? J(u.dynamicChildren, b, w, y, S, resolveChildrenNamespace(m, D), k)
+          : V || x(u, m, w, null, y, S, resolveChildrenNamespace(m, D), k, !1),
+        _ > 0)
       ) {
-        if (M & 16) re(_, T, A, g, v);
+        if (_ & 16) te(w, N, C, y, D);
         else if (
-          (M & 2 && T.class !== A.class && i(_, 'class', null, A.class, v),
-          M & 4 && i(_, 'style', T.style, A.style, v),
-          M & 8)
+          (_ & 2 && N.class !== C.class && i(w, 'class', null, C.class, D),
+          _ & 4 && i(w, 'style', N.style, C.style, D),
+          _ & 8)
         ) {
-          const I = h.dynamicProps;
-          for (let F = 0; F < I.length; F++) {
-            const H = I[F],
-              X = T[H],
-              Q = A[H];
-            (Q !== X || H === 'value') && i(_, H, X, Q, v, g);
+          const g = m.dynamicProps;
+          for (let R = 0; R < g.length; R++) {
+            const Y = g[R],
+              W = N[Y],
+              U = C[Y];
+            (U !== W || Y === 'value') && i(w, Y, W, U, D, y);
           }
         }
-        M & 1 && u.children !== h.children && c(_, h.children);
-      } else !C && S == null && re(_, T, A, g, v);
-      ((B = A.onVnodeUpdated) || E) &&
+        _ & 1 && u.children !== m.children && c(w, m.children);
+      } else !V && b == null && te(w, N, C, y, D);
+      ((h = C.onVnodeUpdated) || A) &&
         queuePostRenderEffect(() => {
-          (B && invokeVNodeHook(B, g, h, u),
-            E && invokeDirectiveHook(h, u, g, 'updated'));
-        }, D);
+          (h && invokeVNodeHook(h, y, m, u),
+            A && invokeDirectiveHook(m, u, y, 'updated'));
+        }, S);
     },
-    Z = (u, h, g, D, v, b, C) => {
-      for (let _ = 0; _ < h.length; _++) {
-        const M = u[_],
-          S = h[_],
-          E =
-            M.el &&
-            (M.type === Fragment || !isSameVNodeType(M, S) || M.shapeFlag & 198)
-              ? f(M.el)
-              : g;
-        R(M, S, E, null, D, v, b, C, !0);
+    J = (u, m, y, S, D, k, V) => {
+      for (let w = 0; w < m.length; w++) {
+        const _ = u[w],
+          b = m[w],
+          A = _.el || resolveAsyncComponentPlaceholder(_),
+          N =
+            A &&
+            (_.type === Fragment || !isSameVNodeType(_, b) || _.shapeFlag & 198)
+              ? f(A)
+              : y;
+        B(_, b, N, null, S, D, k, V, !0);
       }
     },
-    re = (u, h, g, D, v) => {
-      if (h !== g) {
-        if (h !== EMPTY_OBJ)
-          for (const b in h)
-            !isReservedProp(b) && !(b in g) && i(u, b, h[b], null, v, D);
-        for (const b in g) {
-          if (isReservedProp(b)) continue;
-          const C = g[b],
-            _ = h[b];
-          C !== _ && b !== 'value' && i(u, b, _, C, v, D);
+    te = (u, m, y, S, D) => {
+      if (m !== y) {
+        if (m !== EMPTY_OBJ)
+          for (const k in m)
+            !isReservedProp(k) && !(k in y) && i(u, k, m[k], null, D, S);
+        for (const k in y) {
+          if (isReservedProp(k)) continue;
+          const V = y[k],
+            w = m[k];
+          V !== w && k !== 'value' && i(u, k, w, V, D, S);
         }
-        'value' in g && i(u, 'value', h.value, g.value, v);
+        'value' in y && i(u, 'value', m.value, y.value, D);
       }
     },
-    P = (u, h, g, D, v, b, C, _, M) => {
-      const S = (h.el = u ? u.el : a('')),
-        E = (h.anchor = u ? u.anchor : a(''));
-      let { patchFlag: T, dynamicChildren: A, slotScopeIds: B } = h;
-      (B && (_ = _ ? _.concat(B) : B),
+    ne = (u, m, y, S, D, k, V, w, _) => {
+      const b = (m.el = u ? u.el : o('')),
+        A = (m.anchor = u ? u.anchor : o(''));
+      let { patchFlag: N, dynamicChildren: C, slotScopeIds: h } = m;
+      (h && (w = w ? w.concat(h) : h),
         u == null
-          ? (s(S, g, D), s(E, g, D), J(h.children || [], g, E, v, b, C, _, M))
-          : T > 0 && T & 64 && A && u.dynamicChildren
-            ? (Z(u.dynamicChildren, A, g, v, b, C, _),
-              (h.key != null || (v && h === v.subTree)) &&
-                traverseStaticChildren(u, h, !0))
-            : x(u, h, g, E, v, b, C, _, M));
+          ? (r(b, y, S), r(A, y, S), G(m.children || [], y, A, D, k, V, w, _))
+          : N > 0 &&
+              N & 64 &&
+              C &&
+              u.dynamicChildren &&
+              u.dynamicChildren.length === C.length
+            ? (J(u.dynamicChildren, C, y, D, k, V, w),
+              (m.key != null || (D && m === D.subTree)) &&
+                traverseStaticChildren(u, m, !0))
+            : x(u, m, y, A, D, k, V, w, _));
     },
-    q = (u, h, g, D, v, b, C, _, M) => {
-      ((h.slotScopeIds = _),
+    ie = (u, m, y, S, D, k, V, w, _) => {
+      ((m.slotScopeIds = w),
         u == null
-          ? h.shapeFlag & 512
-            ? v.ctx.activate(h, g, D, C, M)
-            : de(h, g, D, v, b, C, M)
-          : pe(u, h, M));
+          ? m.shapeFlag & 512
+            ? D.ctx.activate(m, y, S, V, _)
+            : ce(m, y, S, D, k, V, _)
+          : ue(u, m, _));
     },
-    de = (u, h, g, D, v, b, C) => {
-      const _ = (u.component = createComponentInstance(u, D, v));
+    ce = (u, m, y, S, D, k, V) => {
+      const w = (u.component = createComponentInstance(u, S, D));
       if (
-        (isKeepAlive(u) && (_.ctx.renderer = he),
-        setupComponent(_, !1, C),
-        _.asyncDep)
+        (isKeepAlive(u) && (w.ctx.renderer = pe),
+        setupComponent(w, !1, V),
+        w.asyncDep)
       ) {
-        if ((v && v.registerDep(_, z, C), !u.el)) {
-          const M = (_.subTree = createVNode(Comment));
-          (O(null, M, h, g), (u.placeholder = M.el));
+        if ((D && D.registerDep(w, L, V, k), !u.el)) {
+          const _ = (w.subTree = createVNode(Comment));
+          (I(null, _, m, y), (u.placeholder = _.el));
         }
-      } else z(_, u, h, g, v, b, C);
+      } else L(w, u, m, y, D, k, V);
     },
-    pe = (u, h, g) => {
-      const D = (h.component = u.component);
-      if (shouldUpdateComponent(u, h, g))
-        if (D.asyncDep && !D.asyncResolved) {
-          L(D, h, g);
+    ue = (u, m, y) => {
+      const S = (m.component = u.component);
+      if (shouldUpdateComponent(u, m, y))
+        if (S.asyncDep && !S.asyncResolved) {
+          ((m.el = u.el), (m.placeholder = u.placeholder), H(S, m, y));
           return;
-        } else ((D.next = h), D.update());
-      else ((h.el = u.el), (D.vnode = h));
+        } else ((S.next = m), S.update());
+      else ((m.el = u.el), (m.placeholder = u.placeholder), (S.vnode = m));
     },
-    z = (u, h, g, D, v, b, C) => {
-      const _ = () => {
+    L = (u, m, y, S, D, k, V) => {
+      const w = () => {
         if (u.isMounted) {
-          let { next: T, bu: A, u: B, parent: I, vnode: F } = u;
+          let { next: N, bu: C, u: h, parent: g, vnode: R } = u;
           {
-            const ie = locateNonHydratedAsyncRoot(u);
-            if (ie) {
-              (T && ((T.el = F.el), L(u, T, C)),
-                ie.asyncDep.then(() => {
-                  u.isUnmounted || _();
+            const oe = locateNonHydratedAsyncRoot(u);
+            if (oe) {
+              (N && ((N.el = R.el), H(u, N, V)),
+                oe.asyncDep.then(() => {
+                  queuePostRenderEffect(() => {
+                    u.isUnmounted || b();
+                  }, D);
                 }));
               return;
             }
           }
-          let H = T,
-            X;
+          let Y = N,
+            W;
           (toggleRecurse(u, !1),
-            T ? ((T.el = F.el), L(u, T, C)) : (T = F),
-            A && invokeArrayFns(A),
-            (X = T.props && T.props.onVnodeBeforeUpdate) &&
-              invokeVNodeHook(X, I, T, F),
+            N ? ((N.el = R.el), H(u, N, V)) : (N = R),
+            C && invokeArrayFns(C),
+            (W = N.props && N.props.onVnodeBeforeUpdate) &&
+              invokeVNodeHook(W, g, N, R),
             toggleRecurse(u, !0));
-          const Q = renderComponentRoot(u),
-            ne = u.subTree;
-          ((u.subTree = Q),
-            R(ne, Q, f(ne.el), y(ne), u, v, b),
-            (T.el = Q.el),
-            H === null && updateHOCHostEl(u, Q.el),
-            B && queuePostRenderEffect(B, v),
-            (X = T.props && T.props.onVnodeUpdated) &&
-              queuePostRenderEffect(() => invokeVNodeHook(X, I, T, F), v));
+          const U = renderComponentRoot(u),
+            ae = u.subTree;
+          ((u.subTree = U),
+            B(ae, U, f(ae.el), T(ae), u, D, k),
+            (N.el = U.el),
+            Y === null && updateHOCHostEl(u, U.el),
+            h && queuePostRenderEffect(h, D),
+            (W = N.props && N.props.onVnodeUpdated) &&
+              queuePostRenderEffect(() => invokeVNodeHook(W, g, N, R), D));
         } else {
-          let T;
-          const { el: A, props: B } = h,
-            { bm: I, m: F, parent: H, root: X, type: Q } = u,
-            ne = isAsyncWrapper(h);
+          let N;
+          const { el: C, props: h } = m,
+            { bm: g, m: R, parent: Y, root: W, type: U } = u,
+            ae = isAsyncWrapper(m);
           (toggleRecurse(u, !1),
-            I && invokeArrayFns(I),
-            !ne && (T = B && B.onVnodeBeforeMount) && invokeVNodeHook(T, H, h),
+            g && invokeArrayFns(g),
+            !ae && (N = h && h.onVnodeBeforeMount) && invokeVNodeHook(N, Y, m),
             toggleRecurse(u, !0));
           {
-            X.ce && X.ce._def.shadowRoot !== !1 && X.ce._injectChildStyle(Q);
-            const ie = (u.subTree = renderComponentRoot(u));
-            (R(null, ie, g, D, u, v, b), (h.el = ie.el));
+            W.ce &&
+              W.ce._hasShadowRoot() &&
+              W.ce._injectChildStyle(U, u.parent ? u.parent.type : void 0);
+            const oe = (u.subTree = renderComponentRoot(u));
+            (B(null, oe, y, S, u, D, k), (m.el = oe.el));
           }
           if (
-            (F && queuePostRenderEffect(F, v),
-            !ne && (T = B && B.onVnodeMounted))
+            (R && queuePostRenderEffect(R, D),
+            !ae && (N = h && h.onVnodeMounted))
           ) {
-            const ie = h;
-            queuePostRenderEffect(() => invokeVNodeHook(T, H, ie), v);
+            const oe = m;
+            queuePostRenderEffect(() => invokeVNodeHook(N, Y, oe), D);
           }
-          ((h.shapeFlag & 256 ||
-            (H && isAsyncWrapper(H.vnode) && H.vnode.shapeFlag & 256)) &&
+          ((m.shapeFlag & 256 ||
+            (Y && isAsyncWrapper(Y.vnode) && Y.vnode.shapeFlag & 256)) &&
             u.a &&
-            queuePostRenderEffect(u.a, v),
+            queuePostRenderEffect(u.a, D),
             (u.isMounted = !0),
-            (h = g = D = null));
+            (m = y = S = null));
         }
       };
       u.scope.on();
-      const M = (u.effect = new ReactiveEffect(_));
+      const _ = (u.effect = new ReactiveEffect(w));
       u.scope.off();
-      const S = (u.update = M.run.bind(M)),
-        E = (u.job = M.runIfDirty.bind(M));
-      ((E.i = u),
-        (E.id = u.uid),
-        (M.scheduler = () => queueJob(E)),
+      const b = (u.update = _.run.bind(_)),
+        A = (u.job = _.runIfDirty.bind(_));
+      ((A.i = u),
+        (A.id = u.uid),
+        (_.scheduler = () => queueJob(A)),
         toggleRecurse(u, !0),
-        S());
+        b());
     },
-    L = (u, h, g) => {
-      h.component = u;
-      const D = u.vnode.props;
-      ((u.vnode = h),
+    H = (u, m, y) => {
+      m.component = u;
+      const S = u.vnode.props;
+      ((u.vnode = m),
         (u.next = null),
-        updateProps(u, h.props, D, g),
-        updateSlots(u, h.children, g),
+        updateProps(u, m.props, S, y),
+        updateSlots(u, m.children, y),
         pauseTracking(),
         flushPreFlushCbs(u),
         resetTracking());
     },
-    x = (u, h, g, D, v, b, C, _, M = !1) => {
-      const S = u && u.children,
-        E = u ? u.shapeFlag : 0,
-        T = h.children,
-        { patchFlag: A, shapeFlag: B } = h;
-      if (A > 0) {
-        if (A & 128) {
-          ce(S, T, g, D, v, b, C, _, M);
+    x = (u, m, y, S, D, k, V, w, _ = !1) => {
+      const b = u && u.children,
+        A = u ? u.shapeFlag : 0,
+        N = m.children,
+        { patchFlag: C, shapeFlag: h } = m;
+      if (C > 0) {
+        if (C & 128) {
+          se(b, N, y, S, D, k, V, w, _);
           return;
-        } else if (A & 256) {
-          ae(S, T, g, D, v, b, C, _, M);
+        } else if (C & 256) {
+          X(b, N, y, S, D, k, V, w, _);
           return;
         }
       }
-      B & 8
-        ? (E & 16 && m(S, v, b), T !== S && c(g, T))
-        : E & 16
-          ? B & 16
-            ? ce(S, T, g, D, v, b, C, _, M)
-            : m(S, v, b, !0)
-          : (E & 8 && c(g, ''), B & 16 && J(T, g, D, v, b, C, _, M));
+      h & 8
+        ? (A & 16 && re(b, D, k), N !== b && c(y, N))
+        : A & 16
+          ? h & 16
+            ? se(b, N, y, S, D, k, V, w, _)
+            : re(b, D, k, !0)
+          : (A & 8 && c(y, ''), h & 16 && G(N, y, S, D, k, V, w, _));
     },
-    ae = (u, h, g, D, v, b, C, _, M) => {
-      ((u = u || EMPTY_ARR), (h = h || EMPTY_ARR));
-      const S = u.length,
-        E = h.length,
-        T = Math.min(S, E);
-      let A;
-      for (A = 0; A < T; A++) {
-        const B = (h[A] = M ? cloneIfMounted(h[A]) : normalizeVNode(h[A]));
-        R(u[A], B, g, null, v, b, C, _, M);
+    X = (u, m, y, S, D, k, V, w, _) => {
+      ((u = u || EMPTY_ARR), (m = m || EMPTY_ARR));
+      const b = u.length,
+        A = m.length,
+        N = Math.min(b, A);
+      let C;
+      for (C = 0; C < N; C++) {
+        const h = (m[C] = _ ? cloneIfMounted(m[C]) : normalizeVNode(m[C]));
+        B(u[C], h, y, null, D, k, V, w, _);
       }
-      S > E ? m(u, v, b, !0, !1, T) : J(h, g, D, v, b, C, _, M, T);
+      b > A ? re(u, D, k, !0, !1, N) : G(m, y, S, D, k, V, w, _, N);
     },
-    ce = (u, h, g, D, v, b, C, _, M) => {
-      let S = 0;
-      const E = h.length;
-      let T = u.length - 1,
-        A = E - 1;
-      for (; S <= T && S <= A; ) {
-        const B = u[S],
-          I = (h[S] = M ? cloneIfMounted(h[S]) : normalizeVNode(h[S]));
-        if (isSameVNodeType(B, I)) R(B, I, g, null, v, b, C, _, M);
+    se = (u, m, y, S, D, k, V, w, _) => {
+      let b = 0;
+      const A = m.length;
+      let N = u.length - 1,
+        C = A - 1;
+      for (; b <= N && b <= C; ) {
+        const h = u[b],
+          g = (m[b] = _ ? cloneIfMounted(m[b]) : normalizeVNode(m[b]));
+        if (isSameVNodeType(h, g)) B(h, g, y, null, D, k, V, w, _);
         else break;
-        S++;
+        b++;
       }
-      for (; S <= T && S <= A; ) {
-        const B = u[T],
-          I = (h[A] = M ? cloneIfMounted(h[A]) : normalizeVNode(h[A]));
-        if (isSameVNodeType(B, I)) R(B, I, g, null, v, b, C, _, M);
+      for (; b <= N && b <= C; ) {
+        const h = u[N],
+          g = (m[C] = _ ? cloneIfMounted(m[C]) : normalizeVNode(m[C]));
+        if (isSameVNodeType(h, g)) B(h, g, y, null, D, k, V, w, _);
         else break;
-        (T--, A--);
+        (N--, C--);
       }
-      if (S > T) {
-        if (S <= A) {
-          const B = A + 1,
-            I = B < E ? h[B].el : D;
-          for (; S <= A; )
-            (R(
+      if (b > N) {
+        if (b <= C) {
+          const h = C + 1,
+            g = h < A ? m[h].el : S;
+          for (; b <= C; )
+            (B(
               null,
-              (h[S] = M ? cloneIfMounted(h[S]) : normalizeVNode(h[S])),
+              (m[b] = _ ? cloneIfMounted(m[b]) : normalizeVNode(m[b])),
+              y,
               g,
-              I,
-              v,
-              b,
-              C,
+              D,
+              k,
+              V,
+              w,
               _,
-              M,
             ),
-              S++);
+              b++);
         }
-      } else if (S > A) for (; S <= T; ) (ee(u[S], v, b, !0), S++);
+      } else if (b > C) for (; b <= N; ) (K(u[b], D, k, !0), b++);
       else {
-        const B = S,
-          I = S,
-          F = new Map();
-        for (S = I; S <= A; S++) {
-          const te = (h[S] = M ? cloneIfMounted(h[S]) : normalizeVNode(h[S]));
-          te.key != null && F.set(te.key, S);
+        const h = b,
+          g = b,
+          R = new Map();
+        for (b = g; b <= C; b++) {
+          const Z = (m[b] = _ ? cloneIfMounted(m[b]) : normalizeVNode(m[b]));
+          Z.key != null && R.set(Z.key, b);
         }
-        let H,
-          X = 0;
-        const Q = A - I + 1;
-        let ne = !1,
-          ie = 0;
-        const fe = new Array(Q);
-        for (S = 0; S < Q; S++) fe[S] = 0;
-        for (S = B; S <= T; S++) {
-          const te = u[S];
-          if (X >= Q) {
-            ee(te, v, b, !0);
+        let Y,
+          W = 0;
+        const U = C - g + 1;
+        let ae = !1,
+          oe = 0;
+        const me = new Array(U);
+        for (b = 0; b < U; b++) me[b] = 0;
+        for (b = h; b <= N; b++) {
+          const Z = u[b];
+          if (W >= U) {
+            K(Z, D, k, !0);
             continue;
           }
-          let oe;
-          if (te.key != null) oe = F.get(te.key);
+          let le;
+          if (Z.key != null) le = R.get(Z.key);
           else
-            for (H = I; H <= A; H++)
-              if (fe[H - I] === 0 && isSameVNodeType(te, h[H])) {
-                oe = H;
+            for (Y = g; Y <= C; Y++)
+              if (me[Y - g] === 0 && isSameVNodeType(Z, m[Y])) {
+                le = Y;
                 break;
               }
-          oe === void 0
-            ? ee(te, v, b, !0)
-            : ((fe[oe - I] = S + 1),
-              oe >= ie ? (ie = oe) : (ne = !0),
-              R(te, h[oe], g, null, v, b, C, _, M),
-              X++);
+          le === void 0
+            ? K(Z, D, k, !0)
+            : ((me[le - g] = b + 1),
+              le >= oe ? (oe = le) : (ae = !0),
+              B(Z, m[le], y, null, D, k, V, w, _),
+              W++);
         }
-        const ve = ne ? getSequence(fe) : EMPTY_ARR;
-        for (H = ve.length - 1, S = Q - 1; S >= 0; S--) {
-          const te = I + S,
-            oe = h[te],
-            be = h[te + 1],
-            De = te + 1 < E ? be.el || be.placeholder : D;
-          fe[S] === 0
-            ? R(null, oe, g, De, v, b, C, _, M)
-            : ne && (H < 0 || S !== ve[H] ? le(oe, g, De, 2) : H--);
+        const ve = ae ? getSequence(me) : EMPTY_ARR;
+        for (Y = ve.length - 1, b = U - 1; b >= 0; b--) {
+          const Z = g + b,
+            le = m[Z],
+            be = m[Z + 1],
+            De = Z + 1 < A ? be.el || resolveAsyncComponentPlaceholder(be) : S;
+          me[b] === 0
+            ? B(null, le, y, De, D, k, V, w, _)
+            : ae && (Y < 0 || b !== ve[Y] ? Q(le, y, De, 2) : Y--);
         }
       }
     },
-    le = (u, h, g, D, v = null) => {
-      const { el: b, type: C, transition: _, children: M, shapeFlag: S } = u;
-      if (S & 6) {
-        le(u.component.subTree, h, g, D);
+    Q = (u, m, y, S, D = null) => {
+      const { el: k, type: V, transition: w, children: _, shapeFlag: b } = u;
+      if (b & 6) {
+        Q(u.component.subTree, m, y, S);
         return;
       }
-      if (S & 128) {
-        u.suspense.move(h, g, D);
+      if (b & 128) {
+        u.suspense.move(m, y, S);
         return;
       }
-      if (S & 64) {
-        C.move(u, h, g, he);
+      if (b & 64) {
+        V.move(u, m, y, pe);
         return;
       }
-      if (C === Fragment) {
-        s(b, h, g);
-        for (let T = 0; T < M.length; T++) le(M[T], h, g, D);
-        s(u.anchor, h, g);
+      if (V === Fragment) {
+        r(k, m, y);
+        for (let N = 0; N < _.length; N++) Q(_[N], m, y, S);
+        r(u.anchor, m, y);
         return;
       }
-      if (C === Static) {
-        W(u, h, g);
+      if (V === Static) {
+        j(u, m, y);
         return;
       }
-      if (D !== 2 && S & 1 && _)
-        if (D === 0)
-          (_.beforeEnter(b),
-            s(b, h, g),
-            queuePostRenderEffect(() => _.enter(b), v));
+      if (S !== 2 && b & 1 && w)
+        if (S === 0)
+          w.persisted && !k[leaveCbKey]
+            ? r(k, m, y)
+            : (w.beforeEnter(k),
+              r(k, m, y),
+              queuePostRenderEffect(() => w.enter(k), D));
         else {
-          const { leave: T, delayLeave: A, afterLeave: B } = _,
-            I = () => {
-              u.ctx.isUnmounted ? n(b) : s(b, h, g);
+          const { leave: N, delayLeave: C, afterLeave: h } = w,
+            g = () => {
+              u.ctx.isUnmounted ? n(k) : r(k, m, y);
             },
-            F = () => {
-              (b._isLeaving && b[leaveCbKey](!0),
-                T(b, () => {
-                  (I(), B && B());
-                }));
+            R = () => {
+              const Y = k._isLeaving || !!k[leaveCbKey];
+              (k._isLeaving && k[leaveCbKey](!0),
+                w.persisted && !Y
+                  ? g()
+                  : N(k, () => {
+                      (g(), h && h());
+                    }));
             };
-          A ? A(b, I, F) : F();
+          C ? C(k, g, R) : R();
         }
-      else s(b, h, g);
+      else r(k, m, y);
     },
-    ee = (u, h, g, D = !1, v = !1) => {
+    K = (u, m, y, S = !1, D = !1) => {
       const {
-        type: b,
-        props: C,
-        ref: _,
-        children: M,
-        dynamicChildren: S,
-        shapeFlag: E,
-        patchFlag: T,
-        dirs: A,
-        cacheIndex: B,
+        type: k,
+        props: V,
+        ref: w,
+        children: _,
+        dynamicChildren: b,
+        shapeFlag: A,
+        patchFlag: N,
+        dirs: C,
+        cacheIndex: h,
+        memo: g,
       } = u;
       if (
-        (T === -2 && (v = !1),
-        _ != null &&
-          (pauseTracking(), setRef(_, null, g, u, !0), resetTracking()),
-        B != null && (h.renderCache[B] = void 0),
-        E & 256)
+        ((N === -2 || (b && b.hasOnce)) && (D = !1),
+        w != null &&
+          (pauseTracking(), setRef(w, null, y, u, !0), resetTracking()),
+        h != null && (!u.ctx || u.ctx === m) && (m.renderCache[h] = void 0),
+        A & 256)
       ) {
-        h.ctx.deactivate(u);
+        m.ctx.deactivate(u);
         return;
       }
-      const I = E & 1 && A,
-        F = !isAsyncWrapper(u);
-      let H;
+      const R = A & 1 && C,
+        Y = !isAsyncWrapper(u);
+      let W;
       if (
-        (F && (H = C && C.onVnodeBeforeUnmount) && invokeVNodeHook(H, h, u),
-        E & 6)
+        (Y && (W = V && V.onVnodeBeforeUnmount) && invokeVNodeHook(W, m, u),
+        A & 6)
       )
-        $(u.component, g, D);
+        fe(u.component, y, S);
       else {
-        if (E & 128) {
-          u.suspense.unmount(g, D);
+        if (A & 128) {
+          u.suspense.unmount(y, S);
           return;
         }
-        (I && invokeDirectiveHook(u, null, h, 'beforeUnmount'),
-          E & 64
-            ? u.type.remove(u, h, g, he, D)
-            : S && !S.hasOnce && (b !== Fragment || (T > 0 && T & 64))
-              ? m(S, h, g, !1, !0)
-              : ((b === Fragment && T & 384) || (!v && E & 16)) && m(M, h, g),
-          D && me(u));
+        (R && invokeDirectiveHook(u, null, m, 'beforeUnmount'),
+          A & 64
+            ? u.type.remove(u, m, y, pe, S)
+            : b && !b.hasOnce && (k !== Fragment || (N > 0 && N & 64))
+              ? re(b, m, y, !1, !0)
+              : ((k === Fragment && N & 384) || (!D && A & 16)) && re(_, m, y),
+          S && de(u));
       }
-      ((F && (H = C && C.onVnodeUnmounted)) || I) &&
+      const U = g != null && h == null;
+      ((Y && (W = V && V.onVnodeUnmounted)) || R || U) &&
         queuePostRenderEffect(() => {
-          (H && invokeVNodeHook(H, h, u),
-            I && invokeDirectiveHook(u, null, h, 'unmounted'));
-        }, g);
+          (W && invokeVNodeHook(W, m, u),
+            R && invokeDirectiveHook(u, null, m, 'unmounted'),
+            U && (u.el = null));
+        }, y);
     },
-    me = (u) => {
-      const { type: h, el: g, anchor: D, transition: v } = u;
-      if (h === Fragment) {
-        ge(g, D);
+    de = (u) => {
+      const { type: m, el: y, anchor: S, transition: D } = u,
+        k = m === Fragment;
+      if (k && !D) {
+        he(y, S);
         return;
       }
-      if (h === Static) {
-        V(u);
+      if (m === Static) {
+        (E(u), D && !D.persisted && D.afterLeave && D.afterLeave());
         return;
       }
-      const b = () => {
-        (n(g), v && !v.persisted && v.afterLeave && v.afterLeave());
-      };
-      if (u.shapeFlag & 1 && v && !v.persisted) {
-        const { leave: C, delayLeave: _ } = v,
-          M = () => C(g, b);
-        _ ? _(u.el, b, M) : M();
-      } else b();
+      const V = k ? getTransitionRoot(u) : u,
+        w = () => {
+          (k ? f(y) && he(y, S) : n(y),
+            D && !D.persisted && D.afterLeave && D.afterLeave());
+        };
+      if (V && V.shapeFlag & 1 && D && !D.persisted) {
+        const { leave: _, delayLeave: b } = D,
+          A = V.el,
+          N = () => _(A, w);
+        b ? b(A, w, N) : N();
+      } else w();
     },
-    ge = (u, h) => {
-      let g;
-      for (; u !== h; ) ((g = w(u)), n(u), (u = g));
-      n(h);
+    he = (u, m) => {
+      let y;
+      for (; u !== m; ) ((y = v(u)), n(u), (u = y));
+      n(m);
     },
-    $ = (u, h, g) => {
-      const { bum: D, scope: v, job: b, subTree: C, um: _, m: M, a: S } = u;
-      (invalidateMount(M),
-        invalidateMount(S),
-        D && invokeArrayFns(D),
-        v.stop(),
-        b && ((b.flags |= 8), ee(C, u, h, g)),
-        _ && queuePostRenderEffect(_, h),
+    fe = (u, m, y) => {
+      const { bum: S, scope: D, job: k, subTree: V, um: w, m: _, a: b } = u;
+      (invalidateMount(_),
+        invalidateMount(b),
+        S && invokeArrayFns(S),
+        D.stop(),
+        k
+          ? ((k.flags |= 8), K(V, u, m, y))
+          : u.vnode.el &&
+            V &&
+            ((V.transition = u.vnode.transition), K(V, u, m, y)),
+        w && queuePostRenderEffect(w, m),
         queuePostRenderEffect(() => {
           u.isUnmounted = !0;
-        }, h));
+        }, m));
     },
-    m = (u, h, g, D = !1, v = !1, b = 0) => {
-      for (let C = b; C < u.length; C++) ee(u[C], h, g, D, v);
+    re = (u, m, y, S = !1, D = !1, k = 0) => {
+      for (let V = k; V < u.length; V++) K(u[V], m, y, S, D);
     },
-    y = (u) => {
-      if (u.shapeFlag & 6) return y(u.component.subTree);
+    T = (u) => {
+      if (u.shapeFlag & 6) return T(u.component.subTree);
       if (u.shapeFlag & 128) return u.suspense.next();
-      const h = w(u.anchor || u.el),
-        g = h && h[TeleportEndKey];
-      return g ? w(g) : h;
-    };
-  let ue = !1;
-  const ye = (u, h, g) => {
-      (u == null
-        ? h._vnode && ee(h._vnode, null, null, !0)
-        : R(h._vnode || null, u, h, null, null, null, g),
-        (h._vnode = u),
-        ue || ((ue = !0), flushPreFlushCbs(), flushPostFlushCbs(), (ue = !1)));
+      const m = v(u.anchor || u.el),
+        y = m && m[TeleportEndKey];
+      return y ? v(y) : m;
     },
-    he = {
-      p: R,
-      um: ee,
-      m: le,
-      r: me,
-      mt: de,
-      mc: J,
-      pc: x,
-      pbc: Z,
-      n: y,
-      o: e,
-    };
-  return { render: ye, hydrate: void 0, createApp: createAppAPI(ye) };
+    ge = (u, m, y) => {
+      const S =
+        u && m._vnode
+          ? void 0
+          : u && u.component
+            ? u.component.uid
+            : getNextUid();
+      flushOnAppMount(() => {
+        (u == null
+          ? m._vnode && K(m._vnode, null, null, !0)
+          : B(m._vnode || null, u, m, null, null, null, y),
+          (m._vnode = u));
+      }, S);
+    },
+    pe = { p: B, um: K, m: Q, r: de, mt: ce, mc: G, pc: x, pbc: J, n: T, o: e };
+  return { render: ge, hydrate: void 0, createApp: createAppAPI(ge) };
 }
-function resolveChildrenNamespace({ type: e, props: t }, r) {
-  return (r === 'svg' && e === 'foreignObject') ||
-    (r === 'mathml' &&
+function resolveChildrenNamespace({ type: e, props: t }, s) {
+  return (s === 'svg' && e === 'foreignObject') ||
+    (s === 'mathml' &&
       e === 'annotation-xml' &&
       t &&
       t.encoding &&
       t.encoding.includes('html'))
     ? void 0
-    : r;
+    : s;
 }
-function toggleRecurse({ effect: e, job: t }, r) {
-  r ? ((e.flags |= 32), (t.flags |= 4)) : ((e.flags &= -33), (t.flags &= -5));
+function toggleRecurse({ effect: e, job: t }, s) {
+  s ? ((e.flags |= 32), (t.flags |= 4)) : ((e.flags &= -33), (t.flags &= -5));
 }
 function needTransition(e, t) {
   return (!e || (e && !e.pendingBranch)) && t && !t.persisted;
 }
-function traverseStaticChildren(e, t, r = !1) {
-  const s = e.children,
+function traverseStaticChildren(e, t, s = !1) {
+  const r = e.children,
     n = t.children;
-  if (isArray(s) && isArray(n))
-    for (let i = 0; i < s.length; i++) {
-      const o = s[i];
-      let a = n[i];
-      (a.shapeFlag & 1 &&
-        !a.dynamicChildren &&
-        ((a.patchFlag <= 0 || a.patchFlag === 32) &&
-          ((a = n[i] = cloneIfMounted(n[i])), (a.el = o.el)),
-        !r && a.patchFlag !== -2 && traverseStaticChildren(o, a)),
-        a.type === Text && a.patchFlag !== -1 && (a.el = o.el),
-        a.type === Comment && !a.el && (a.el = o.el));
+  if (isArray(r) && isArray(n))
+    for (let i = 0; i < r.length; i++) {
+      const a = r[i];
+      let o = n[i];
+      (o.shapeFlag & 1 &&
+        !o.dynamicChildren &&
+        ((o.patchFlag <= 0 || o.patchFlag === 32) &&
+          ((o = n[i] = cloneIfMounted(n[i])), (o.el = a.el)),
+        !s && o.patchFlag !== -2 && traverseStaticChildren(a, o)),
+        o.type === Text &&
+          (o.patchFlag === -1 && (o = n[i] = cloneIfMounted(o)), (o.el = a.el)),
+        o.type === Comment && !o.el && (o.el = a.el));
     }
 }
 function getSequence(e) {
   const t = e.slice(),
-    r = [0];
-  let s, n, i, o, a;
+    s = [0];
+  let r, n, i, a, o;
   const l = e.length;
-  for (s = 0; s < l; s++) {
-    const d = e[s];
+  for (r = 0; r < l; r++) {
+    const d = e[r];
     if (d !== 0) {
-      if (((n = r[r.length - 1]), e[n] < d)) {
-        ((t[s] = n), r.push(s));
+      if (((n = s[s.length - 1]), e[n] < d)) {
+        ((t[r] = n), s.push(r));
         continue;
       }
-      for (i = 0, o = r.length - 1; i < o; )
-        ((a = (i + o) >> 1), e[r[a]] < d ? (i = a + 1) : (o = a));
-      d < e[r[i]] && (i > 0 && (t[s] = r[i - 1]), (r[i] = s));
+      for (i = 0, a = s.length - 1; i < a; )
+        ((o = (i + a) >> 1), e[s[o]] < d ? (i = o + 1) : (a = o));
+      d < e[s[i]] && (i > 0 && (t[r] = s[i - 1]), (s[i] = r));
     }
   }
-  for (i = r.length, o = r[i - 1]; i-- > 0; ) ((r[i] = o), (o = t[o]));
-  return r;
+  for (i = s.length, a = s[i - 1]; i-- > 0; ) ((s[i] = a), (a = t[a]));
+  return s;
 }
 function locateNonHydratedAsyncRoot(e) {
   const t = e.subTree.component;
@@ -3362,233 +3865,10 @@ function locateNonHydratedAsyncRoot(e) {
 function invalidateMount(e) {
   if (e) for (let t = 0; t < e.length; t++) e[t].flags |= 8;
 }
-const ssrContextKey = Symbol.for('v-scx'),
-  useSSRContext = () => inject(ssrContextKey);
-function watch(e, t, r) {
-  return doWatch(e, t, r);
-}
-function doWatch(e, t, r = EMPTY_OBJ) {
-  const { immediate: s, deep: n, flush: i, once: o } = r,
-    a = extend({}, r),
-    l = (t && s) || (!t && i !== 'post');
-  let d;
-  if (isInSSRComponentSetup) {
-    if (i === 'sync') {
-      const k = useSSRContext();
-      d = k.__watcherHandles || (k.__watcherHandles = []);
-    } else if (!l) {
-      const k = () => {};
-      return ((k.stop = NOOP), (k.resume = NOOP), (k.pause = NOOP), k);
-    }
-  }
-  const c = currentInstance;
-  a.call = (k, N, R) => callWithAsyncErrorHandling(k, c, N, R);
-  let f = !1;
-  (i === 'post'
-    ? (a.scheduler = (k) => {
-        queuePostRenderEffect(k, c && c.suspense);
-      })
-    : i !== 'sync' &&
-      ((f = !0),
-      (a.scheduler = (k, N) => {
-        N ? k() : queueJob(k);
-      })),
-    (a.augmentJob = (k) => {
-      (t && (k.flags |= 4),
-        f && ((k.flags |= 2), c && ((k.id = c.uid), (k.i = c))));
-    }));
-  const w = watch$1(e, t, a);
-  return (isInSSRComponentSetup && (d ? d.push(w) : l && w()), w);
-}
-function instanceWatch(e, t, r) {
-  const s = this.proxy,
-    n = isString(e)
-      ? e.includes('.')
-        ? createPathGetter(s, e)
-        : () => s[e]
-      : e.bind(s, s);
-  let i;
-  isFunction(t) ? (i = t) : ((i = t.handler), (r = t));
-  const o = setCurrentInstance(this),
-    a = doWatch(n, i.bind(s), r);
-  return (o(), a);
-}
-function createPathGetter(e, t) {
-  const r = t.split('.');
-  return () => {
-    let s = e;
-    for (let n = 0; n < r.length && s; n++) s = s[r[n]];
-    return s;
-  };
-}
-const getModelModifiers = (e, t) =>
-  t === 'modelValue' || t === 'model-value'
-    ? e.modelModifiers
-    : e[`${t}Modifiers`] ||
-      e[`${camelize(t)}Modifiers`] ||
-      e[`${hyphenate(t)}Modifiers`];
-function emit(e, t, ...r) {
-  if (e.isUnmounted) return;
-  const s = e.vnode.props || EMPTY_OBJ;
-  let n = r;
-  const i = t.startsWith('update:'),
-    o = i && getModelModifiers(s, t.slice(7));
-  o &&
-    (o.trim && (n = r.map((c) => (isString(c) ? c.trim() : c))),
-    o.number && (n = r.map(looseToNumber)));
-  let a,
-    l = s[(a = toHandlerKey(t))] || s[(a = toHandlerKey(camelize(t)))];
-  (!l && i && (l = s[(a = toHandlerKey(hyphenate(t)))]),
-    l && callWithAsyncErrorHandling(l, e, 6, n));
-  const d = s[a + 'Once'];
-  if (d) {
-    if (!e.emitted) e.emitted = {};
-    else if (e.emitted[a]) return;
-    ((e.emitted[a] = !0), callWithAsyncErrorHandling(d, e, 6, n));
-  }
-}
-const mixinEmitsCache = new WeakMap();
-function normalizeEmitsOptions(e, t, r = !1) {
-  const s = r ? mixinEmitsCache : t.emitsCache,
-    n = s.get(e);
-  if (n !== void 0) return n;
-  const i = e.emits;
-  let o = {},
-    a = !1;
-  if (!isFunction(e)) {
-    const l = (d) => {
-      const c = normalizeEmitsOptions(d, t, !0);
-      c && ((a = !0), extend(o, c));
-    };
-    (!r && t.mixins.length && t.mixins.forEach(l),
-      e.extends && l(e.extends),
-      e.mixins && e.mixins.forEach(l));
-  }
-  return !i && !a
-    ? (isObject(e) && s.set(e, null), null)
-    : (isArray(i) ? i.forEach((l) => (o[l] = null)) : extend(o, i),
-      isObject(e) && s.set(e, o),
-      o);
-}
-function isEmitListener(e, t) {
-  return !e || !isOn(t)
-    ? !1
-    : ((t = t.slice(2).replace(/Once$/, '')),
-      hasOwn(e, t[0].toLowerCase() + t.slice(1)) ||
-        hasOwn(e, hyphenate(t)) ||
-        hasOwn(e, t));
-}
-function markAttrsAccessed() {}
-function renderComponentRoot(e) {
-  const {
-      type: t,
-      vnode: r,
-      proxy: s,
-      withProxy: n,
-      propsOptions: [i],
-      slots: o,
-      attrs: a,
-      emit: l,
-      render: d,
-      renderCache: c,
-      props: f,
-      data: w,
-      setupState: k,
-      ctx: N,
-      inheritAttrs: R,
-    } = e,
-    K = setCurrentRenderingInstance(e);
-  let O, j;
-  try {
-    if (r.shapeFlag & 4) {
-      const V = n || s,
-        Y = V;
-      ((O = normalizeVNode(d.call(Y, V, c, f, k, w, N))), (j = a));
-    } else {
-      const V = t;
-      ((O = normalizeVNode(
-        V.length > 1 ? V(f, { attrs: a, slots: o, emit: l }) : V(f, null),
-      )),
-        (j = t.props ? a : getFunctionalFallthrough(a)));
-    }
-  } catch (V) {
-    ((blockStack.length = 0), handleError(V, e, 1), (O = createVNode(Comment)));
-  }
-  let W = O;
-  if (j && R !== !1) {
-    const V = Object.keys(j),
-      { shapeFlag: Y } = W;
-    V.length &&
-      Y & 7 &&
-      (i && V.some(isModelListener) && (j = filterModelListeners(j, i)),
-      (W = cloneVNode(W, j, !1, !0)));
-  }
-  return (
-    r.dirs &&
-      ((W = cloneVNode(W, null, !1, !0)),
-      (W.dirs = W.dirs ? W.dirs.concat(r.dirs) : r.dirs)),
-    r.transition && setTransitionHooks(W, r.transition),
-    (O = W),
-    setCurrentRenderingInstance(K),
-    O
-  );
-}
-const getFunctionalFallthrough = (e) => {
-    let t;
-    for (const r in e)
-      (r === 'class' || r === 'style' || isOn(r)) &&
-        ((t || (t = {}))[r] = e[r]);
-    return t;
-  },
-  filterModelListeners = (e, t) => {
-    const r = {};
-    for (const s in e)
-      (!isModelListener(s) || !(s.slice(9) in t)) && (r[s] = e[s]);
-    return r;
-  };
-function shouldUpdateComponent(e, t, r) {
-  const { props: s, children: n, component: i } = e,
-    { props: o, children: a, patchFlag: l } = t,
-    d = i.emitsOptions;
-  if (t.dirs || t.transition) return !0;
-  if (r && l >= 0) {
-    if (l & 1024) return !0;
-    if (l & 16) return s ? hasPropsChanged(s, o, d) : !!o;
-    if (l & 8) {
-      const c = t.dynamicProps;
-      for (let f = 0; f < c.length; f++) {
-        const w = c[f];
-        if (o[w] !== s[w] && !isEmitListener(d, w)) return !0;
-      }
-    }
-  } else
-    return (n || a) && (!a || !a.$stable)
-      ? !0
-      : s === o
-        ? !1
-        : s
-          ? o
-            ? hasPropsChanged(s, o, d)
-            : !0
-          : !!o;
-  return !1;
-}
-function hasPropsChanged(e, t, r) {
-  const s = Object.keys(t);
-  if (s.length !== Object.keys(e).length) return !0;
-  for (let n = 0; n < s.length; n++) {
-    const i = s[n];
-    if (t[i] !== e[i] && !isEmitListener(r, i)) return !0;
-  }
-  return !1;
-}
-function updateHOCHostEl({ vnode: e, parent: t }, r) {
-  for (; t; ) {
-    const s = t.subTree;
-    if ((s.suspense && s.suspense.activeBranch === e && (s.el = e.el), s === e))
-      (((e = t.vnode).el = r), (t = t.parent));
-    else break;
-  }
+function resolveAsyncComponentPlaceholder(e) {
+  if (e.placeholder) return e.placeholder;
+  const t = e.component;
+  return t ? resolveAsyncComponentPlaceholder(t.subTree) : null;
 }
 const isSuspense = (e) => e.__isSuspense;
 function queueEffectWithSuspense(e, t) {
@@ -3625,11 +3905,11 @@ function setupBlock(e) {
     e
   );
 }
-function createElementBlock(e, t, r, s, n, i) {
-  return setupBlock(createBaseVNode(e, t, r, s, n, i, !0));
+function createElementBlock(e, t, s, r, n, i) {
+  return setupBlock(createBaseVNode(e, t, s, r, n, i, !0));
 }
-function createBlock(e, t, r, s, n) {
-  return setupBlock(createVNode(e, t, r, s, n, !0));
+function createBlock(e, t, s, r, n) {
+  return setupBlock(createVNode(e, t, s, r, n, !0));
 }
 function isVNode(e) {
   return e ? e.__v_isVNode === !0 : !1;
@@ -3638,23 +3918,23 @@ function isSameVNodeType(e, t) {
   return e.type === t.type && e.key === t.key;
 }
 const normalizeKey = ({ key: e }) => e ?? null,
-  normalizeRef = ({ ref: e, ref_key: t, ref_for: r }) => (
+  normalizeRef = ({ ref: e, ref_key: t, ref_for: s }) => (
     typeof e == 'number' && (e = '' + e),
     e != null
       ? isString(e) || isRef(e) || isFunction(e)
-        ? { i: currentRenderingInstance, r: e, k: t, f: !!r }
+        ? { i: currentRenderingInstance, r: e, k: t, f: !!s }
         : e
       : null
   );
 function createBaseVNode(
   e,
   t = null,
-  r = null,
-  s = 0,
+  s = null,
+  r = 0,
   n = null,
   i = e === Fragment ? 0 : 1,
-  o = !1,
   a = !1,
+  o = !1,
 ) {
   const l = {
     __v_isVNode: !0,
@@ -3665,7 +3945,7 @@ function createBaseVNode(
     ref: t && normalizeRef(t),
     scopeId: currentScopeId,
     slotScopeIds: null,
-    children: r,
+    children: s,
     component: null,
     suspense: null,
     ssContent: null,
@@ -3679,18 +3959,18 @@ function createBaseVNode(
     targetAnchor: null,
     staticCount: 0,
     shapeFlag: i,
-    patchFlag: s,
+    patchFlag: r,
     dynamicProps: n,
     dynamicChildren: null,
     appContext: null,
     ctx: currentRenderingInstance,
   };
   return (
-    a
-      ? (normalizeChildren(l, r), i & 128 && e.normalize(l))
-      : r && (l.shapeFlag |= isString(r) ? 8 : 16),
+    o
+      ? (normalizeChildren(l, s), i & 128 && e.normalize(l))
+      : s && (l.shapeFlag |= isString(s) ? 8 : 16),
     isBlockTreeEnabled > 0 &&
-      !o &&
+      !a &&
       currentBlock &&
       (l.patchFlag > 0 || i & 6) &&
       l.patchFlag !== 32 &&
@@ -3699,30 +3979,30 @@ function createBaseVNode(
   );
 }
 const createVNode = _createVNode;
-function _createVNode(e, t = null, r = null, s = 0, n = null, i = !1) {
+function _createVNode(e, t = null, s = null, r = 0, n = null, i = !1) {
   if (((!e || e === NULL_DYNAMIC_COMPONENT) && (e = Comment), isVNode(e))) {
-    const a = cloneVNode(e, t, !0);
+    const o = cloneVNode(e, t, !0);
     return (
-      r && normalizeChildren(a, r),
+      s && normalizeChildren(o, s),
       isBlockTreeEnabled > 0 &&
         !i &&
         currentBlock &&
-        (a.shapeFlag & 6
-          ? (currentBlock[currentBlock.indexOf(e)] = a)
-          : currentBlock.push(a)),
-      (a.patchFlag = -2),
-      a
+        (o.shapeFlag & 6
+          ? (currentBlock[currentBlock.indexOf(e)] = o)
+          : currentBlock.push(o)),
+      (o.patchFlag = -2),
+      o
     );
   }
   if ((isClassComponent(e) && (e = e.__vccOpts), t)) {
     t = guardReactiveProps(t);
-    let { class: a, style: l } = t;
-    (a && !isString(a) && (t.class = normalizeClass(a)),
+    let { class: o, style: l } = t;
+    (o && !isString(o) && (t.class = normalizeClass(o)),
       isObject(l) &&
         (isProxy(l) && !isArray(l) && (l = extend({}, l)),
         (t.style = normalizeStyle(l))));
   }
-  const o = isString(e)
+  const a = isString(e)
     ? 1
     : isSuspense(e)
       ? 128
@@ -3733,13 +4013,13 @@ function _createVNode(e, t = null, r = null, s = 0, n = null, i = !1) {
           : isFunction(e)
             ? 2
             : 0;
-  return createBaseVNode(e, t, r, s, n, o, i, !0);
+  return createBaseVNode(e, t, s, r, n, a, i, !0);
 }
 function guardReactiveProps(e) {
   return e ? (isProxy(e) || isInternalObject(e) ? extend({}, e) : e) : null;
 }
-function cloneVNode(e, t, r = !1, s = !1) {
-  const { props: n, ref: i, patchFlag: o, children: a, transition: l } = e,
+function cloneVNode(e, t, s = !1, r = !1) {
+  const { props: n, ref: i, patchFlag: a, children: o, transition: l } = e,
     d = t ? mergeProps(n || {}, t) : n,
     c = {
       __v_isVNode: !0,
@@ -3749,7 +4029,7 @@ function cloneVNode(e, t, r = !1, s = !1) {
       key: d && normalizeKey(d),
       ref:
         t && t.ref
-          ? r && i
+          ? s && i
             ? isArray(i)
               ? i.concat(normalizeRef(t))
               : [i, normalizeRef(t)]
@@ -3757,13 +4037,13 @@ function cloneVNode(e, t, r = !1, s = !1) {
           : i,
       scopeId: e.scopeId,
       slotScopeIds: e.slotScopeIds,
-      children: a,
+      children: o,
       target: e.target,
       targetStart: e.targetStart,
       targetAnchor: e.targetAnchor,
       staticCount: e.staticCount,
       shapeFlag: e.shapeFlag,
-      patchFlag: t && e.type !== Fragment ? (o === -1 ? 16 : o | 16) : o,
+      patchFlag: t && e.type !== Fragment ? (a === -1 ? 16 : a | 16) : a,
       dynamicProps: e.dynamicProps,
       dynamicChildren: e.dynamicChildren,
       appContext: e.appContext,
@@ -3778,15 +4058,16 @@ function cloneVNode(e, t, r = !1, s = !1) {
       anchor: e.anchor,
       ctx: e.ctx,
       ce: e.ce,
+      cacheIndex: e.cacheIndex,
     };
-  return (l && s && setTransitionHooks(c, l.clone(c)), c);
+  return (l && r && setTransitionHooks(c, l.clone(c)), c);
 }
 function createTextVNode(e = ' ', t = 0) {
   return createVNode(Text, null, e, t);
 }
 function createStaticVNode(e, t) {
-  const r = createVNode(Static, null, e);
-  return ((r.staticCount = t), r);
+  const s = createVNode(Static, null, e);
+  return ((s.staticCount = t), s);
 }
 function createCommentVNode(e = '', t = !1) {
   return t
@@ -3806,18 +4087,18 @@ function cloneIfMounted(e) {
   return (e.el === null && e.patchFlag !== -1) || e.memo ? e : cloneVNode(e);
 }
 function normalizeChildren(e, t) {
-  let r = 0;
-  const { shapeFlag: s } = e;
+  let s = 0;
+  const { shapeFlag: r } = e;
   if (t == null) t = null;
-  else if (isArray(t)) r = 16;
+  else if (isArray(t)) s = 16;
   else if (typeof t == 'object')
-    if (s & 65) {
+    if (r & 65) {
       const n = t.default;
       n &&
         (n._c && (n._d = !1), normalizeChildren(e, n()), n._c && (n._d = !0));
       return;
     } else {
-      r = 32;
+      s = 32;
       const n = t._;
       !n && !isInternalObject(t)
         ? (t._ctx = currentRenderingInstance)
@@ -3827,44 +4108,50 @@ function normalizeChildren(e, t) {
             ? (t._ = 1)
             : ((t._ = 2), (e.patchFlag |= 1024)));
     }
-  else
-    isFunction(t)
-      ? ((t = { default: t, _ctx: currentRenderingInstance }), (r = 32))
-      : ((t = String(t)),
-        s & 64 ? ((r = 16), (t = [createTextVNode(t)])) : (r = 8));
-  ((e.children = t), (e.shapeFlag |= r));
+  else if (isFunction(t)) {
+    if (r & 65) {
+      normalizeChildren(e, { default: t });
+      return;
+    }
+    ((t = { default: t, _ctx: currentRenderingInstance }), (s = 32));
+  } else
+    ((t = String(t)),
+      r & 64 ? ((s = 16), (t = [createTextVNode(t)])) : (s = 8));
+  ((e.children = t), (e.shapeFlag |= s));
 }
 function mergeProps(...e) {
   const t = {};
-  for (let r = 0; r < e.length; r++) {
-    const s = e[r];
-    for (const n in s)
+  for (let s = 0; s < e.length; s++) {
+    const r = e[s];
+    for (const n in r)
       if (n === 'class')
-        t.class !== s.class && (t.class = normalizeClass([t.class, s.class]));
-      else if (n === 'style') t.style = normalizeStyle([t.style, s.style]);
+        t.class !== r.class && (t.class = normalizeClass([t.class, r.class]));
+      else if (n === 'style') t.style = normalizeStyle([t.style, r.style]);
       else if (isOn(n)) {
         const i = t[n],
-          o = s[n];
-        o &&
-          i !== o &&
-          !(isArray(i) && i.includes(o)) &&
-          (t[n] = i ? [].concat(i, o) : o);
-      } else n !== '' && (t[n] = s[n]);
+          a = r[n];
+        a && i !== a && !(isArray(i) && i.includes(a))
+          ? (t[n] = i ? [].concat(i, a) : a)
+          : a == null && i == null && !isModelListener(n) && (t[n] = a);
+      } else n !== '' && (t[n] = r[n]);
   }
   return t;
 }
-function invokeVNodeHook(e, t, r, s = null) {
-  callWithAsyncErrorHandling(e, t, 7, [r, s]);
+function invokeVNodeHook(e, t, s, r = null) {
+  callWithAsyncErrorHandling(e, t, 7, [s, r]);
 }
 const emptyAppContext = createAppContext();
 let uid = 0;
-function createComponentInstance(e, t, r) {
-  const s = e.type,
+function getNextUid() {
+  return uid;
+}
+function createComponentInstance(e, t, s) {
+  const r = e.type,
     n = (t ? t.appContext : e.appContext) || emptyAppContext,
     i = {
       uid: uid++,
       vnode: e,
-      type: s,
+      type: r,
       parent: t,
       appContext: n,
       root: null,
@@ -3885,12 +4172,12 @@ function createComponentInstance(e, t, r) {
       renderCache: [],
       components: null,
       directives: null,
-      propsOptions: normalizePropsOptions(s, n),
-      emitsOptions: normalizeEmitsOptions(s, n),
+      propsOptions: normalizePropsOptions(r, n),
+      emitsOptions: normalizeEmitsOptions(r, n),
       emit: null,
       emitted: null,
       propsDefaults: EMPTY_OBJ,
-      inheritAttrs: s.inheritAttrs,
+      inheritAttrs: r.inheritAttrs,
       ctx: EMPTY_OBJ,
       data: EMPTY_OBJ,
       props: EMPTY_OBJ,
@@ -3899,8 +4186,8 @@ function createComponentInstance(e, t, r) {
       refs: EMPTY_OBJ,
       setupState: EMPTY_OBJ,
       setupContext: null,
-      suspense: r,
-      suspenseId: r ? r.pendingId : 0,
+      suspense: s,
+      suspenseId: s ? s.pendingId : 0,
       asyncDep: null,
       asyncResolved: !1,
       isMounted: !1,
@@ -3934,23 +4221,23 @@ const getCurrentInstance = () => currentInstance || currentRenderingInstance;
 let internalSetCurrentInstance, setInSSRSetupState;
 {
   const e = getGlobalThis(),
-    t = (r, s) => {
+    t = (s, r) => {
       let n;
       return (
-        (n = e[r]) || (n = e[r] = []),
-        n.push(s),
+        (n = e[s]) || (n = e[s] = []),
+        n.push(r),
         (i) => {
-          n.length > 1 ? n.forEach((o) => o(i)) : n[0](i);
+          n.length > 1 ? n.forEach((a) => a(i)) : n[0](i);
         }
       );
     };
   ((internalSetCurrentInstance = t(
     '__VUE_INSTANCE_SETTERS__',
-    (r) => (currentInstance = r),
+    (s) => (currentInstance = s),
   )),
     (setInSSRSetupState = t(
       '__VUE_SSR_SETTERS__',
-      (r) => (isInSSRComponentSetup = r),
+      (s) => (isInSSRComponentSetup = s),
     )));
 }
 const setCurrentInstance = (e) => {
@@ -3971,44 +4258,49 @@ function isStatefulComponent(e) {
   return e.vnode.shapeFlag & 4;
 }
 let isInSSRComponentSetup = !1;
-function setupComponent(e, t = !1, r = !1) {
+function setupComponent(e, t = !1, s = !1) {
   t && setInSSRSetupState(t);
-  const { props: s, children: n } = e.vnode,
+  const { props: r, children: n } = e.vnode,
     i = isStatefulComponent(e);
-  (initProps(e, s, i, t), initSlots(e, n, r || t));
-  const o = i ? setupStatefulComponent(e, t) : void 0;
-  return (t && setInSSRSetupState(!1), o);
+  (initProps(e, r, i, t), initSlots(e, n, s || t));
+  const a = i ? setupStatefulComponent(e, t) : void 0;
+  return (t && setInSSRSetupState(!1), a);
 }
 function setupStatefulComponent(e, t) {
-  const r = e.type;
+  const s = e.type;
   ((e.accessCache = Object.create(null)),
     (e.proxy = new Proxy(e.ctx, PublicInstanceProxyHandlers)));
-  const { setup: s } = r;
-  if (s) {
+  const { setup: r } = s;
+  if (r) {
     pauseTracking();
-    const n = (e.setupContext = s.length > 1 ? createSetupContext(e) : null),
+    const n = (e.setupContext = r.length > 1 ? createSetupContext(e) : null),
       i = setCurrentInstance(e),
-      o = callWithErrorHandling(s, e, 0, [e.props, n]),
-      a = isPromise(o);
+      a = callWithErrorHandling(r, e, 0, [e.props, n]),
+      o = isPromise(a);
     if (
       (resetTracking(),
       i(),
-      (a || e.sp) && !isAsyncWrapper(e) && markAsyncBoundary(e),
-      a)
+      (o || e.sp) && !isAsyncWrapper(e) && markAsyncBoundary(e),
+      o)
     ) {
-      if ((o.then(unsetCurrentInstance, unsetCurrentInstance), t))
-        return o
+      if ((a.then(unsetCurrentInstance, unsetCurrentInstance), t))
+        return a
           .then((l) => {
-            handleSetupResult(e, l);
+            setInSSRSetupState(!0);
+            try {
+              handleSetupResult(e, l, t);
+            } finally {
+              setInSSRSetupState(!1);
+            }
           })
           .catch((l) => {
             handleError(l, e, 0);
           });
-      e.asyncDep = o;
-    } else handleSetupResult(e, o);
+      e.asyncDep = a;
+    } else handleSetupResult(e, a);
   } else finishComponentSetup(e);
 }
-function handleSetupResult(e, t, r) {
+function handleSetupResult(e, t, s) {
   (isFunction(t)
     ? e.type.__ssrInlineRender
       ? (e.ssrRender = t)
@@ -4016,9 +4308,9 @@ function handleSetupResult(e, t, r) {
     : isObject(t) && (e.setupState = proxyRefs(t)),
     finishComponentSetup(e));
 }
-function finishComponentSetup(e, t, r) {
-  const s = e.type;
-  e.render || (e.render = s.render || NOOP);
+function finishComponentSetup(e, t, s) {
+  const r = e.type;
+  e.render || (e.render = r.render || NOOP);
   {
     const n = setCurrentInstance(e);
     pauseTracking();
@@ -4035,8 +4327,8 @@ const attrsProxyHandlers = {
   },
 };
 function createSetupContext(e) {
-  const t = (r) => {
-    e.exposed = r || {};
+  const t = (s) => {
+    e.exposed = s || {};
   };
   return {
     attrs: new Proxy(e.attrs, attrsProxyHandlers),
@@ -4049,12 +4341,12 @@ function getComponentPublicInstance(e) {
   return e.exposed
     ? e.exposeProxy ||
         (e.exposeProxy = new Proxy(proxyRefs(markRaw(e.exposed)), {
-          get(t, r) {
-            if (r in t) return t[r];
-            if (r in publicPropertiesMap) return publicPropertiesMap[r](e);
+          get(t, s) {
+            if (s in t) return t[s];
+            if (s in publicPropertiesMap) return publicPropertiesMap[s](e);
           },
-          has(t, r) {
-            return r in t || r in publicPropertiesMap;
+          has(t, s) {
+            return s in t || s in publicPropertiesMap;
           },
         }))
     : e.proxy;
@@ -4065,31 +4357,29 @@ const classifyRE = /(?:^|[-_])\w/g,
 function getComponentName(e, t = !0) {
   return isFunction(e) ? e.displayName || e.name : e.name || (t && e.__name);
 }
-function formatComponentName(e, t, r = !1) {
-  let s = getComponentName(t);
-  if (!s && t.__file) {
+function formatComponentName(e, t, s = !1) {
+  let r = getComponentName(t);
+  if (!r && t.__file) {
     const n = t.__file.match(/([^/\\]+)\.\w+$/);
-    n && (s = n[1]);
+    n && (r = n[1]);
   }
-  if (!s && e && e.parent) {
+  if (!r && e) {
     const n = (i) => {
-      for (const o in i) if (i[o] === t) return o;
+      for (const a in i) if (i[a] === t) return a;
     };
-    s =
-      n(e.components || e.parent.type.components) || n(e.appContext.components);
+    r =
+      n(e.components) ||
+      (e.parent && n(e.parent.type.components)) ||
+      n(e.appContext.components);
   }
-  return s ? classify(s) : r ? 'App' : 'Anonymous';
+  return r ? classify(r) : s ? 'App' : 'Anonymous';
 }
 function isClassComponent(e) {
   return isFunction(e) && '__vccOpts' in e;
 }
 const computed = (e, t) => computed$1(e, t, isInSSRComponentSetup),
-  version = '3.5.22';
-/**
- * @vue/runtime-dom v3.5.22
- * (c) 2018-present Yuxi (Evan) You and Vue contributors
- * @license MIT
- **/ let policy;
+  version = '3.5.44';
+let policy;
 const tt = typeof window < 'u' && window.trustedTypes;
 if (tt)
   try {
@@ -4101,27 +4391,27 @@ const unsafeToTrustedHTML = policy ? (e) => policy.createHTML(e) : (e) => e,
   doc = typeof document < 'u' ? document : null,
   templateContainer = doc && doc.createElement('template'),
   nodeOps = {
-    insert: (e, t, r) => {
-      t.insertBefore(e, r || null);
+    insert: (e, t, s) => {
+      t.insertBefore(e, s || null);
     },
     remove: (e) => {
       const t = e.parentNode;
       t && t.removeChild(e);
     },
-    createElement: (e, t, r, s) => {
+    createElement: (e, t, s, r) => {
       const n =
         t === 'svg'
           ? doc.createElementNS(svgNS, e)
           : t === 'mathml'
             ? doc.createElementNS(mathmlNS, e)
-            : r
-              ? doc.createElement(e, { is: r })
+            : s
+              ? doc.createElement(e, { is: s })
               : doc.createElement(e);
       return (
         e === 'select' &&
-          s &&
-          s.multiple != null &&
-          n.setAttribute('multiple', s.multiple),
+          r &&
+          r.multiple != null &&
+          n.setAttribute('multiple', r.multiple),
         n
       );
     },
@@ -4139,44 +4429,44 @@ const unsafeToTrustedHTML = policy ? (e) => policy.createHTML(e) : (e) => e,
     setScopeId(e, t) {
       e.setAttribute(t, '');
     },
-    insertStaticContent(e, t, r, s, n, i) {
-      const o = r ? r.previousSibling : t.lastChild;
+    insertStaticContent(e, t, s, r, n, i) {
+      const a = s ? s.previousSibling : t.lastChild;
       if (n && (n === i || n.nextSibling))
         for (
           ;
-          t.insertBefore(n.cloneNode(!0), r),
+          t.insertBefore(n.cloneNode(!0), s),
             !(n === i || !(n = n.nextSibling));
 
         );
       else {
         templateContainer.innerHTML = unsafeToTrustedHTML(
-          s === 'svg'
+          r === 'svg'
             ? `<svg>${e}</svg>`
-            : s === 'mathml'
+            : r === 'mathml'
               ? `<math>${e}</math>`
               : e,
         );
-        const a = templateContainer.content;
-        if (s === 'svg' || s === 'mathml') {
-          const l = a.firstChild;
-          for (; l.firstChild; ) a.appendChild(l.firstChild);
-          a.removeChild(l);
+        const o = templateContainer.content;
+        if (r === 'svg' || r === 'mathml') {
+          const l = o.firstChild;
+          for (; l.firstChild; ) o.appendChild(l.firstChild);
+          o.removeChild(l);
         }
-        t.insertBefore(a, r);
+        t.insertBefore(o, s);
       }
       return [
-        o ? o.nextSibling : t.firstChild,
-        r ? r.previousSibling : t.lastChild,
+        a ? a.nextSibling : t.firstChild,
+        s ? s.previousSibling : t.lastChild,
       ];
     },
   },
   vtcKey = Symbol('_vtc');
-function patchClass(e, t, r) {
-  const s = e[vtcKey];
-  (s && (t = (t ? [t, ...s] : [...s]).join(' ')),
+function patchClass(e, t, s) {
+  const r = e[vtcKey];
+  (r && (t = (t ? [t, ...r] : [...r]).join(' ')),
     t == null
       ? e.removeAttribute('class')
-      : r
+      : s
         ? e.setAttribute('class', t)
         : (e.className = t));
 }
@@ -4184,20 +4474,20 @@ const vShowOriginalDisplay = Symbol('_vod'),
   vShowHidden = Symbol('_vsh'),
   vShow = {
     name: 'show',
-    beforeMount(e, { value: t }, { transition: r }) {
+    beforeMount(e, { value: t }, { transition: s }) {
       ((e[vShowOriginalDisplay] =
         e.style.display === 'none' ? '' : e.style.display),
-        r && t ? r.beforeEnter(e) : setDisplay(e, t));
+        s && t ? s.beforeEnter(e) : setDisplay(e, t));
     },
-    mounted(e, { value: t }, { transition: r }) {
-      r && t && r.enter(e);
+    mounted(e, { value: t }, { transition: s }) {
+      s && t && s.enter(e);
     },
-    updated(e, { value: t, oldValue: r }, { transition: s }) {
-      !t != !r &&
-        (s
+    updated(e, { value: t, oldValue: s }, { transition: r }) {
+      !t != !s &&
+        (r
           ? t
-            ? (s.beforeEnter(e), setDisplay(e, !0), s.enter(e))
-            : s.leave(e, () => {
+            ? (r.beforeEnter(e), setDisplay(e, !0), r.enter(e))
+            : r.leave(e, () => {
                 setDisplay(e, !1);
               })
           : setDisplay(e, t));
@@ -4212,120 +4502,141 @@ function setDisplay(e, t) {
 }
 const CSS_VAR_TEXT = Symbol(''),
   displayRE = /(?:^|;)\s*display\s*:/;
-function patchStyle(e, t, r) {
-  const s = e.style,
-    n = isString(r);
+function patchStyle(e, t, s) {
+  const r = e.style,
+    n = isString(s);
   let i = !1;
-  if (r && !n) {
+  if (s && !n) {
     if (t)
       if (isString(t))
-        for (const o of t.split(';')) {
-          const a = o.slice(0, o.indexOf(':')).trim();
-          r[a] == null && setStyle(s, a, '');
+        for (const a of t.split(';')) {
+          const o = a.slice(0, a.indexOf(':')).trim();
+          s[o] == null && setStyle(r, o, '');
         }
-      else for (const o in t) r[o] == null && setStyle(s, o, '');
-    for (const o in r) (o === 'display' && (i = !0), setStyle(s, o, r[o]));
+      else for (const a in t) s[a] == null && setStyle(r, a, '');
+    for (const a in s) {
+      a === 'display' && (i = !0);
+      const o = s[a];
+      o != null
+        ? shouldPreserveTextareaResizeStyle(
+            e,
+            a,
+            !isString(t) && t ? t[a] : void 0,
+            o,
+          ) || setStyle(r, a, o)
+        : setStyle(r, a, '');
+    }
   } else if (n) {
-    if (t !== r) {
-      const o = s[CSS_VAR_TEXT];
-      (o && (r += ';' + o), (s.cssText = r), (i = displayRE.test(r)));
+    if (t !== s) {
+      const a = r[CSS_VAR_TEXT];
+      (a && (s += ';' + a), (r.cssText = s), (i = displayRE.test(s)));
     }
   } else t && e.removeAttribute('style');
   vShowOriginalDisplay in e &&
-    ((e[vShowOriginalDisplay] = i ? s.display : ''),
-    e[vShowHidden] && (s.display = 'none'));
+    ((!n || t !== s) && (e[vShowOriginalDisplay] = i ? r.display : ''),
+    e[vShowHidden] && (r.display = 'none'));
 }
 const importantRE = /\s*!important$/;
-function setStyle(e, t, r) {
-  if (isArray(r)) r.forEach((s) => setStyle(e, t, s));
-  else if ((r == null && (r = ''), t.startsWith('--'))) e.setProperty(t, r);
+function setStyle(e, t, s) {
+  if (isArray(s)) s.forEach((r) => setStyle(e, t, r));
+  else if ((s == null && (s = ''), t.startsWith('--')))
+    importantRE.test(s)
+      ? e.setProperty(t, s.replace(importantRE, ''), 'important')
+      : e.setProperty(t, s);
   else {
-    const s = autoPrefix(e, t);
-    importantRE.test(r)
-      ? e.setProperty(hyphenate(s), r.replace(importantRE, ''), 'important')
-      : (e[s] = r);
+    const r = autoPrefix(e, t);
+    importantRE.test(s)
+      ? e.setProperty(hyphenate(r), s.replace(importantRE, ''), 'important')
+      : (e[r] = s);
   }
 }
 const prefixes = ['Webkit', 'Moz', 'ms'],
   prefixCache = {};
 function autoPrefix(e, t) {
-  const r = prefixCache[t];
-  if (r) return r;
-  let s = camelize(t);
-  if (s !== 'filter' && s in e) return (prefixCache[t] = s);
-  s = capitalize(s);
+  const s = prefixCache[t];
+  if (s) return s;
+  let r = camelize(t);
+  if (r !== 'filter' && r in e) return (prefixCache[t] = r);
+  r = capitalize(r);
   for (let n = 0; n < prefixes.length; n++) {
-    const i = prefixes[n] + s;
+    const i = prefixes[n] + r;
     if (i in e) return (prefixCache[t] = i);
   }
   return t;
 }
-const xlinkNS = 'http://www.w3.org/1999/xlink';
-function patchAttr(e, t, r, s, n, i = isSpecialBooleanAttr(t)) {
-  s && t.startsWith('xlink:')
-    ? r == null
-      ? e.removeAttributeNS(xlinkNS, t.slice(6, t.length))
-      : e.setAttributeNS(xlinkNS, t, r)
-    : r == null || (i && !includeBooleanAttr(r))
-      ? e.removeAttribute(t)
-      : e.setAttribute(t, i ? '' : isSymbol(r) ? String(r) : r);
+function shouldPreserveTextareaResizeStyle(e, t, s, r) {
+  return (
+    e.tagName === 'TEXTAREA' &&
+    (t === 'width' || t === 'height') &&
+    isString(r) &&
+    s === r
+  );
 }
-function patchDOMProp(e, t, r, s, n) {
+const xlinkNS = 'http://www.w3.org/1999/xlink';
+function patchAttr(e, t, s, r, n, i = isSpecialBooleanAttr(t)) {
+  r && t.startsWith('xlink:')
+    ? s == null
+      ? e.removeAttributeNS(xlinkNS, t.slice(6, t.length))
+      : e.setAttributeNS(xlinkNS, t, s)
+    : s == null || (i && !includeBooleanAttr(s))
+      ? e.removeAttribute(t)
+      : e.setAttribute(t, i ? '' : isSymbol(s) ? String(s) : s);
+}
+function patchDOMProp(e, t, s, r, n) {
   if (t === 'innerHTML' || t === 'textContent') {
-    r != null && (e[t] = t === 'innerHTML' ? unsafeToTrustedHTML(r) : r);
+    s != null && (e[t] = t === 'innerHTML' ? unsafeToTrustedHTML(s) : s);
     return;
   }
   const i = e.tagName;
   if (t === 'value' && i !== 'PROGRESS' && !i.includes('-')) {
-    const a = i === 'OPTION' ? e.getAttribute('value') || '' : e.value,
-      l = r == null ? (e.type === 'checkbox' ? 'on' : '') : String(r);
-    ((a !== l || !('_value' in e)) && (e.value = l),
-      r == null && e.removeAttribute(t),
-      (e._value = r));
+    const o = i === 'OPTION' ? e.getAttribute('value') || '' : e.value,
+      l = s == null ? (e.type === 'checkbox' ? 'on' : '') : String(s);
+    ((o !== l || !('_value' in e)) && (e.value = l),
+      s == null && e.removeAttribute(t),
+      (e._value = s));
     return;
   }
-  let o = !1;
-  if (r === '' || r == null) {
-    const a = typeof e[t];
-    a === 'boolean'
-      ? (r = includeBooleanAttr(r))
-      : r == null && a === 'string'
-        ? ((r = ''), (o = !0))
-        : a === 'number' && ((r = 0), (o = !0));
+  let a = !1;
+  if (s === '' || s == null) {
+    const o = typeof e[t];
+    o === 'boolean'
+      ? (s = includeBooleanAttr(s))
+      : s == null && o === 'string'
+        ? ((s = ''), (a = !0))
+        : o === 'number' && ((s = 0), (a = !0));
   }
   try {
-    e[t] = r;
+    e[t] = s;
   } catch {}
-  o && e.removeAttribute(n || t);
+  a && e.removeAttribute(n || t);
 }
-function addEventListener(e, t, r, s) {
-  e.addEventListener(t, r, s);
+function addEventListener(e, t, s, r) {
+  e.addEventListener(t, s, r);
 }
-function removeEventListener(e, t, r, s) {
-  e.removeEventListener(t, r, s);
+function removeEventListener(e, t, s, r) {
+  e.removeEventListener(t, s, r);
 }
 const veiKey = Symbol('_vei');
-function patchEvent(e, t, r, s, n = null) {
+function patchEvent(e, t, s, r, n = null) {
   const i = e[veiKey] || (e[veiKey] = {}),
-    o = i[t];
-  if (s && o) o.value = s;
+    a = i[t];
+  if (r && a) a.value = r;
   else {
-    const [a, l] = parseName(t);
-    if (s) {
-      const d = (i[t] = createInvoker(s, n));
-      addEventListener(e, a, d, l);
-    } else o && (removeEventListener(e, a, o, l), (i[t] = void 0));
+    const [o, l] = parseName(t);
+    if (r) {
+      const d = (i[t] = createInvoker(r, n));
+      addEventListener(e, o, d, l);
+    } else a && (removeEventListener(e, o, a, l), (i[t] = void 0));
   }
 }
-const optionsModifierRE = /(?:Once|Passive|Capture)$/;
+const optionsModifierRE = /(Once|Passive|Capture)$/,
+  optionsModifierEventRE = /^on:?(?:Once|Passive|Capture)$/;
 function parseName(e) {
-  let t;
-  if (optionsModifierRE.test(e)) {
-    t = {};
-    let s;
-    for (; (s = e.match(optionsModifierRE)); )
-      ((e = e.slice(0, e.length - s[0].length)), (t[s[0].toLowerCase()] = !0));
-  }
+  let t, s;
+  for (; (s = e.match(optionsModifierRE)) && !optionsModifierEventRE.test(e); )
+    (t || (t = {}),
+      (e = e.slice(0, e.length - s[1].length)),
+      (t[s[1].toLowerCase()] = !0));
   return [e[2] === ':' ? e.slice(3) : hyphenate(e.slice(2)), t];
 }
 let cachedNow = 0;
@@ -4333,72 +4644,71 @@ const p = Promise.resolve(),
   getNow = () =>
     cachedNow || (p.then(() => (cachedNow = 0)), (cachedNow = Date.now()));
 function createInvoker(e, t) {
-  const r = (s) => {
-    if (!s._vts) s._vts = Date.now();
-    else if (s._vts <= r.attached) return;
-    callWithAsyncErrorHandling(
-      patchStopImmediatePropagation(s, r.value),
-      t,
-      5,
-      [s],
-    );
+  const s = (r) => {
+    if (!r._vts) r._vts = Date.now();
+    else if (r._vts <= s.attached) return;
+    const n = s.value;
+    if (isArray(n)) {
+      const i = r.stopImmediatePropagation;
+      r.stopImmediatePropagation = () => {
+        (i.call(r), (r._stopped = !0));
+      };
+      const a = n.slice(),
+        o = [r];
+      for (let l = 0; l < a.length && !r._stopped; l++) {
+        const d = a[l];
+        d && callWithAsyncErrorHandling(d, t, 5, o);
+      }
+    } else callWithAsyncErrorHandling(n, t, 5, [r]);
   };
-  return ((r.value = e), (r.attached = getNow()), r);
-}
-function patchStopImmediatePropagation(e, t) {
-  if (isArray(t)) {
-    const r = e.stopImmediatePropagation;
-    return (
-      (e.stopImmediatePropagation = () => {
-        (r.call(e), (e._stopped = !0));
-      }),
-      t.map((s) => (n) => !n._stopped && s && s(n))
-    );
-  } else return t;
+  return ((s.value = e), (s.attached = getNow()), s);
 }
 const isNativeOn = (e) =>
     e.charCodeAt(0) === 111 &&
     e.charCodeAt(1) === 110 &&
     e.charCodeAt(2) > 96 &&
     e.charCodeAt(2) < 123,
-  patchProp = (e, t, r, s, n, i) => {
-    const o = n === 'svg';
+  patchProp = (e, t, s, r, n, i) => {
+    const a = n === 'svg';
     t === 'class'
-      ? patchClass(e, s, o)
+      ? patchClass(e, r, a)
       : t === 'style'
-        ? patchStyle(e, r, s)
+        ? patchStyle(e, s, r)
         : isOn(t)
-          ? isModelListener(t) || patchEvent(e, t, r, s, i)
+          ? isModelListener(t) || patchEvent(e, t, s, r, i)
           : (
                 t[0] === '.'
                   ? ((t = t.slice(1)), !0)
                   : t[0] === '^'
                     ? ((t = t.slice(1)), !1)
-                    : shouldSetAsProp(e, t, s, o)
+                    : shouldSetAsProp(e, t, r, a)
               )
-            ? (patchDOMProp(e, t, s),
+            ? (patchDOMProp(e, t, r),
               !e.tagName.includes('-') &&
                 (t === 'value' || t === 'checked' || t === 'selected') &&
-                patchAttr(e, t, s, o, i, t !== 'value'))
-            : e._isVueCE && (/[A-Z]/.test(t) || !isString(s))
-              ? patchDOMProp(e, camelize(t), s, i, t)
+                patchAttr(e, t, r, a, i, t !== 'value'))
+            : e._isVueCE &&
+                (shouldSetAsPropForVueCE(e, t) ||
+                  (e._def.__asyncLoader && (/[A-Z]/.test(t) || !isString(r))))
+              ? patchDOMProp(e, camelize(t), r, i, t)
               : (t === 'true-value'
-                  ? (e._trueValue = s)
-                  : t === 'false-value' && (e._falseValue = s),
-                patchAttr(e, t, s, o));
+                  ? (e._trueValue = r)
+                  : t === 'false-value' && (e._falseValue = r),
+                patchAttr(e, t, r, a));
   };
-function shouldSetAsProp(e, t, r, s) {
-  if (s)
+function shouldSetAsProp(e, t, s, r) {
+  if (r)
     return !!(
       t === 'innerHTML' ||
       t === 'textContent' ||
-      (t in e && isNativeOn(t) && isFunction(r))
+      (t in e && isNativeOn(t) && isFunction(s))
     );
   if (
     t === 'spellcheck' ||
     t === 'draggable' ||
     t === 'translate' ||
     t === 'autocorrect' ||
+    (t === 'sandbox' && e.tagName === 'IFRAME') ||
     t === 'form' ||
     (t === 'list' && e.tagName === 'INPUT') ||
     (t === 'type' && e.tagName === 'TEXTAREA')
@@ -4409,11 +4719,19 @@ function shouldSetAsProp(e, t, r, s) {
     if (n === 'IMG' || n === 'VIDEO' || n === 'CANVAS' || n === 'SOURCE')
       return !1;
   }
-  return isNativeOn(t) && isString(r) ? !1 : t in e;
+  return isNativeOn(t) && isString(s) ? !1 : t in e;
+}
+function shouldSetAsPropForVueCE(e, t) {
+  const s = e._def.props;
+  if (!s) return !1;
+  const r = camelize(t);
+  return Array.isArray(s)
+    ? s.some((n) => camelize(n) === r)
+    : Object.keys(s).some((n) => camelize(n) === r);
 }
 const getModelAssigner = (e) => {
   const t = e.props['onUpdate:modelValue'] || !1;
-  return isArray(t) ? (r) => invokeArrayFns(t, r) : t;
+  return isArray(t) ? (s) => invokeArrayFns(t, s) : t;
 };
 function onCompositionStart(e) {
   e.target.composing = !0;
@@ -4423,151 +4741,188 @@ function onCompositionEnd(e) {
   t.composing && ((t.composing = !1), t.dispatchEvent(new Event('input')));
 }
 const assignKey = Symbol('_assign'),
-  vModelText = {
-    created(e, { modifiers: { lazy: t, trim: r, number: s } }, n) {
-      e[assignKey] = getModelAssigner(n);
-      const i = s || (n.props && n.props.type === 'number');
-      (addEventListener(e, t ? 'change' : 'input', (o) => {
-        if (o.target.composing) return;
-        let a = e.value;
-        (r && (a = a.trim()), i && (a = looseToNumber(a)), e[assignKey](a));
+  initialValueKey = Symbol('_initialValue');
+function castValue(e, t, s) {
+  return (t && (e = e.trim()), s && (e = looseToNumber(e)), e);
+}
+const vModelText = {
+    created(e, { modifiers: { lazy: t, trim: s, number: r } }, n) {
+      (e.parentNode &&
+        (e.type === 'text'
+          ? (e[initialValueKey] = e.defaultValue.replace(/[\r\n]/g, ''))
+          : e.type === 'textarea' &&
+            (e[initialValueKey] = e.defaultValue.replace(
+              /\r\n?/g,
+              `
+`,
+            ))),
+        (e[assignKey] = getModelAssigner(n)));
+      const i = r || (n.props && n.props.type === 'number');
+      (addEventListener(e, t ? 'change' : 'input', (a) => {
+        a.target.composing || e[assignKey](castValue(e.value, s, i));
       }),
-        r &&
+        (s || i) &&
           addEventListener(e, 'change', () => {
-            e.value = e.value.trim();
+            e.value = castValue(e.value, s, i);
           }),
         t ||
           (addEventListener(e, 'compositionstart', onCompositionStart),
           addEventListener(e, 'compositionend', onCompositionEnd),
           addEventListener(e, 'change', onCompositionEnd)));
     },
-    mounted(e, { value: t }) {
-      e.value = t ?? '';
+    mounted(e, { value: t, modifiers: { trim: s, number: r } }) {
+      const n = t ?? '',
+        i = e[initialValueKey];
+      (delete e[initialValueKey],
+        i !== void 0 &&
+        (e.type === 'text' || e.type === 'textarea') &&
+        e.value !== i
+          ? e[assignKey](castValue(e.value, s, r))
+          : (e.value = n));
     },
     beforeUpdate(
       e,
-      { value: t, oldValue: r, modifiers: { lazy: s, trim: n, number: i } },
-      o,
+      { value: t, oldValue: s, modifiers: { lazy: r, trim: n, number: i } },
+      a,
     ) {
-      if (((e[assignKey] = getModelAssigner(o)), e.composing)) return;
-      const a =
+      if (((e[assignKey] = getModelAssigner(a)), e.composing)) return;
+      const o =
           (i || e.type === 'number') && !/^0\d/.test(e.value)
             ? looseToNumber(e.value)
             : e.value,
         l = t ?? '';
-      a !== l &&
-        ((document.activeElement === e &&
-          e.type !== 'range' &&
-          ((s && t === r) || (n && e.value.trim() === l))) ||
-          (e.value = l));
+      if (o === l) return;
+      const d = e.getRootNode();
+      ((d instanceof Document || d instanceof ShadowRoot) &&
+        d.activeElement === e &&
+        e.type !== 'range' &&
+        ((r && t === s) || (n && e.value.trim() === l))) ||
+        (e.value = l);
     },
   },
   vModelCheckbox = {
     deep: !0,
-    created(e, t, r) {
-      ((e[assignKey] = getModelAssigner(r)),
+    created(e, t, s) {
+      ((e[assignKey] = getModelAssigner(s)),
         addEventListener(e, 'change', () => {
-          const s = e._modelValue,
+          const r = e._modelValue,
             n = getValue(e),
             i = e.checked,
-            o = e[assignKey];
-          if (isArray(s)) {
-            const a = looseIndexOf(s, n),
-              l = a !== -1;
-            if (i && !l) o(s.concat(n));
+            a = e[assignKey];
+          if (isArray(r)) {
+            const o = looseIndexOf(r, n),
+              l = o !== -1;
+            if (i && !l) a(r.concat(n));
             else if (!i && l) {
-              const d = [...s];
-              (d.splice(a, 1), o(d));
+              const d = [...r];
+              (d.splice(o, 1), a(d));
             }
-          } else if (isSet(s)) {
-            const a = new Set(s);
-            (i ? a.add(n) : a.delete(n), o(a));
-          } else o(getCheckboxValue(e, i));
+          } else if (isSet(r)) {
+            const o = new Set(r);
+            (i ? o.add(n) : o.delete(n), a(o));
+          } else a(getCheckboxValue(e, i));
         }));
     },
     mounted: setChecked,
-    beforeUpdate(e, t, r) {
-      ((e[assignKey] = getModelAssigner(r)), setChecked(e, t, r));
+    beforeUpdate(e, t, s) {
+      ((e[assignKey] = getModelAssigner(s)), setChecked(e, t, s));
     },
   };
-function setChecked(e, { value: t, oldValue: r }, s) {
+function setChecked(e, { value: t, oldValue: s }, r) {
   e._modelValue = t;
   let n;
-  if (isArray(t)) n = looseIndexOf(t, s.props.value) > -1;
-  else if (isSet(t)) n = t.has(s.props.value);
+  if (isArray(t)) n = looseIndexOf(t, r.props.value) > -1;
+  else if (isSet(t)) n = t.has(r.props.value);
   else {
-    if (t === r) return;
+    if (t === s) return;
     n = looseEqual(t, getCheckboxValue(e, !0));
   }
   e.checked !== n && (e.checked = n);
 }
 const vModelRadio = {
-    created(e, { value: t }, r) {
-      ((e.checked = looseEqual(t, r.props.value)),
-        (e[assignKey] = getModelAssigner(r)),
+    created(e, { value: t }, s) {
+      ((e.checked = looseEqual(t, s.props.value)),
+        (e[assignKey] = getModelAssigner(s)),
         addEventListener(e, 'change', () => {
           e[assignKey](getValue(e));
         }));
     },
-    beforeUpdate(e, { value: t, oldValue: r }, s) {
-      ((e[assignKey] = getModelAssigner(s)),
-        t !== r && (e.checked = looseEqual(t, s.props.value)));
+    beforeUpdate(e, { value: t, oldValue: s }, r) {
+      ((e[assignKey] = getModelAssigner(r)),
+        t !== s && (e.checked = looseEqual(t, r.props.value)));
     },
   },
   vModelSelect = {
     deep: !0,
-    created(e, { value: t, modifiers: { number: r } }, s) {
-      const n = isSet(t);
-      (addEventListener(e, 'change', () => {
-        const i = Array.prototype.filter
-          .call(e.options, (o) => o.selected)
-          .map((o) => (r ? looseToNumber(getValue(o)) : getValue(o)));
-        (e[assignKey](e.multiple ? (n ? new Set(i) : i) : i[0]),
-          (e._assigning = !0),
-          nextTick(() => {
-            e._assigning = !1;
-          }));
-      }),
-        (e[assignKey] = getModelAssigner(s)));
+    created(e, { value: t, modifiers: { number: s } }, r) {
+      ((e._modelValue = t),
+        addEventListener(e, 'change', () => {
+          const n = Array.prototype.filter
+              .call(e.options, (l) => l.selected)
+              .map((l) => (s ? looseToNumber(getValue(l)) : getValue(l))),
+            i = e.multiple,
+            a = i ? (isSet(e._modelValue) ? new Set(n) : n) : n[0],
+            o = (e._pendingValue = [i, i ? (isArray(a) ? n.slice() : n) : a]);
+          try {
+            e[assignKey](a);
+          } finally {
+            nextTick(() => {
+              e._pendingValue === o && (e._pendingValue = void 0);
+            });
+          }
+        }),
+        (e[assignKey] = getModelAssigner(r)));
     },
     mounted(e, { value: t }) {
       setSelected(e, t);
     },
-    beforeUpdate(e, t, r) {
-      e[assignKey] = getModelAssigner(r);
+    beforeUpdate(e, { value: t }, s) {
+      ((e._modelValue = t), (e[assignKey] = getModelAssigner(s)));
     },
     updated(e, { value: t }) {
-      e._assigning || setSelected(e, t);
+      const s = e._pendingValue;
+      ((e._pendingValue = void 0),
+        (!s || s[0] !== e.multiple || !isSameSelectValue(t, s[1], s[0])) &&
+          setSelected(e, t));
     },
   };
+function isSameSelectValue(e, t, s) {
+  if (!s || isArray(e)) return looseEqual(e, t);
+  if (isSet(e)) {
+    if (e.size !== t.length) return !1;
+    for (const r of t) if (!e.has(r)) return !1;
+    return !0;
+  }
+  return !1;
+}
 function setSelected(e, t) {
-  const r = e.multiple,
-    s = isArray(t);
-  if (!(r && !s && !isSet(t))) {
+  const s = e.multiple,
+    r = isArray(t);
+  if (!(s && !r && !isSet(t))) {
     for (let n = 0, i = e.options.length; n < i; n++) {
-      const o = e.options[n],
-        a = getValue(o);
-      if (r)
-        if (s) {
-          const l = typeof a;
+      const a = e.options[n],
+        o = getValue(a);
+      if (s)
+        if (r) {
+          const l = typeof o;
           l === 'string' || l === 'number'
-            ? (o.selected = t.some((d) => String(d) === String(a)))
-            : (o.selected = looseIndexOf(t, a) > -1);
-        } else o.selected = t.has(a);
-      else if (looseEqual(getValue(o), t)) {
+            ? (a.selected = t.some((d) => String(d) === String(o)))
+            : (a.selected = looseIndexOf(t, o) > -1);
+        } else a.selected = t.has(o);
+      else if (looseEqual(getValue(a), t)) {
         e.selectedIndex !== n && (e.selectedIndex = n);
         return;
       }
     }
-    !r && e.selectedIndex !== -1 && (e.selectedIndex = -1);
+    !s && e.selectedIndex !== -1 && (e.selectedIndex = -1);
   }
 }
 function getValue(e) {
   return '_value' in e ? e._value : e.value;
 }
 function getCheckboxValue(e, t) {
-  const r = t ? '_trueValue' : '_falseValue';
-  return r in e ? e[r] : t;
+  const s = t ? '_trueValue' : '_falseValue';
+  return s in e ? e[s] : t;
 }
 const systemModifiers = ['ctrl', 'shift', 'alt', 'meta'],
   modifierGuards = {
@@ -4582,17 +4937,18 @@ const systemModifiers = ['ctrl', 'shift', 'alt', 'meta'],
     middle: (e) => 'button' in e && e.button !== 1,
     right: (e) => 'button' in e && e.button !== 2,
     exact: (e, t) =>
-      systemModifiers.some((r) => e[`${r}Key`] && !t.includes(r)),
+      systemModifiers.some((s) => e[`${s}Key`] && !t.includes(s)),
   },
   withModifiers = (e, t) => {
-    const r = e._withMods || (e._withMods = {}),
-      s = t.join('.');
+    if (!e) return e;
+    const s = e._withMods || (e._withMods = {}),
+      r = t.join('.');
     return (
-      r[s] ||
-      (r[s] = (n, ...i) => {
-        for (let o = 0; o < t.length; o++) {
-          const a = modifierGuards[t[o]];
-          if (a && a(n, t)) return;
+      s[r] ||
+      (s[r] = (n, ...i) => {
+        for (let a = 0; a < t.length; a++) {
+          const o = modifierGuards[t[a]];
+          if (o && o(n, t)) return;
         }
         return e(n, ...i);
       })
@@ -4608,14 +4964,14 @@ const systemModifiers = ['ctrl', 'shift', 'alt', 'meta'],
     delete: 'backspace',
   },
   withKeys = (e, t) => {
-    const r = e._withKeys || (e._withKeys = {}),
-      s = t.join('.');
+    const s = e._withKeys || (e._withKeys = {}),
+      r = t.join('.');
     return (
-      r[s] ||
-      (r[s] = (n) => {
+      s[r] ||
+      (s[r] = (n) => {
         if (!('key' in n)) return;
         const i = hyphenate(n.key);
-        if (t.some((o) => o === i || keyNames[o] === i)) return e(n);
+        if (t.some((a) => a === i || keyNames[a] === i)) return e(n);
       })
     );
   },
@@ -4626,19 +4982,19 @@ function ensureRenderer() {
 }
 const createApp = (...e) => {
   const t = ensureRenderer().createApp(...e),
-    { mount: r } = t;
+    { mount: s } = t;
   return (
-    (t.mount = (s) => {
-      const n = normalizeContainer(s);
+    (t.mount = (r) => {
+      const n = normalizeContainer(r);
       if (!n) return;
       const i = t._component;
       (!isFunction(i) && !i.render && !i.template && (i.template = n.innerHTML),
         n.nodeType === 1 && (n.textContent = ''));
-      const o = r(n, !1, resolveRootNamespace(n));
+      const a = s(n, !1, resolveRootNamespace(n));
       return (
         n instanceof Element &&
           (n.removeAttribute('v-cloak'), n.setAttribute('data-v-app', '')),
-        o
+        a
       );
     }),
     t
@@ -4691,7 +5047,7 @@ function requirePersianDate_min() {
           weekNumber: { 6: 0, 0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6 },
         },
         ordinalNumbers: function (e, t) {
-          var r = {
+          var s = {
               1: 'یک',
               2: 'دو',
               3: 'سو',
@@ -4723,18 +5079,18 @@ function requirePersianDate_min() {
               200: 'دویست',
               300: 'سیصد',
             },
-            s = '';
-          if (e == 1) s = 'اول';
-          else if (r[e]) s = r[e] + (e == 30 ? 'ام' : 'م');
+            r = '';
+          if (e == 1) r = 'اول';
+          else if (s[e]) r = s[e] + (e == 30 ? 'ام' : 'م');
           else {
             var n = e % 100;
-            ((r[n] || (n = e % 10)) && (s = r[n] + 'م'),
+            ((s[n] || (n = e % 10)) && (r = s[n] + 'م'),
               (n = (e - n) % 100) &&
-                (s = r[n] + (s ? ' و ' + s : n == 30 ? 'ام ' : 'م')),
+                (r = s[n] + (r ? ' و ' + r : n == 30 ? 'ام ' : 'م')),
               (n = 100 * Math.floor(e / 100)) &&
-                (s = r[n] + (s ? ' و ' + s : 'م')));
+                (r = s[n] + (r ? ' و ' + r : 'م')));
           }
-          return (t == 2 && (s += 'ین'), s);
+          return (t == 2 && (r += 'ین'), r);
         },
       },
       gregorian: {
@@ -4825,60 +5181,50 @@ function requirePersianDate_min() {
       return (e % 4 == 0 && e % 100 != 0) || e % 400 == 0;
     },
     isLeapYear = function (e, t) {
-      switch (e[0]) {
-        case 'j':
-          return jalali$4(t);
-        default:
-          return gregorian$4(t);
-      }
+      return e[0] === 'j' ? jalali$4(t) : gregorian$4(t);
     },
     isPersianDate = function (e) {
       return e instanceof PersianDate;
     },
-    isValid = function (e, t, r, s, n, i, o, a) {
-      return isValidDate(e, t, r, s) && isValidTime(n, i, o, a);
+    isValid = function (e, t, s, r, n, i, a, o) {
+      return isValidDate(e, t, s, r) && isValidTime(n, i, a, o);
     },
-    jalali$3 = function (e, t, r) {
+    jalali$3 = function (e, t, s) {
       return (
-        !(t >= 7 && t <= 11 && r == 31) &&
-        (t != 12 || r != 31) &&
-        !(t == 12 && r == 30 && !isLeapYear('j', e))
+        !(t >= 7 && t <= 11 && s == 31) &&
+        (t != 12 || s != 31) &&
+        !(t == 12 && s == 30 && !isLeapYear('j', e))
       );
     },
-    gregorian$3 = function (e, t, r) {
+    gregorian$3 = function (e, t, s) {
       return (
-        (![2, 4, 6, 9, 11].includes(t) || r != 31) &&
-        !(t == 2 && (r == 30 || (r == 29 && !isLeapYear('g', e))))
+        (![2, 4, 6, 9, 11].includes(t) || s != 31) &&
+        !(t == 2 && (s == 30 || (s == 29 && !isLeapYear('g', e))))
       );
     },
-    isValidDate = function (e, t, r, s) {
-      if (
-        [t, r, s].some(function (n) {
-          return String(n).search(/null|NaN/) != -1;
-        }) ||
+    isValidDate = function (e, t, s, r) {
+      return [t, s, r].some(function (n) {
+        return String(n).search(/null|NaN/) != -1;
+      }) ||
         t < 0 ||
-        r > 12 ||
-        r < 1 ||
-        s > 31 ||
-        s < 1
-      )
-        return !1;
-      switch (e[0]) {
-        case 'j':
-          return jalali$3(t, r, s);
-        default:
-          return gregorian$3(t, r, s);
-      }
+        s > 12 ||
+        s < 1 ||
+        r > 31 ||
+        r < 1
+        ? !1
+        : e[0] === 'j'
+          ? jalali$3(t, s, r)
+          : gregorian$3(t, s, r);
     },
-    isValidTime = function (e, t, r, s) {
+    isValidTime = function (e, t, s, r) {
       return (
-        ![e, t, r, s].some(function (n) {
+        ![e, t, s, r].some(function (n) {
           return String(n).search(/null|NaN/) != -1;
         }) &&
         !(e < 0 || e > 23) &&
         !(t < 0 || t > 59) &&
-        !(r < 0 || r > 59) &&
-        !(s < 0 || s > 999)
+        !(s < 0 || s > 59) &&
+        !(r < 0 || r > 999)
       );
     };
   function isSame() {
@@ -4887,8 +5233,8 @@ function requirePersianDate_min() {
       [this.c].concat(Array.prototype.slice.call(arguments)),
     );
     return (
-      (e = this.toArray().map(function (t, r) {
-        return REGEX.isNumeric.test(e[r]) ? e[r] : t;
+      (e = this.toArray().map(function (t, s) {
+        return REGEX.isNumeric.test(e[s]) ? e[s] : t;
       })),
       compare.call(this, e, '==')
     );
@@ -4896,8 +5242,8 @@ function requirePersianDate_min() {
   function _setPrototypeOf(e, t) {
     return (_setPrototypeOf =
       Object.setPrototypeOf ||
-      function (r, s) {
-        return ((r.__proto__ = s), r);
+      function (s, r) {
+        return ((s.__proto__ = r), s);
       })(e, t);
   }
   function _isNativeReflectConstruct() {
@@ -4915,14 +5261,14 @@ function requirePersianDate_min() {
       return !1;
     }
   }
-  function _construct(e, t, r) {
+  function _construct(e, t, s) {
     return (_construct = _isNativeReflectConstruct()
       ? Reflect.construct
-      : function (s, n, i) {
-          var o = [null];
-          o.push.apply(o, n);
-          var a = new (Function.bind.apply(s, o))();
-          return (i && _setPrototypeOf(a, i.prototype), a);
+      : function (r, n, i) {
+          var a = [null];
+          a.push.apply(a, n);
+          var o = new (Function.bind.apply(r, a))();
+          return (i && _setPrototypeOf(o, i.prototype), o);
         }).apply(null, arguments);
   }
   function _slicedToArray(e, t) {
@@ -4955,27 +5301,27 @@ function requirePersianDate_min() {
       return Array.from(e);
   }
   function _iterableToArrayLimit(e, t) {
-    var r =
+    var s =
       e && ((typeof Symbol < 'u' && e[Symbol.iterator]) || e['@@iterator']);
-    if (r != null) {
-      var s,
+    if (s != null) {
+      var r,
         n,
         i = [],
-        o = !0,
-        a = !1;
+        a = !0,
+        o = !1;
       try {
         for (
-          r = r.call(e);
-          !(o = (s = r.next()).done) && (i.push(s.value), !t || i.length !== t);
-          o = !0
+          s = s.call(e);
+          !(a = (r = s.next()).done) && (i.push(r.value), !t || i.length !== t);
+          a = !0
         );
       } catch (l) {
-        ((a = !0), (n = l));
+        ((o = !0), (n = l));
       } finally {
         try {
-          o || r.return == null || r.return();
+          a || s.return == null || s.return();
         } finally {
-          if (a) throw n;
+          if (o) throw n;
         }
       }
       return i;
@@ -4984,13 +5330,13 @@ function requirePersianDate_min() {
   function _unsupportedIterableToArray(e, t) {
     if (e) {
       if (typeof e == 'string') return _arrayLikeToArray(e, t);
-      var r = Object.prototype.toString.call(e).slice(8, -1);
+      var s = Object.prototype.toString.call(e).slice(8, -1);
       return (
-        r === 'Object' && e.constructor && (r = e.constructor.name),
-        r === 'Map' || r === 'Set'
+        s === 'Object' && e.constructor && (s = e.constructor.name),
+        s === 'Map' || s === 'Set'
           ? Array.from(e)
-          : r === 'Arguments' ||
-              /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(r)
+          : s === 'Arguments' ||
+              /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(s)
             ? _arrayLikeToArray(e, t)
             : void 0
       );
@@ -4998,8 +5344,8 @@ function requirePersianDate_min() {
   }
   function _arrayLikeToArray(e, t) {
     (t == null || t > e.length) && (t = e.length);
-    for (var r = 0, s = new Array(t); r < t; r++) s[r] = e[r];
-    return s;
+    for (var s = 0, r = new Array(t); s < t; s++) r[s] = e[s];
+    return r;
   }
   function _nonIterableSpread() {
     throw new TypeError(`Invalid attempt to spread non-iterable instance.
@@ -5010,16 +5356,16 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 In order to be iterable, non-array objects must have a [Symbol.iterator]() method.`);
   }
   function _createForOfIteratorHelper(e, t) {
-    var r = (typeof Symbol < 'u' && e[Symbol.iterator]) || e['@@iterator'];
-    if (!r) {
-      if (Array.isArray(e) || (r = _unsupportedIterableToArray(e)) || t) {
-        r && (e = r);
-        var s = 0,
+    var s = (typeof Symbol < 'u' && e[Symbol.iterator]) || e['@@iterator'];
+    if (!s) {
+      if (Array.isArray(e) || (s = _unsupportedIterableToArray(e)) || t) {
+        s && (e = s);
+        var r = 0,
           n = function () {};
         return {
           s: n,
           n: function () {
-            return s >= e.length ? { done: !0 } : { done: !1, value: e[s++] };
+            return r >= e.length ? { done: !0 } : { done: !1, value: e[r++] };
           },
           e: function (l) {
             throw l;
@@ -5031,24 +5377,24 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 In order to be iterable, non-array objects must have a [Symbol.iterator]() method.`);
     }
     var i,
-      o = !0,
-      a = !1;
+      a = !0,
+      o = !1;
     return {
       s: function () {
-        r = r.call(e);
+        s = s.call(e);
       },
       n: function () {
-        var l = r.next();
-        return ((o = l.done), l);
+        var l = s.next();
+        return ((a = l.done), l);
       },
       e: function (l) {
-        ((a = !0), (i = l));
+        ((o = !0), (i = l));
       },
       f: function () {
         try {
-          o || r.return == null || r.return();
+          a || s.return == null || s.return();
         } finally {
-          if (a) throw i;
+          if (o) throw i;
         }
       },
     };
@@ -5065,7 +5411,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       t.toArray()
     );
   };
-  function isBetween(e, t, r) {
+  function isBetween(e, t, s) {
     return (
       (e = typesToArray(this.c, e)),
       (e = matchingDate(e, this.clone())),
@@ -5075,37 +5421,37 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         !this.isValid.apply(this, _toConsumableArray(e)) ||
         !this.isValid.apply(this, _toConsumableArray(t))
       ) &&
-        compare.call(this, e, r[0] === '[' ? '>=' : '>') &&
-        compare.call(this, t, r[1] === ']' ? '<=' : '<')
+        compare.call(this, e, s[0] === '[' ? '>=' : '>') &&
+        compare.call(this, t, s[1] === ']' ? '<=' : '<')
     );
   }
   function isInArray(e) {
     var t = this;
-    return e.some(function (r) {
-      return isSame.call(t, r);
+    return e.some(function (s) {
+      return isSame.call(t, s);
     });
   }
-  var gtj = function (e, t, r, s, n, i, o) {
-      var a, l;
-      ((r = (a = e
+  var gtj = function (e, t, s, r, n, i, a) {
+      var o, l;
+      ((s = (o = e
         ? isDate(e)
           ? e
           : new Date(
               REGEX.isNumeric.test(e) ? e : 0,
               REGEX.isNumeric.test(t) ? t : 0,
-              REGEX.isNumeric.test(r) ? r : 1,
-              REGEX.isNumeric.test(s) ? s : 0,
+              REGEX.isNumeric.test(s) ? s : 1,
+              REGEX.isNumeric.test(r) ? r : 0,
               REGEX.isNumeric.test(n) ? n : 0,
               REGEX.isNumeric.test(i) ? i : 0,
-              REGEX.isNumeric.test(o) ? o : 0,
+              REGEX.isNumeric.test(a) ? a : 0,
             )
         : new Date()).getDate()),
-        (t = a.getMonth() + 1),
-        (e = a.getFullYear()),
-        (s = a.getHours()),
-        (n = a.getMinutes()),
-        (i = a.getSeconds()),
-        (o = a.getMilliseconds()),
+        (t = o.getMonth() + 1),
+        (e = o.getFullYear()),
+        (r = o.getHours()),
+        (n = o.getMinutes()),
+        (i = o.getSeconds()),
+        (a = o.getMilliseconds()),
         e > 1600 ? ((l = 979), (e -= 1600)) : ((l = 0), (e -= 621)));
       var d = t > 2 ? e + 1 : e,
         c =
@@ -5114,7 +5460,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           parseInt((d + 99) / 100) +
           parseInt((d + 399) / 400) -
           80 +
-          r +
+          s +
           [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334][t - 1];
       return (
         (l += 33 * parseInt(c / 12053)),
@@ -5126,41 +5472,41 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           l,
           c < 186 ? 1 + parseInt(c / 31) : 7 + parseInt((c - 186) / 30),
           1 + (c < 186 ? c % 31 : (c - 186) % 30),
-          s,
+          r,
           n,
           i,
-          o,
+          a,
         ]
       );
     },
-    jtg = function (e, t, r, s, n, i, o) {
-      var a, l, d;
+    jtg = function (e, t, s, r, n, i, a) {
+      var o, l, d;
       ((e = REGEX.isNumeric.test(e) ? +e : 1),
         (t = REGEX.isNumeric.test(t) ? +t : 1),
-        (r = REGEX.isNumeric.test(r) ? +r : 1),
-        (s = REGEX.isNumeric.test(s) ? +s : 0),
+        (s = REGEX.isNumeric.test(s) ? +s : 1),
+        (r = REGEX.isNumeric.test(r) ? +r : 0),
         (n = REGEX.isNumeric.test(n) ? +n : 0),
         (i = REGEX.isNumeric.test(i) ? +i : 0),
-        (o = REGEX.isNumeric.test(o) ? +o : 0),
-        e > 979 ? ((a = 1600), (e -= 979)) : (a = 621));
+        (a = REGEX.isNumeric.test(a) ? +a : 0),
+        e > 979 ? ((o = 1600), (e -= 979)) : (o = 621));
       var c =
         365 * e +
         8 * parseInt(e / 33) +
         parseInt(((e % 33) + 3) / 4) +
         78 +
-        r +
+        s +
         (t < 7 ? 31 * (t - 1) : 30 * (t - 7) + 186);
-      ((a += 400 * parseInt(c / 146097)),
+      ((o += 400 * parseInt(c / 146097)),
         (c %= 146097) > 36524 &&
-          ((a += 100 * parseInt(--c / 36524)), (c %= 36524) >= 365 && c++),
-        (a += 4 * parseInt(c / 1461)),
+          ((o += 100 * parseInt(--c / 36524)), (c %= 36524) >= 365 && c++),
+        (o += 4 * parseInt(c / 1461)),
         (c %= 1461) > 365 &&
-          ((a += parseInt((c - 1) / 365)), (c = (c - 1) % 365)),
+          ((o += parseInt((c - 1) / 365)), (c = (c - 1) % 365)),
         (d = c + 1));
       var f = [
         0,
         31,
-        isLeapYear('gregorian', a) ? 29 : 28,
+        isLeapYear('gregorian', o) ? 29 : 28,
         31,
         30,
         31,
@@ -5173,11 +5519,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         31,
       ];
       for (l = 0; l < 13; l++) {
-        var w = f[l];
-        if (d <= w) break;
-        d -= w;
+        var v = f[l];
+        if (d <= v) break;
+        d -= v;
       }
-      return new Date(a, l - 1, d, s, n, i, o);
+      return new Date(o, l - 1, d, r, n, i, a);
     },
     warn = function (e) {
       console.warn(e);
@@ -5188,7 +5534,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     invalid = function (e) {
       return (delete this.d, (this.error = e), this);
     },
-    typesToArray = function (e, t, r, s, n, i, o, a) {
+    typesToArray = function (e, t, s, r, n, i, a, o) {
       return (
         t || (t = new Date()),
         typeof t == 'string' && t.search(REGEX.separators) != -1
@@ -5209,7 +5555,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                       t.s || t.second || t.seconds || 0,
                       t.ms || t.millisecond || t.milliseconds || 0,
                     ]
-                  : [t, r, s, n, i, o, a]
+                  : [t, s, r, n, i, a, o]
       );
     },
     ordinalNumber = function (e) {
@@ -5217,13 +5563,13 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           arguments.length > 1 && arguments[1] !== void 0
             ? arguments[1]
             : 'jalali',
-        r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : 1;
-      return CALENDAR[t].ordinalNumbers(e, r);
+        s = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : 1;
+      return CALENDAR[t].ordinalNumbers(e, s);
     },
     addPrefix = function (e, t) {
-      var r =
+      var s =
         arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : '0';
-      return r.repeat(t - String(e).length) + e;
+      return s.repeat(t - String(e).length) + e;
     },
     setJalaliDate = function (e) {
       var t = _slicedToArray(gtj(e), 7);
@@ -5268,21 +5614,16 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           arguments.length > 1 && arguments[1] !== void 0
             ? arguments[1]
             : 'jalali',
-        r =
+        s =
           arguments.length > 2 && arguments[2] !== void 0
             ? arguments[2]
             : 'standard';
       return isDate(e)
-        ? CALENDAR[t].days.weekNumber[e.getDay()] + (r != 'standard' ? 0 : 1)
+        ? CALENDAR[t].days.weekNumber[e.getDay()] + (s != 'standard' ? 0 : 1)
         : error('the first param must be instance of Date.');
     },
     getDefaultFormat$4 = function (e) {
-      switch (e[0]) {
-        case 'j':
-          return 'jy';
-        default:
-          return 'y';
-      }
+      return e[0] === 'j' ? 'jy' : 'y';
     };
   function year(e) {
     if (((e = String(e).trim()), REGEX.isNumeric.test(e)))
@@ -5294,16 +5635,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     var t = this.c == 'jalali' ? this.d.year : gtj(this.toDate())[0];
     if (e == 'jy' || e == 'jYYYY') return t;
     if (e == 'jYY') return String(t).slice(-2);
-    var r = this.c == 'gregorian' ? this.d.year : this.toDate().getFullYear();
-    return e == 'y' || e == 'YYYY' ? r : e == 'YY' ? String(r).slice(-2) : t;
+    var s = this.c == 'gregorian' ? this.d.year : this.toDate().getFullYear();
+    return e == 'y' || e == 'YYYY' ? s : e == 'YY' ? String(s).slice(-2) : t;
   }
   var getDefaultFormat$3 = function (e) {
-    switch (e[0]) {
-      case 'j':
-        return 'jQ';
-      default:
-        return 'Q';
-    }
+    return e[0] === 'j' ? 'jQ' : 'Q';
   };
   function quarter(e) {
     if (((e = String(e).trim()), REGEX.isNumeric.test(e))) {
@@ -5326,22 +5662,17 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     if (e == 'jQ') return t;
     if (e == 'jQo') return ordinalNumber(t);
     if (e == 'jQO') return ordinalNumber(t, 'jalali', 2);
-    var r = Math.ceil(
+    var s = Math.ceil(
       (this.c == 'gregorian' ? this.d.month : this.toDate().getMonth() + 1) / 3,
     );
     return e == 'Q'
-      ? r
+      ? s
       : e == 'Qo' || e == 'QO'
-        ? ordinalNumber(r, 'gregorian')
+        ? ordinalNumber(s, 'gregorian')
         : t;
   }
   var getDefaultFormat$2 = function (e) {
-    switch (e[0]) {
-      case 'j':
-        return 'jM';
-      default:
-        return 'M';
-    }
+    return e[0] === 'j' ? 'jM' : 'M';
   };
   function month(e) {
     if (((e = String(e).trim()), REGEX.isNumeric.test(e))) {
@@ -5364,26 +5695,21 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     if (e == 'jMMMM' || e == 'jMMM') return CALENDAR.jalali.months[t];
     if (e == 'jMo') return ordinalNumber(t);
     if (e == 'jMO') return ordinalNumber(t, 'jalali', 2);
-    var r = this.c == 'gregorian' ? this.d.month : this.toDate().getMonth() + 1;
+    var s = this.c == 'gregorian' ? this.d.month : this.toDate().getMonth() + 1;
     return e == 'M'
-      ? r
+      ? s
       : e == 'MM'
-        ? addPrefix(r, 2)
+        ? addPrefix(s, 2)
         : e == 'MMMM'
-          ? CALENDAR.gregorian.months[r]
+          ? CALENDAR.gregorian.months[s]
           : e == 'Mo' || e == 'MO'
-            ? ordinalNumber(r, 'gregorian')
+            ? ordinalNumber(s, 'gregorian')
             : e == 'MMM'
-              ? CALENDAR.gregorian.months[r].slice(0, 3)
+              ? CALENDAR.gregorian.months[s].slice(0, 3)
               : t;
   }
   var getDefaultFormat$1 = function (e) {
-    switch (e[0]) {
-      case 'j':
-        return 'jw';
-      default:
-        return 'w';
-    }
+    return e[0] === 'j' ? 'jw' : 'w';
   };
   function week(e) {
     if (((e = String(e).trim()), REGEX.isNumeric.test(e))) {
@@ -5391,30 +5717,30 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       if (e < 1) (this.week(1), this.subWeek(e - 1, !1));
       else if (e > t) (this.week(t), this.addWeek(e - t, !1));
       else {
-        var r = getWeekOfYear.call(
+        var s = getWeekOfYear.call(
           this,
           this.d.year,
           this.d.month,
           this.d.date,
           this.c,
         );
-        this.addWeek(+e - r);
+        this.addWeek(+e - s);
       }
       for (; !this.isValidDate(); ) this.subDay(1, !1);
       return this;
     }
     e || (e = getDefaultFormat$1(this.c));
-    var s = getWeekOfYear.call(
+    var r = getWeekOfYear.call(
       this,
       this.year('jy'),
       this.month('jM'),
       this.date('jD'),
       this.c,
     );
-    if (e == 'jw' || e == 'jW') return s;
-    if (e == 'jww' || e == 'jWW') return addPrefix(s, 2);
-    if (e == 'jwo' || e == 'jWo') return ordinalNumber(s);
-    if (e == 'jwO' || e == 'jWO') return ordinalNumber(s, 'jalali', 2);
+    if (e == 'jw' || e == 'jW') return r;
+    if (e == 'jww' || e == 'jWW') return addPrefix(r, 2);
+    if (e == 'jwo' || e == 'jWo') return ordinalNumber(r);
+    if (e == 'jwO' || e == 'jWO') return ordinalNumber(r, 'jalali', 2);
     var n = getWeekOfYear.call(
       this,
       this.year('y'),
@@ -5428,15 +5754,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         ? addPrefix(n, 2)
         : e == 'wo' || e == 'Wo' || e == 'wO' || e == 'WO'
           ? ordinalNumber(n, 'gregorian')
-          : s;
+          : r;
   }
   var getDefaultFormat = function (e) {
-    switch (e[0]) {
-      case 'j':
-        return 'jD';
-      default:
-        return 'D';
-    }
+    return e[0] === 'j' ? 'jD' : 'D';
   };
   function date(e) {
     if (((e = String(e).trim()), REGEX.isNumeric.test(e))) {
@@ -5451,20 +5772,20 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       );
     }
     e || (e = getDefaultFormat(this.c));
-    var r = this.c == 'jalali' ? this.d.date : gtj(this.toDate())[2];
-    if (e == 'jDD') return addPrefix(r, 2);
-    if (e == 'jD') return r;
-    if (e == 'jDo') return ordinalNumber(r);
-    if (e == 'jDO') return ordinalNumber(r, 'jalali', 2);
-    var s = this.toDate();
-    if (e == 'jdddd' || e == 'jddd') return getDayLabel(s);
-    if (e == 'jdd') return getDayLabel(s).slice(0, 1);
-    var n = getDayOfWeek(s);
+    var s = this.c == 'jalali' ? this.d.date : gtj(this.toDate())[2];
+    if (e == 'jDD') return addPrefix(s, 2);
+    if (e == 'jD') return s;
+    if (e == 'jDo') return ordinalNumber(s);
+    if (e == 'jDO') return ordinalNumber(s, 'jalali', 2);
+    var r = this.toDate();
+    if (e == 'jdddd' || e == 'jddd') return getDayLabel(r);
+    if (e == 'jdd') return getDayLabel(r).slice(0, 1);
+    var n = getDayOfWeek(r);
     if (e == 'jdo') return ordinalNumber(n);
     if (e == 'jdO') return ordinalNumber(n, 'jalali', 2);
-    if (e == 'jd') return getDayOfWeek(s, 'jalali', 'array');
+    if (e == 'jd') return getDayOfWeek(r, 'jalali', 'array');
     if (e == 'jde') return n;
-    var i = getDayOfYear(this.year('jy'), this.month('jM'), r, 'j');
+    var i = getDayOfYear(this.year('jy'), this.month('jM'), s, 'j');
     return e == 'jDDDD'
       ? addPrefix(i, 3)
       : e == 'jDDD'
@@ -5474,18 +5795,18 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           : e == 'jDDDO'
             ? ordinalNumber(i, 'jalali', 2)
             : e == 'DD'
-              ? addPrefix(s.getDate(), 2)
+              ? addPrefix(r.getDate(), 2)
               : e == 'D'
-                ? s.getDate()
+                ? r.getDate()
                 : e == 'Do' || e == 'DO'
-                  ? ordinalNumber(s.getDate(), 'gregorian')
+                  ? ordinalNumber(r.getDate(), 'gregorian')
                   : e == 'dddd'
-                    ? getDayLabel(s, 'gregorian')
+                    ? getDayLabel(r, 'gregorian')
                     : e == 'ddd'
-                      ? getDayLabel(s, 'gregorian').slice(0, 3)
+                      ? getDayLabel(r, 'gregorian').slice(0, 3)
                       : e == 'dd'
-                        ? getDayLabel(s, 'gregorian').slice(0, 2)
-                        : ((n = getDayOfWeek(s, 'gregorian')),
+                        ? getDayLabel(r, 'gregorian').slice(0, 2)
+                        : ((n = getDayOfWeek(r, 'gregorian')),
                           e == 'do' || e == 'dO'
                             ? ordinalNumber(n, 'gregorian')
                             : e == 'd'
@@ -5493,9 +5814,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                               : e == 'de'
                                 ? n
                                 : ((i = getDayOfYear(
-                                    s.getFullYear(),
-                                    s.getMonth() + 1,
-                                    s.getDate(),
+                                    r.getFullYear(),
+                                    r.getMonth() + 1,
+                                    r.getDate(),
                                     'g',
                                   )),
                                   e == 'DDDD'
@@ -5504,7 +5825,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                                       ? i
                                       : e == 'DDDo' || e == 'DDDO'
                                         ? ordinalNumber(i, 'gregorian')
-                                        : r));
+                                        : s));
   }
   function hour(e) {
     if (((e = String(e).trim()), REGEX.isNumeric.test(e)))
@@ -5582,48 +5903,38 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
   function timestamp(e) {
     return e ? this.fromGregorian(+String(e).trim()) : this.toDate().getTime();
   }
-  var jalali$2 = function (e, t, r) {
-      return r >= 1 && r <= 6
+  var jalali$2 = function (e, t, s) {
+      return s >= 1 && s <= 6
         ? 31
-        : (r > 6 && r <= 11) || isLeapYear(e, t)
+        : (s > 6 && s <= 11) || isLeapYear(e, t)
           ? 30
           : 29;
     },
-    gregorian$2 = function (e, t, r) {
-      return [1, 3, 5, 7, 8, 10, 12].includes(r)
+    gregorian$2 = function (e, t, s) {
+      return [1, 3, 5, 7, 8, 10, 12].includes(s)
         ? 31
-        : r != 2
+        : s != 2
           ? 30
           : isLeapYear(e, t)
             ? 29
             : 28;
     },
-    getDaysInMonth = function (e, t, r) {
-      switch (e[0]) {
-        case 'j':
-          return jalali$2(e, t, r);
-        default:
-          return gregorian$2(e, t, r);
-      }
+    getDaysInMonth = function (e, t, s) {
+      return e[0] === 'j' ? jalali$2(e, t, s) : gregorian$2(e, t, s);
     },
     getDayOfYearFormat = function (e) {
-      switch (e[0]) {
-        case 'j':
-          return 'jd';
-        default:
-          return 'd';
-      }
+      return e[0] === 'j' ? 'jd' : 'd';
     };
   function getWeeksInYear(e) {
     var t = getDayOfYearFormat(this.c),
-      r = this.clone().parse(e),
-      s = r.date(t),
-      n = r.clone().endOf('year').startOf('day'),
+      s = this.clone().parse(e),
+      r = s.date(t),
+      n = s.clone().endOf('year').startOf('day'),
       i = n.date(t);
     return (
-      s > 3 ? r.addDay(7 - s) : r.subDay(s),
+      r > 3 ? s.addDay(7 - r) : s.subDay(r),
       i > 3 ? n.addDay(7 - i) : n.subDay(i),
-      Math.ceil(n.diff(r, 'date') / 7)
+      Math.ceil(n.diff(s, 'date') / 7)
     );
   }
   function startOf(e) {
@@ -5682,12 +5993,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     );
   }
   function time() {
-    for (var e = arguments.length, t = new Array(e), r = 0; r < e; r++)
-      t[r] = arguments[r];
+    for (var e = arguments.length, t = new Array(e), s = 0; s < e; s++)
+      t[s] = arguments[s];
     if (!t.length) return this.toArray().slice(3);
-    var s = [];
+    var r = [];
     return (
-      (s = isPersianDate(t[0])
+      (r = isPersianDate(t[0])
         ? t[0].time()
         : isDate(t[0])
           ? [
@@ -5704,34 +6015,29 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 t[0].ms || t[0].millisecond || t[0].milliseconds || 0,
               ]
             : typesToArray.apply(void 0, [this.c].concat(t))),
-      this.isValidTime.apply(this, _toConsumableArray(s))
-        ? this.hour(s[0] || 0)
-            .minute(s[1] || 0)
-            .second(s[2] || 0)
-            .millisecond(s[3] || 0)
+      this.isValidTime.apply(this, _toConsumableArray(r))
+        ? this.hour(r[0] || 0)
+            .minute(r[1] || 0)
+            .second(r[2] || 0)
+            .millisecond(r[3] || 0)
         : 'زمان نامعتبر'
     );
   }
-  var getDayOfYear = function (e, t, r, s) {
-      for (t = +t, r = +r; --t != 0; ) r += getDaysInMonth(s, e, t);
-      return r;
+  var getDayOfYear = function (e, t, s, r) {
+      for (t = +t, s = +s; --t != 0; ) s += getDaysInMonth(r, e, t);
+      return s;
     },
     dayOfYearFormat = function (e) {
-      switch (e[0]) {
-        case 'j':
-          return 'jd';
-        default:
-          return 'd';
-      }
+      return e[0] === 'j' ? 'jd' : 'd';
     },
-    getWeekOfYear = function (e, t, r, s) {
-      var n = this.clone().calendar(s).parse(e),
-        i = n.date(dayOfYearFormat(s)),
-        o = n.clone().parse(e, t, r);
+    getWeekOfYear = function (e, t, s, r) {
+      var n = this.clone().calendar(r).parse(e),
+        i = n.date(dayOfYearFormat(r)),
+        a = n.clone().parse(e, t, s);
       i > 3 && n.addDay(7 - i);
-      var a = Math.ceil(o.diff(n, 'date', !0) / 7),
-        l = o.clone().getWeeksInYear();
-      return a > l ? l : a;
+      var o = Math.ceil(a.diff(n, 'date', !0) / 7),
+        l = a.clone().getWeeksInYear();
+      return o > l ? l : o;
     },
     compare = function compare(date, operator) {
       return (
@@ -5748,20 +6054,20 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       );
     },
     mathOperation = function (e, t) {
-      var r = this;
+      var s = this;
       if (!e.length) return !1;
-      var s = _toConsumableArray(e),
-        n = s.map(function (i) {
-          var o;
+      var r = _toConsumableArray(e),
+        n = r.map(function (i) {
+          var a;
           return (
-            (i = typesToArray(r.c, i)),
-            !!r.isValid.apply(r, _toConsumableArray(i)) &&
-              (o = r.clone()).parse.apply(o, _toConsumableArray(i)).timestamp()
+            (i = typesToArray(s.c, i)),
+            !!s.isValid.apply(s, _toConsumableArray(i)) &&
+              (a = s.clone()).parse.apply(a, _toConsumableArray(i)).timestamp()
           );
         });
       return (
         !n.includes(!1) &&
-        s[n.indexOf(Math[t].apply(Math, _toConsumableArray(n)))]
+        r[n.indexOf(Math[t].apply(Math, _toConsumableArray(n)))]
       );
     },
     isTimestamp = function (e) {
@@ -5788,8 +6094,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     );
   }
   function fromJalali() {
-    for (var e = arguments.length, t = new Array(e), r = 0; r < e; r++)
-      t[r] = arguments[r];
+    for (var e = arguments.length, t = new Array(e), s = 0; s < e; s++)
+      t[s] = arguments[s];
     return (
       (t = t.length
         ? typesToArray.apply(void 0, ['jalali'].concat(_toConsumableArray(t)))
@@ -5807,8 +6113,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     );
   }
   function fromGregorian() {
-    for (var e = arguments.length, t = new Array(e), r = 0; r < e; r++)
-      t[r] = arguments[r];
+    for (var e = arguments.length, t = new Array(e), s = 0; s < e; s++)
+      t[s] = arguments[s];
     if (
       (t.length
         ? this.isPersianDate(t[0])
@@ -5861,10 +6167,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
   function addMonth(e, t) {
     if (e < 0) return this.subMonth(Math.abs(e));
     e = +e;
-    var r = 12 - this.d.month + 1;
-    if (r > e) this.d.month += e;
+    var s = 12 - this.d.month + 1;
+    if (s > e) this.d.month += e;
     else {
-      for (this.addYear(1, !1), this.d.month = 1, e -= r; e >= 12; )
+      for (this.addYear(1, !1), this.d.month = 1, e -= s; e >= 12; )
         ((e -= 12), this.addYear(1, !1));
       e != 0 && (this.d.month += e);
     }
@@ -5881,8 +6187,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     if (t > e) this.d.date += e;
     else {
       (this.addMonth(1, !1), (this.d.date = 1), (e -= t));
-      for (var r = this.getDaysInMonth(); e >= r; )
-        ((e -= r), this.addMonth(1, !1), (r = this.getDaysInMonth()));
+      for (var s = this.getDaysInMonth(); e >= s; )
+        ((e -= s), this.addMonth(1, !1), (s = this.getDaysInMonth()));
       e != 0 && (this.d.date += e);
     }
     return this;
@@ -5941,10 +6247,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
   }
   function subMonth(e, t) {
     e = Math.abs(e);
-    var r = this.d.month;
-    if (r > e) this.d.month -= e;
+    var s = this.d.month;
+    if (s > e) this.d.month -= e;
     else {
-      for (this.subYear(1, !1), this.d.month = 12, e -= r; e >= 12; )
+      for (this.subYear(1, !1), this.d.month = 12, e -= s; e >= 12; )
         (this.subYear(1, !1), (e -= 12));
       e != 0 && (this.d.month -= e);
     }
@@ -5960,10 +6266,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     if (t > e) this.d.date -= e;
     else {
       this.subMonth(1, !1);
-      var r = this.getDaysInMonth();
-      for (this.d.date = r, e -= t; e >= r; )
-        ((e -= r), this.subMonth(1, !1), (r = this.getDaysInMonth()));
-      this.d.date = r - e;
+      var s = this.getDaysInMonth();
+      for (this.d.date = s, e -= t; e >= s; )
+        ((e -= s), this.subMonth(1, !1), (s = this.getDaysInMonth()));
+      this.d.date = s - e;
     }
     return this;
   }
@@ -6023,57 +6329,51 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     };
   function toString(e) {
     var t = [];
-    switch (
-      ((e = e.replace(REGEX.betweenBacktick, function (a, l) {
-        return (t.push(l), '###');
-      })),
-      this.c[0])
-    ) {
-      case 'j':
-        e = jalali$1(e);
-        break;
-      default:
-        e = gregorian$1(e);
-    }
-    var r,
-      s = '',
+    ((e = e.replace(REGEX.betweenBacktick, function (o, l) {
+      return (t.push(l), '###');
+    })),
+    this.c[0]) === 'j'
+      ? (e = jalali$1(e))
+      : (e = gregorian$1(e));
+    var s,
+      r = '',
       n = _createForOfIteratorHelper(e.match(REGEX.format));
     try {
-      for (n.s(); !(r = n.n()).done; ) {
-        var i = r.value;
-        ((s += e.substring(0, e.indexOf(i))),
+      for (n.s(); !(s = n.n()).done; ) {
+        var i = s.value;
+        ((r += e.substring(0, e.indexOf(i))),
           i.search(/Y|y/) != -1
-            ? (s += this.year(i))
+            ? (r += this.year(i))
             : i.search(/M/) != -1
-              ? (s += this.month(i))
+              ? (r += this.month(i))
               : i.search(/Q/) != -1
-                ? (s += this.quarter(i))
+                ? (r += this.quarter(i))
                 : i.search(/D|d/) != -1
-                  ? (s += this.date(i))
+                  ? (r += this.date(i))
                   : i.search(/W|w/) != -1
-                    ? (s += this.week(i))
+                    ? (r += this.week(i))
                     : i.search(/H|h|k/) != -1
-                      ? (s += this.hour(i))
+                      ? (r += this.hour(i))
                       : i.search(/m/) != -1
-                        ? (s += this.minute(i))
+                        ? (r += this.minute(i))
                         : i.search(/s/) != -1
-                          ? (s += this.second(i))
+                          ? (r += this.second(i))
                           : i.search(/c|C/) != -1
-                            ? (s += this.millisecond(i))
+                            ? (r += this.millisecond(i))
                             : i.search(/t/) != -1
-                              ? (s += this.timestamp())
+                              ? (r += this.timestamp())
                               : i.search(/a|A/) != -1 &&
-                                (s += TIMETYPE(this.d.hour, i)),
+                                (r += TIMETYPE(this.d.hour, i)),
           (e = e.substr(e.indexOf(i) + i.length)));
       }
-    } catch (a) {
-      n.e(a);
+    } catch (o) {
+      n.e(o);
     } finally {
       n.f();
     }
-    s += e;
-    for (var o = 0; o < t.length; o++) s = s.replace('###', t[o]);
-    return String(s);
+    r += e;
+    for (var a = 0; a < t.length; a++) r = r.replace('###', t[a]);
+    return String(r);
   }
   function toArray() {
     if (!arguments.length) return Object.values(this.d);
@@ -6114,15 +6414,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       return (--e[1], _construct(Date, _toConsumableArray(e)));
     };
   function toDate() {
-    switch (this.c[0]) {
-      case 'j':
-        return jalali(this.toArray());
-      default:
-        return gregorian(this.toArray());
-    }
+    return this.c[0] === 'j'
+      ? jalali(this.toArray())
+      : gregorian(this.toArray());
   }
-  function diff(e, t, r) {
-    var s;
+  function diff(e, t, s) {
+    var r;
     if (
       ((e = typesToArray(this.c, e)),
       !this.isValid.apply(this, _toConsumableArray(e)))
@@ -6130,7 +6427,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       return 'تاریخ نامعتبر';
     var n =
       this.timestamp() -
-      (s = this.clone()).parse.apply(s, _toConsumableArray(e)).timestamp();
+      (r = this.clone()).parse.apply(r, _toConsumableArray(e)).timestamp();
     switch (t) {
       case 'y':
       case 'year':
@@ -6163,28 +6460,28 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       case 'seconds':
         n = Math.ceil(n / 1e3);
     }
-    return r ? n + (n >= 0 ? 1 : -1) : n;
+    return s ? n + (n >= 0 ? 1 : -1) : n;
   }
   function diffForHumans(e, t) {
-    var r = this.diff(e, 's');
-    if (typeof r == 'string') return 'تاریخ نامعتبر';
-    var s = t && (r > 0 ? 'آینده' : 'پیش');
-    return (r = Math.abs(r)) == 0
+    var s = this.diff(e, 's');
+    if (typeof s == 'string') return 'تاریخ نامعتبر';
+    var r = t && (s > 0 ? 'آینده' : 'پیش');
+    return (s = Math.abs(s)) == 0
       ? 'هم اکنون'
-      : (r =
-          r < 45
+      : (s =
+          s < 45
             ? 'لحظات'
-            : (r /= 60) < 45
-              ? Math.round(r) + ' دقیقه'
-              : (r /= 60) < 23.5
-                ? Math.round(r) + ' ساعت'
-                : (r /= 24) < 26
-                  ? Math.round(r) + ' روز'
-                  : r < 320
-                    ? Math.round(r / 30) + ' ماه'
-                    : Math.round(r / 365) + ' سال') + (t ? ' ' + s : '');
+            : (s /= 60) < 45
+              ? Math.round(s) + ' دقیقه'
+              : (s /= 60) < 23.5
+                ? Math.round(s) + ' ساعت'
+                : (s /= 24) < 26
+                  ? Math.round(s) + ' روز'
+                  : s < 320
+                    ? Math.round(s / 30) + ' ماه'
+                    : Math.round(s / 365) + ' سال') + (t ? ' ' + r : '');
   }
-  var PersianDate = function e(t, r) {
+  var PersianDate = function e(t, s) {
     ((this.d = {}),
       (this.c = 'jalali'),
       (e.prototype.now = function () {
@@ -6227,62 +6524,62 @@ https://alireza-ab.ir/persian-date/create-and-parse#from-gregorian-date`),
           )
         );
       }),
-      (e.prototype.calendar = function (s) {
-        return calendar.call(this, s);
+      (e.prototype.calendar = function (r) {
+        return calendar.call(this, r);
       }),
       (e.prototype.year = function () {
-        var s =
+        var r =
           arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : '';
-        return this.error ? this.error : year.call(this, s);
+        return this.error ? this.error : year.call(this, r);
       }),
       (e.prototype.month = function () {
-        var s =
+        var r =
           arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : '';
-        return this.error ? this.error : month.call(this, s);
+        return this.error ? this.error : month.call(this, r);
       }),
       (e.prototype.date = function () {
-        var s =
+        var r =
           arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : '';
-        return this.error ? this.error : date.call(this, s);
+        return this.error ? this.error : date.call(this, r);
       }),
       (e.prototype.quarter = function () {
-        var s =
+        var r =
           arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : '';
-        return this.error ? this.error : quarter.call(this, s);
+        return this.error ? this.error : quarter.call(this, r);
       }),
       (e.prototype.week = function () {
-        var s =
+        var r =
           arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : '';
-        return this.error ? this.error : week.call(this, s);
+        return this.error ? this.error : week.call(this, r);
       }),
       (e.prototype.hour = function () {
-        var s =
+        var r =
           arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 'H';
-        return this.error ? this.error : hour.call(this, s);
+        return this.error ? this.error : hour.call(this, r);
       }),
       (e.prototype.minute = function () {
-        var s =
+        var r =
           arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 'm';
-        return this.error ? this.error : minute.call(this, s);
+        return this.error ? this.error : minute.call(this, r);
       }),
       (e.prototype.second = function () {
-        var s =
+        var r =
           arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 's';
-        return this.error ? this.error : second.call(this, s);
+        return this.error ? this.error : second.call(this, r);
       }),
       (e.prototype.millisecond = function () {
-        var s =
+        var r =
           arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 'c';
-        return this.error ? this.error : millisecond.call(this, s);
+        return this.error ? this.error : millisecond.call(this, r);
       }),
-      (e.prototype.timestamp = function (s) {
-        return this.error ? this.error : timestamp.call(this, s);
+      (e.prototype.timestamp = function (r) {
+        return this.error ? this.error : timestamp.call(this, r);
       }),
       (e.prototype.valueOf = function () {
         return this.timestamp();
       }),
       (e.prototype.getDaysInMonth = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0
               ? arguments[0]
               : this.d.year,
@@ -6290,28 +6587,28 @@ https://alireza-ab.ir/persian-date/create-and-parse#from-gregorian-date`),
             arguments.length > 1 && arguments[1] !== void 0
               ? arguments[1]
               : this.d.month;
-        return this.error ? this.error : getDaysInMonth(this.c, s, n);
+        return this.error ? this.error : getDaysInMonth(this.c, r, n);
       }),
       (e.prototype.getWeeksInYear = function () {
-        var s =
+        var r =
           arguments.length > 0 && arguments[0] !== void 0
             ? arguments[0]
             : this.d.year;
-        return this.error ? this.error : getWeeksInYear.call(this, s);
+        return this.error ? this.error : getWeeksInYear.call(this, r);
       }),
       (e.prototype.startOf = function () {
-        var s =
+        var r =
           arguments.length > 0 && arguments[0] !== void 0
             ? arguments[0]
             : 'year';
-        return startOf.call(this, s);
+        return startOf.call(this, r);
       }),
       (e.prototype.endOf = function () {
-        var s =
+        var r =
           arguments.length > 0 && arguments[0] !== void 0
             ? arguments[0]
             : 'year';
-        return endOf.call(this, s);
+        return endOf.call(this, r);
       }),
       (e.prototype.time = function () {
         return this.error
@@ -6322,145 +6619,145 @@ https://alireza-ab.ir/persian-date/create-and-parse#from-gregorian-date`),
             );
       }),
       (e.prototype.addYear = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : s ? addYear.call(this, s, n) : this;
+        return this.error ? this.error : r ? addYear.call(this, r, n) : this;
       }),
       (e.prototype.addMonth = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : s ? addMonth.call(this, s, n) : this;
+        return this.error ? this.error : r ? addMonth.call(this, r, n) : this;
       }),
       (e.prototype.addDay = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : s ? addDay.call(this, s, n) : this;
+        return this.error ? this.error : r ? addDay.call(this, r, n) : this;
       }),
       (e.prototype.addQuarter = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : s ? addQuarter.call(this, s, n) : this;
+        return this.error ? this.error : r ? addQuarter.call(this, r, n) : this;
       }),
       (e.prototype.addWeek = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : s ? addWeek.call(this, s, n) : this;
+        return this.error ? this.error : r ? addWeek.call(this, r, n) : this;
       }),
       (e.prototype.addHour = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : s ? addHour.call(this, s, n) : this;
+        return this.error ? this.error : r ? addHour.call(this, r, n) : this;
       }),
       (e.prototype.addMinute = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : s ? addMinute.call(this, s, n) : this;
+        return this.error ? this.error : r ? addMinute.call(this, r, n) : this;
       }),
       (e.prototype.addSecond = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : s ? addSecond.call(this, s, n) : this;
+        return this.error ? this.error : r ? addSecond.call(this, r, n) : this;
       }),
       (e.prototype.addMillisecond = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
         return this.error
           ? this.error
-          : s
-            ? addMillisecond.call(this, s, n)
+          : r
+            ? addMillisecond.call(this, r, n)
             : this;
       }),
       (e.prototype.subYear = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : s ? subYear.call(this, s, n) : this;
+        return this.error ? this.error : r ? subYear.call(this, r, n) : this;
       }),
       (e.prototype.subMonth = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : s ? subMonth.call(this, s, n) : this;
+        return this.error ? this.error : r ? subMonth.call(this, r, n) : this;
       }),
       (e.prototype.subDay = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : s ? subDay.call(this, s, n) : this;
+        return this.error ? this.error : r ? subDay.call(this, r, n) : this;
       }),
       (e.prototype.subQuarter = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : s ? subQuarter.call(this, s, n) : this;
+        return this.error ? this.error : r ? subQuarter.call(this, r, n) : this;
       }),
       (e.prototype.subWeek = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : s ? subWeek.call(this, s, n) : this;
+        return this.error ? this.error : r ? subWeek.call(this, r, n) : this;
       }),
       (e.prototype.subHour = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : s ? subHour.call(this, s, n) : this;
+        return this.error ? this.error : r ? subHour.call(this, r, n) : this;
       }),
       (e.prototype.subMinute = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : s ? subMinute.call(this, s, n) : this;
+        return this.error ? this.error : r ? subMinute.call(this, r, n) : this;
       }),
       (e.prototype.subSecond = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : s ? subSecond.call(this, s, n) : this;
+        return this.error ? this.error : r ? subSecond.call(this, r, n) : this;
       }),
       (e.prototype.subMillisecond = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : 1,
           n =
             !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
         return this.error
           ? this.error
-          : s
-            ? subMillisecond.call(this, s, n)
+          : r
+            ? subMillisecond.call(this, r, n)
             : this;
       }),
       (e.prototype.toString = function () {
-        var s =
+        var r =
           arguments.length > 0 && arguments[0] !== void 0
             ? arguments[0]
             : 'date';
-        return this.error ? this.error : toString.call(this, s);
+        return this.error ? this.error : toString.call(this, r);
       }),
       (e.prototype.toArray = function () {
         return this.error
@@ -6481,14 +6778,14 @@ https://alireza-ab.ir/persian-date/create-and-parse#from-gregorian-date`),
       (e.prototype.toDate = function () {
         return this.error ? this.error : toDate.call(this);
       }),
-      (e.prototype.diff = function (s, n) {
+      (e.prototype.diff = function (r, n) {
         var i = arguments.length > 2 && arguments[2] !== void 0 && arguments[2];
-        return this.error ? this.error : diff.call(this, s, n, i);
+        return this.error ? this.error : diff.call(this, r, n, i);
       }),
-      (e.prototype.diffForHumans = function (s) {
+      (e.prototype.diffForHumans = function (r) {
         var n =
           !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-        return this.error ? this.error : diffForHumans.call(this, s, n);
+        return this.error ? this.error : diffForHumans.call(this, r, n);
       }),
       (e.prototype.min = function () {
         return mathOperation.call(this, arguments, 'min');
@@ -6497,21 +6794,21 @@ https://alireza-ab.ir/persian-date/create-and-parse#from-gregorian-date`),
         return mathOperation.call(this, arguments, 'max');
       }),
       (e.prototype.isLeapYear = function () {
-        var s =
+        var r =
           arguments.length > 0 && arguments[0] !== void 0
             ? arguments[0]
             : this.d.year;
-        return !this.error && isLeapYear(this.c, s);
+        return !this.error && isLeapYear(this.c, r);
       }),
-      (e.prototype.isValid = function (s, n, i, o, a, l, d) {
+      (e.prototype.isValid = function (r, n, i, a, o, l, d) {
         return (
           !this.error &&
-          this.isValidDate(s, n, i) &&
-          this.isValidTime(o, a, l, d)
+          this.isValidDate(r, n, i) &&
+          this.isValidTime(a, o, l, d)
         );
       }),
       (e.prototype.isValidDate = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0
               ? arguments[0]
               : this.d.year,
@@ -6523,10 +6820,10 @@ https://alireza-ab.ir/persian-date/create-and-parse#from-gregorian-date`),
             arguments.length > 2 && arguments[2] !== void 0
               ? arguments[2]
               : this.d.date;
-        return !this.error && isValidDate(this.c, s, n, i);
+        return !this.error && isValidDate(this.c, r, n, i);
       }),
       (e.prototype.isValidTime = function () {
-        var s =
+        var r =
             arguments.length > 0 && arguments[0] !== void 0
               ? arguments[0]
               : this.d.hour,
@@ -6538,11 +6835,11 @@ https://alireza-ab.ir/persian-date/create-and-parse#from-gregorian-date`),
             arguments.length > 2 && arguments[2] !== void 0
               ? arguments[2]
               : this.d.second,
-          o =
+          a =
             arguments.length > 3 && arguments[3] !== void 0
               ? arguments[3]
               : this.d.millisecond;
-        return !this.error && isValidTime(s, n, i, o);
+        return !this.error && isValidTime(r, n, i, a);
       }),
       (e.prototype.isSame = function () {
         return (
@@ -6565,19 +6862,19 @@ https://alireza-ab.ir/persian-date/create-and-parse#from-gregorian-date`),
       (e.prototype.isSameOrAfter = function () {
         return !this.error && compare.call(this, arguments, '>=');
       }),
-      (e.prototype.isBetween = function (s, n) {
+      (e.prototype.isBetween = function (r, n) {
         var i =
           arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : '()';
-        return !this.error && isBetween.call(this, s, n, i);
+        return !this.error && isBetween.call(this, r, n, i);
       }),
-      (e.prototype.isInArray = function (s) {
-        return !this.error && isInArray.call(this, s);
+      (e.prototype.isInArray = function (r) {
+        return !this.error && isInArray.call(this, r);
       }),
       (e.prototype.isDate = isDate),
       (e.prototype.isPersianDate = isPersianDate),
-      r && this.calendar(r),
+      s && this.calendar(s),
       t
-        ? r && r[0] == 'j'
+        ? s && s[0] == 'j'
           ? this.fromJalali(t)
           : this.fromGregorian(t)
         : this.now());
@@ -6690,64 +6987,80 @@ const PersianDate = getDefaultExportFromCjs(PersianDate_minExports),
       },
     },
     mergeObject: function (e, t) {
-      const r = JSON.parse(JSON.stringify(e));
-      for (const s in t)
-        e[s] && Object.prototype.toString.call(t[s]) === '[object Object]'
-          ? (r[s] = this.mergeObject(e[s], t[s]))
-          : (r[s] = t[s]);
-      return r;
+      const s = new Set(['__proto__', 'prototype', 'constructor']),
+        r = (a) => {
+          if (Object.prototype.toString.call(a) !== '[object Object]')
+            return !1;
+          const o = Object.getPrototypeOf(a);
+          return o === Object.prototype || o === null;
+        },
+        n = (a) => {
+          if (Array.isArray(a)) return a.map(n);
+          if (!r(a)) return a;
+          const o = {};
+          for (const l of Object.keys(a)) s.has(l) || (o[l] = n(a[l]));
+          return o;
+        },
+        i = n(e);
+      if (!t) return i;
+      for (const a of Object.keys(t)) {
+        if (s.has(a)) continue;
+        const o = t[a];
+        r(i[a]) && r(o) ? (i[a] = this.mergeObject(i[a], o)) : (i[a] = n(o));
+      }
+      return i;
     },
     setStyles: function (e, t) {
-      for (const r in e) t.style.setProperty('--' + r, e[r]);
+      for (const s in e) t.style.setProperty('--' + s, e[s]);
     },
     setColor: function (e, t) {
       if (!e) return;
-      let r = {};
+      let s = {};
       switch (e) {
         case 'red':
-          r = {
+          s = {
             'primary-color': '#c7004c',
             'secondary-color': '#ffaaaa',
             'in-range-background': '#ffd2d2',
           };
           break;
         case 'pink':
-          r = {
+          s = {
             'primary-color': '#e56ab3',
             'secondary-color': '#ef87be',
             'in-range-background': '#fcbcd7',
           };
           break;
         case 'orange':
-          r = {
+          s = {
             'primary-color': '#ffa500',
             'secondary-color': '#ffbe47',
             'in-range-background': '#ffe0a6',
           };
           break;
         case 'green':
-          r = {
+          s = {
             'primary-color': '#38a169',
             'secondary-color': '#89dda3',
             'in-range-background': '#c6f6d5',
           };
           break;
         case 'purple':
-          r = {
+          s = {
             'primary-color': '#7825d0',
             'secondary-color': '#c196ed',
             'in-range-background': '#d4baf3',
           };
           break;
         case 'gray':
-          r = {
+          s = {
             'primary-color': '#494848',
             'secondary-color': '#909090',
             'in-range-background': '#b4b4b4',
           };
           break;
       }
-      this.setStyles(r, t);
+      this.setStyles(s, t);
     },
     getLastUnit: function (e, t) {
       switch (e.split(/[/ \-.,:\\]/).length + (t == 'time' ? 3 : 0)) {
@@ -6767,58 +7080,58 @@ const PersianDate = getDefaultExportFromCjs(PersianDate_minExports),
           return 'millisecond';
       }
     },
-    getShortcuts(e, t, r) {
-      const s = () => e.clone();
+    getShortcuts(e, t, s) {
+      const r = () => e.clone();
       switch (t) {
         case 'date-single':
           return {
-            [r.now]: [s()],
-            [r.yesterday]: [s().subDay()],
-            [r.tomorrow]: [s().addDay()],
-            [r.firstOfWeek]: [s().startOf('week')],
-            [r.lastOfWeek]: [s().endOf('week')],
+            [s.now]: [r()],
+            [s.yesterday]: [r().subDay()],
+            [s.tomorrow]: [r().addDay()],
+            [s.firstOfWeek]: [r().startOf('week')],
+            [s.lastOfWeek]: [r().endOf('week')],
           };
         case 'date-range':
           return {
-            [r.thisWeek]: [s().startOf('week'), s().endOf('week')],
-            [r.prevWeek]: [
-              s().subWeek().startOf('week'),
-              s().subWeek().endOf('week'),
+            [s.thisWeek]: [r().startOf('week'), r().endOf('week')],
+            [s.prevWeek]: [
+              r().subWeek().startOf('week'),
+              r().subWeek().endOf('week'),
             ],
-            [r.nextWeek]: [
-              s().addWeek().startOf('week'),
-              s().addWeek().endOf('week'),
+            [s.nextWeek]: [
+              r().addWeek().startOf('week'),
+              r().addWeek().endOf('week'),
             ],
-            [r.thisMonth]: [s().startOf('month'), s().endOf('month')],
-            [r.prevMonth]: [
-              s().subMonth().startOf('month'),
-              s().subMonth().endOf('month'),
+            [s.thisMonth]: [r().startOf('month'), r().endOf('month')],
+            [s.prevMonth]: [
+              r().subMonth().startOf('month'),
+              r().subMonth().endOf('month'),
             ],
-            [r.nextMonth]: [
-              s().addMonth().startOf('month'),
-              s().addMonth().endOf('month'),
+            [s.nextMonth]: [
+              r().addMonth().startOf('month'),
+              r().addMonth().endOf('month'),
             ],
           };
         case 'time-single':
           return {
-            [r.now]: [s()],
-            [r.oneHourAgo]: [s().subHour()],
-            [r.oneHourLater]: [s().addHour()],
-            [r.midnight]: [s().startOf('date')],
-            [r.midday]: [s().time(12)],
+            [s.now]: [r()],
+            [s.oneHourAgo]: [r().subHour()],
+            [s.oneHourLater]: [r().addHour()],
+            [s.midnight]: [r().startOf('date')],
+            [s.midday]: [r().time(12)],
           };
         case 'time-range':
           return {
-            [r.thisHour]: [s().startOf('hour'), s().endOf('hour')],
-            [r.prevHour]: [
-              s().subHour().startOf('hour'),
-              s().subHour().endOf('hour'),
+            [s.thisHour]: [r().startOf('hour'), r().endOf('hour')],
+            [s.prevHour]: [
+              r().subHour().startOf('hour'),
+              r().subHour().endOf('hour'),
             ],
-            [r.nextHour]: [
-              s().addHour().startOf('hour'),
-              s().addHour().endOf('hour'),
+            [s.nextHour]: [
+              r().addHour().startOf('hour'),
+              r().addHour().endOf('hour'),
             ],
-            [r.allDay]: [s().startOf('date'), s().endOf('date')],
+            [s.allDay]: [r().startOf('date'), r().endOf('date')],
           };
         default:
           return {};
@@ -6912,27 +7225,27 @@ function isHebrewLeapYear(e) {
   return (7 * e + 1) % 19 < 7;
 }
 function parseHebrewMonth(e, t) {
-  const r = e || '',
+  const s = e || '',
     n = (
       isHebrewLeapYear(t)
         ? [
             'Tishri',
-            'Cheshvan',
+            'Heshvan',
             'Kislev',
             'Tevet',
             'Shevat',
             'Adar I',
-            'Adar',
+            'Adar II',
             'Nisan',
             'Iyar',
             'Sivan',
-            'Tammuz',
+            'Tamuz',
             'Av',
             'Elul',
           ]
         : [
             'Tishri',
-            'Cheshvan',
+            'Heshvan',
             'Kislev',
             'Tevet',
             'Shevat',
@@ -6940,28 +7253,64 @@ function parseHebrewMonth(e, t) {
             'Nisan',
             'Iyar',
             'Sivan',
-            'Tammuz',
+            'Tamuz',
             'Av',
             'Elul',
           ]
-    ).findIndex((i) => r.toLowerCase() === i.toLowerCase());
+    ).findIndex((i) => s.toLowerCase() === i.toLowerCase());
   return n >= 0 ? n + 1 : parsePart(e);
 }
+function parseChineseMonth(e) {
+  const t = (e || '').toLowerCase().replace(/\s+/g, ' ').trim(),
+    s = [
+      'first month',
+      'second month',
+      'third month',
+      'fourth month',
+      'fifth month',
+      'sixth month',
+      'seventh month',
+      'eighth month',
+      'ninth month',
+      'tenth month',
+      'eleventh month',
+      'twelfth month',
+    ],
+    r = t.endsWith('bis'),
+    n = r ? t.slice(0, -3).trim() : t,
+    i = s.indexOf(n);
+  return { month: i >= 0 ? i + 1 : parsePart(e), leapMonth: r };
+}
 function sameDate(e, t) {
-  return e.year === t.year && e.month === t.month && e.day === t.day;
+  return (
+    e.year === t.year &&
+    e.month === t.month &&
+    e.day === t.day &&
+    !!e.leapMonth == !!t.leapMonth
+  );
+}
+function compareDateParts(e, t) {
+  const s = [e.year, e.month, e.leapMonth ? 1 : 0, e.day],
+    r = [t.year, t.month, t.leapMonth ? 1 : 0, t.day];
+  for (let n = 0; n < s.length; n++)
+    if (s[n] !== r[n]) return s[n] < r[n] ? -1 : 1;
+  return 0;
 }
 function formatParts(e, t) {
-  const r = Object.fromEntries(
-      e.formatToParts(t).map(({ type: n, value: i }) => [n, i]),
+  const s = Object.fromEntries(
+      e.formatToParts(t).map(({ type: a, value: o }) => [a, o]),
     ),
-    s = parsePart(r.year || r.relatedYear);
+    r = parsePart(s.year || s.relatedYear),
+    n = e.resolvedOptions().calendar,
+    i = n === 'chinese' ? parseChineseMonth(s.month) : void 0;
   return {
-    year: s,
+    year: r,
     month:
-      e.resolvedOptions().calendar === 'hebrew'
-        ? parseHebrewMonth(r.month, s)
-        : parsePart(r.month),
-    day: parsePart(r.day),
+      n === 'hebrew'
+        ? parseHebrewMonth(s.month, r)
+        : i?.month || parsePart(s.month),
+    day: parsePart(s.day),
+    ...(i?.leapMonth ? { leapMonth: !0 } : {}),
     hour: t.getUTCHours(),
     minute: t.getUTCMinutes(),
     second: t.getUTCSeconds(),
@@ -6972,7 +7321,7 @@ function createFormatter(e) {
   const t = new Intl.DateTimeFormat(`en-u-ca-${e}-nu-latn`, {
     timeZone: 'UTC',
     year: 'numeric',
-    month: 'numeric',
+    month: e === 'chinese' ? 'long' : 'numeric',
     day: 'numeric',
   });
   if (t.resolvedOptions().calendar !== e)
@@ -6991,95 +7340,111 @@ function estimateGregorianYear(e, t) {
       return t;
   }
 }
-function findGregorianDate(e, t, r) {
-  const s = new Date(
+function findGregorianDate(e, t, s) {
+  const r = new Date(
       Date.UTC(
-        estimateGregorianYear(t, r.year),
-        Math.max(0, r.month - 1),
-        Math.max(1, r.day),
+        estimateGregorianYear(t, s.year),
+        Math.max(0, s.month - 1),
+        Math.max(1, s.day),
       ),
     ),
     n = t === 'hijri' ? 900 : 450,
-    i = s.getTime() - n * dayMilliseconds$1,
-    o = s.getTime() + n * dayMilliseconds$1;
-  for (let a = i; a <= o; a += dayMilliseconds$1) {
-    const l = new Date(a);
-    if (sameDate(formatParts(e, l), r)) return l;
+    i = r.getTime() - n * dayMilliseconds$1,
+    a = r.getTime() + n * dayMilliseconds$1,
+    o = formatParts(e, new Date(i)),
+    l = formatParts(e, new Date(a));
+  if (compareDateParts(o, s) > 0 || compareDateParts(l, s) < 0)
+    throw new RangeError(
+      `Unable to convert ${s.year}/${s.month}/${s.day} from ${t}`,
+    );
+  let d = i,
+    c = a;
+  for (; d <= c; ) {
+    const f =
+        d + Math.floor((c - d) / (2 * dayMilliseconds$1)) * dayMilliseconds$1,
+      v = new Date(f),
+      M = compareDateParts(formatParts(e, v), s);
+    if (M === 0) return v;
+    M < 0 ? (d = f + dayMilliseconds$1) : (c = f - dayMilliseconds$1);
   }
   throw new RangeError(
-    `Unable to convert ${r.year}/${r.month}/${r.day} from ${t}`,
+    `Unable to convert ${s.year}/${s.month}/${s.day} from ${t}`,
   );
 }
 function createIntlAdapter(e, t = 'ummalqura') {
   if (e === 'hijri' && t !== 'ummalqura')
     throw new Error(`Hijri provider is not implemented yet: ${t}`);
-  const r = createFormatter(calendarNames[e]);
+  const s = createFormatter(calendarNames[e]);
   return {
     id: e,
     ...(e === 'hijri' ? { provider: t } : {}),
-    getParts(s) {
-      return formatParts(r, s);
+    getParts(r) {
+      return formatParts(s, r);
     },
-    fromParts(s) {
-      const n = findGregorianDate(r, e, s);
+    fromParts(r) {
+      const n = findGregorianDate(s, e, r);
       return (
         n.setUTCHours(
-          s.hour || 0,
-          s.minute || 0,
-          s.second || 0,
-          s.millisecond || 0,
+          r.hour || 0,
+          r.minute || 0,
+          r.second || 0,
+          r.millisecond || 0,
         ),
         n
       );
     },
-    addDays(s, n) {
-      return new Date(s.getTime() + n * dayMilliseconds$1);
+    addDays(r, n) {
+      return new Date(r.getTime() + n * dayMilliseconds$1);
     },
-    addMonths(s, n) {
-      const i = formatParts(r, s),
-        o = i.month + n,
-        a = i.year + Math.floor((o - 1) / 12),
-        l = ((((o - 1) % 12) + 12) % 12) + 1,
-        d = Math.min(
-          i.day,
-          (() => {
-            const c = findGregorianDate(r, e, { year: a, month: l, day: 1 });
-            let f = 1;
-            for (
-              ;
-              sameDate(
-                formatParts(r, new Date(c.getTime() + f * dayMilliseconds$1)),
-                { year: a, month: l, day: f + 1 },
-              );
+    addMonths(r, n) {
+      const i = formatParts(s, r);
+      let a = i.year,
+        o = i.month;
+      const l = (f) => (e === 'hebrew' && isHebrewLeapYear(f) ? 13 : 12),
+        d = n < 0 ? -1 : 1;
+      for (let f = 0; f < Math.abs(n); f++)
+        ((o += d),
+          o > l(a) ? ((o = 1), (a += 1)) : o < 1 && ((a -= 1), (o = l(a))));
+      const c = Math.min(
+        i.day,
+        (() => {
+          const f = findGregorianDate(s, e, { year: a, month: o, day: 1 });
+          let v = 1;
+          for (
+            ;
+            sameDate(
+              formatParts(s, new Date(f.getTime() + v * dayMilliseconds$1)),
+              { year: a, month: o, day: v + 1 },
+            );
 
-            )
-              f += 1;
-            return f;
-          })(),
-        );
-      return findGregorianDate(r, e, { ...i, year: a, month: l, day: d });
+          )
+            v += 1;
+          return v;
+        })(),
+      );
+      return findGregorianDate(s, e, { ...i, year: a, month: o, day: c });
     },
-    daysInMonth(s, n) {
-      const i = findGregorianDate(r, e, { year: s, month: n, day: 1 });
-      let o = 1;
+    daysInMonth(r, n) {
+      const i = findGregorianDate(s, e, { year: r, month: n, day: 1 });
+      let a = 1;
       for (
         ;
         sameDate(
-          formatParts(r, new Date(i.getTime() + o * dayMilliseconds$1)),
-          { year: s, month: n, day: o + 1 },
+          formatParts(s, new Date(i.getTime() + a * dayMilliseconds$1)),
+          { year: r, month: n, day: a + 1 },
         );
 
       )
-        o += 1;
-      return o;
+        a += 1;
+      return a;
     },
   };
 }
 const dayMilliseconds = 864e5,
   islamicEpoch = 19484395e-1;
-function islamicToJulianDay(e, t, r) {
+function islamicToJulianDay(e, t, s) {
   return (
-    r +
+    s +
     Math.ceil(29.5 * (t - 1)) +
     (e - 1) * 354 +
     Math.floor((3 + 11 * e) / 30) +
@@ -7095,15 +7460,15 @@ function gregorianToJulianDay(e) {
 }
 function gregorianToIslamic(e) {
   const t = Math.floor(gregorianToJulianDay(e)) + 0.5,
-    r = Math.floor((30 * (t - islamicEpoch) + 10646) / 10631),
-    s = Math.min(
+    s = Math.floor((30 * (t - islamicEpoch) + 10646) / 10631),
+    r = Math.min(
       12,
-      Math.ceil((t - (29 + islamicToJulianDay(r, 1, 1))) / 29.5) + 1,
+      Math.ceil((t - (29 + islamicToJulianDay(s, 1, 1))) / 29.5) + 1,
     ),
-    n = Math.floor(t - islamicToJulianDay(r, s, 1) + 1);
+    n = Math.floor(t - islamicToJulianDay(s, r, 1) + 1);
   return {
-    year: r,
-    month: s,
+    year: s,
+    month: r,
     day: n,
     hour: e.getUTCHours(),
     minute: e.getUTCMinutes(),
@@ -7134,16 +7499,16 @@ function createTabularHijriAdapter() {
       return new Date(e.getTime() + t * dayMilliseconds);
     },
     addMonths(e, t) {
-      const r = gregorianToIslamic(e),
-        s = r.year * 12 + r.month - 1 + t,
-        n = Math.floor(s / 12),
-        i = (((s % 12) + 12) % 12) + 1,
-        o = i % 2 === 1 ? 30 : 29;
+      const s = gregorianToIslamic(e),
+        r = s.year * 12 + s.month - 1 + t,
+        n = Math.floor(r / 12),
+        i = (((r % 12) + 12) % 12) + 1,
+        a = i % 2 === 1 ? 30 : 29;
       return this.fromParts({
-        ...r,
+        ...s,
         year: n,
         month: i,
-        day: Math.min(r.day, o),
+        day: Math.min(s.day, a),
       });
     },
     daysInMonth(e, t) {
@@ -7171,12 +7536,12 @@ const _hoisted_1$3 = ['transform'],
     },
     setup(e) {
       const t = e,
-        { direction: r, inverse: s } = toRefs(t),
+        { direction: s, inverse: r } = toRefs(t),
         n = computed(
           () =>
-            `rotate(${{ up: -90, down: 90, right: 0, left: 180 }[r.value] + (s.value ? 180 : 0)} 0 0)`,
+            `rotate(${{ up: -90, down: 90, right: 0, left: 180 }[s.value] + (r.value ? 180 : 0)} 0 0)`,
         );
-      return (i, o) => (
+      return (i, a) => (
         openBlock(),
         createElementBlock(
           'svg',
@@ -7188,8 +7553,8 @@ const _hoisted_1$3 = ['transform'],
             transform: n.value,
           },
           [
-            ...(o[0] ||
-              (o[0] = [
+            ...(a[0] ||
+              (a[0] = [
                 createBaseVNode('metadata', null, 'Arrow icon', -1),
                 createBaseVNode(
                   'path',
@@ -7214,9 +7579,9 @@ const _hoisted_1$3 = ['transform'],
     props: { icon: { type: String, required: !0 } },
     setup(e) {
       const t = e,
-        { icon: r } = toRefs(t);
-      return (s, n) =>
-        unref(r) === 'clear'
+        { icon: s } = toRefs(t);
+      return (r, n) =>
+        unref(s) === 'clear'
           ? (openBlock(),
             createElementBlock(
               'svg',
@@ -7227,7 +7592,7 @@ const _hoisted_1$3 = ['transform'],
                   width: '1rem',
                   xmlns: 'http://www.w3.org/2000/svg',
                 },
-                s.$attrs,
+                r.$attrs,
               ),
               [
                 ...(n[0] ||
@@ -7245,7 +7610,7 @@ const _hoisted_1$3 = ['transform'],
               ],
               16,
             ))
-          : unref(r) === 'date'
+          : unref(s) === 'date'
             ? (openBlock(),
               createElementBlock(
                 'svg',
@@ -7257,7 +7622,7 @@ const _hoisted_1$3 = ['transform'],
                       '20.711000442504883 19.33300018310547 51.29999542236328 53.48200225830078',
                     xmlns: 'http://www.w3.org/2000/svg',
                   },
-                  s.$attrs,
+                  r.$attrs,
                   { 'xmlns:xlink': 'http://www.w3.org/1999/xlink' },
                 ),
                 [
@@ -7271,7 +7636,7 @@ const _hoisted_1$3 = ['transform'],
                 ],
                 16,
               ))
-            : unref(r) === 'datetime'
+            : unref(s) === 'datetime'
               ? (openBlock(),
                 createElementBlock(
                   'svg',
@@ -7281,7 +7646,7 @@ const _hoisted_1$3 = ['transform'],
                       'xmlns:svg': 'http://www.w3.org/2000/svg',
                       xmlns: 'http://www.w3.org/2000/svg',
                     },
-                    s.$attrs,
+                    r.$attrs,
                     {
                       viewBox:
                         '7.146755218505859 47.93895721435547 195.70648193359375 201.1220703125',
@@ -7394,13 +7759,13 @@ const _hoisted_1$3 = ['transform'],
                   ],
                   16,
                 ))
-              : unref(r) === 'time'
+              : unref(s) === 'time'
                 ? (openBlock(),
                   createElementBlock(
                     'svg',
                     mergeProps(
                       { key: 3, xmlns: 'http://www.w3.org/2000/svg' },
-                      s.$attrs,
+                      r.$attrs,
                       {
                         'fill-rule': 'evenodd',
                         'clip-rule': 'evenodd',
@@ -7436,7 +7801,7 @@ const _hoisted_1$3 = ['transform'],
       dates: { type: Array, required: !0 },
     },
     setup(e) {
-      return (t, r) =>
+      return (t, s) =>
         e.name.endsWith('[]')
           ? (openBlock(!0),
             createElementBlock(
@@ -7444,7 +7809,7 @@ const _hoisted_1$3 = ['transform'],
               { key: 0 },
               renderList(
                 e.dates,
-                (s, n) => (
+                (r, n) => (
                   openBlock(),
                   createElementBlock(
                     'input',
@@ -7452,7 +7817,7 @@ const _hoisted_1$3 = ['transform'],
                       key: n,
                       type: 'hidden',
                       name: e.name,
-                      value: s.toString(e.format),
+                      value: r.toString(e.format),
                     },
                     null,
                     8,
@@ -7469,7 +7834,7 @@ const _hoisted_1$3 = ['transform'],
                 key: 1,
                 type: 'hidden',
                 name: e.name,
-                value: e.dates.map((s) => s.toString(e.format)),
+                value: e.dates.map((r) => r.toString(e.format)),
               },
               null,
               8,
@@ -7478,6 +7843,11 @@ const _hoisted_1$3 = ['transform'],
     },
   }),
   isClient = typeof window < 'u',
+  jalaliDisableFormats = {
+    date: 'jYYYY/jM/jD',
+    datetime: 'jYYYY/jM/jD H:m',
+    time: 'H:m',
+  },
   _sfc_main$1 = defineComponent({
     components: {
       PDPArrow: _sfc_main$4,
@@ -7488,6 +7858,7 @@ const _hoisted_1$3 = ['transform'],
     props: {
       format: { type: String },
       inputFormat: { type: String },
+      inputMask: { type: [String, Object] },
       displayFormat: { type: String },
       type: {
         type: String,
@@ -7583,9 +7954,11 @@ const _hoisted_1$3 = ['transform'],
         pickerPlace: {},
         documentWidth: isClient ? window.innerWidth : 1 / 0,
         langs: Core.langs,
-        currentLocale:
-          this.locale || this.defaultLocaleForCalendar(this.calendar),
+        currentLocale: (
+          this.locale || this.defaultLocaleForCalendar(this.calendar)
+        ).split(',')[0],
         interval: null,
+        resizeHandler: null,
         submitedValue: [],
       };
     },
@@ -7630,7 +8003,7 @@ const _hoisted_1$3 = ['transform'],
           t = this.currentLocale === 'fa' ? 6 : 0;
         return Array.from(
           { length: 7 },
-          (r, s) => e[(this.calendarWeekStart - t + s + 7) % 7],
+          (s, r) => e[(this.calendarWeekStart - t + r + 7) % 7],
         );
       },
       calendarMonthNames() {
@@ -7661,10 +8034,10 @@ const _hoisted_1$3 = ['transform'],
         };
         for (const t in this.$attrs)
           try {
-            const [, r, s] = t.match(
+            const [, s, r] = t.match(
               /(div|label|alt|picker|firstInput|secondInput)-(.*)/,
             );
-            e[r][s] = this.$attrs[t];
+            e[s][r] = this.$attrs[t];
           } catch {
             e.firstInput[t] = this.$attrs[t];
           }
@@ -7685,6 +8058,12 @@ const _hoisted_1$3 = ['transform'],
           e
         );
       },
+      altDates() {
+        return this.submitedValue;
+      },
+      displayDate() {
+        return this.onDisplay || this.core;
+      },
       years() {
         let e = this.displayYear(this.fromDate);
         const t = this.displayYear(this.toDate);
@@ -7697,8 +8076,8 @@ const _hoisted_1$3 = ['transform'],
         if (Core.isNumber(this.column)) e = this.column;
         else {
           const t = Object.keys(this.column)
-            .sort((r, s) => +r - +s)
-            .find((r) => this.documentWidth <= +r);
+            .sort((s, r) => +s - +r)
+            .find((s) => this.documentWidth <= +s);
           t && (e = this.column[t]);
         }
         if (this.type.includes('time')) {
@@ -7721,46 +8100,46 @@ const _hoisted_1$3 = ['transform'],
       monthDays() {
         const e = [];
         for (let t = 0; t < this.columnCount; t++) {
-          let r;
-          const s = this.calendarMonthDate(this.onDisplay, t),
-            n = this.getCalendarParts(s),
+          let s;
+          const r = this.calendarMonthDate(this.onDisplay, t),
+            n = this.getCalendarParts(r),
             i = n.year,
-            o = n.month,
-            a = this.calendarDayDate(s, 1);
-          r = this.calendarWeekdayOffset(a);
-          let l = this.calendarDaysInMonth(i, o);
-          const d = Math.ceil((l + r) / 7),
+            a = n.month,
+            o = this.calendarDayDate(r, 1);
+          s = this.calendarWeekdayOffset(o);
+          let l = this.calendarDaysInMonth(i, a);
+          const d = Math.ceil((l + s) / 7),
             c = [];
           let f = 1;
-          for (let w = 0; w < d; w++) {
-            c[w] = [];
-            for (let k = 0; k < 7; k++)
-              if (r) ((c[w][k] = { empty: !0 }), --r);
+          for (let v = 0; v < d; v++) {
+            c[v] = [];
+            for (let M = 0; M < 7; M++)
+              if (s) ((c[v][M] = { empty: !0 }), --s);
               else if (l) {
-                const N = this.calendarDayDate(s, f);
-                ((c[w][k] = {
+                const P = this.calendarDayDate(r, f);
+                ((c[v][M] = {
                   friday: this.calendarWeekendDays.includes(
-                    new Date(this.getDateTimestamp(N)).getDay(),
+                    new Date(this.getDateTimestamp(P)).getUTCDay(),
                   ),
                   weekend: this.calendarWeekendDays.includes(
-                    new Date(this.getDateTimestamp(N)).getDay(),
+                    new Date(this.getDateTimestamp(P)).getUTCDay(),
                   ),
-                  raw: N,
+                  raw: P,
                   startRange:
                     this.selectedDates[0] &&
-                    this.isSameCalendarDate(this.selectedDates[0], N),
+                    this.isSameCalendarDate(this.selectedDates[0], P),
                   endRange:
                     this.selectedDates[1] &&
-                    this.isSameCalendarDate(this.selectedDates[1], N),
+                    this.isSameCalendarDate(this.selectedDates[1], P),
                   inRange:
                     this.selectedDates.length == 2 &&
-                    this.isBetweenSelectedDates(N),
-                  disabled: !this.checkDate(N, 'date') || this.isInDisable(N),
-                  today: this.isToday(N),
+                    this.isBetweenSelectedDates(P),
+                  disabled: !this.checkDate(P, 'date') || this.isInDisable(P),
+                  today: this.isToday(P),
                   val: f++,
                 }),
                   --l);
-              } else c[w][k] = { empty: !0 };
+              } else c[v][M] = { empty: !0 };
           }
           e.push(c);
         }
@@ -7772,14 +8151,14 @@ const _hoisted_1$3 = ['transform'],
             this.activeCalendar === 'hebrew'
               ? this.calendarMonthNames.length
               : 12;
-        for (let r = 1; r <= t; r++)
-          e[r] = {
-            label: this.calendarMonthNames[r - 1] || `Month ${r}`,
-            selected: this.displayMonth(this.onDisplay) == r,
+        for (let s = 1; s <= t; s++)
+          e[s] = {
+            label: this.calendarMonthNames[s - 1] || `Month ${s}`,
+            selected: this.displayMonth(this.onDisplay) == s,
             disabled: !this.checkDate(
               this.calendarMonthDate(
                 this.onDisplay,
-                r - this.displayMonth(this.onDisplay),
+                s - this.displayMonth(this.onDisplay),
               ),
               'month',
             ),
@@ -7789,8 +8168,8 @@ const _hoisted_1$3 = ['transform'],
       nextLocale() {
         const e = this.effectiveLocale.split(','),
           t = e.indexOf(this.currentLocale),
-          r = e[t + 1] || e[0];
-        return this.langs[r].translations.label;
+          s = e[t + 1] || e[0];
+        return this.langs[s].translations.label;
       },
       formats() {
         const e = {
@@ -7832,24 +8211,24 @@ const _hoisted_1$3 = ['transform'],
         if (!this.shortcut) return !1;
         const e = {},
           t = this.type.includes('date') ? 'date' : 'time';
-        let r = this.core.clone().now();
+        let s = this.core.clone().now();
         t == 'time' &&
-          !this.validate(r, t) &&
-          (r = this.toDate.clone().subDay().now());
-        const s = (i) =>
+          !this.validate(s, t) &&
+          (s = this.toDate.clone().subDay().now());
+        const r = (i) =>
             this.mode === 'single'
               ? this.validate(i[0], t)
-              : i.some((o) => this.validate(o, t)) &&
+              : i.some((a) => this.validate(a, t)) &&
                 !this.isDisableBetween(...i),
-          n = (i, o = !1) => {
-            for (const a in i) {
-              const l = o
-                ? i[a].map((d) =>
-                    t == 'date' ? r.clone().fromJalali(d) : r.clone().time(d),
+          n = (i, a = !1) => {
+            for (const o in i) {
+              const l = a
+                ? i[o].map((d) =>
+                    t == 'date' ? s.clone().fromJalali(d) : s.clone().time(d),
                   )
-                : i[a];
-              s(l) &&
-                (e[a] =
+                : i[o];
+              r(l) &&
+                (e[o] =
                   this.type == 'date' ? l.map((d) => d.startOf('date')) : l);
             }
           };
@@ -7857,7 +8236,7 @@ const _hoisted_1$3 = ['transform'],
           this.shortcut === !0
             ? n(
                 Core.getShortcuts(
-                  r,
+                  s,
                   `${t}-${this.mode}`,
                   this.lang.translations,
                 ),
@@ -7910,11 +8289,11 @@ const _hoisted_1$3 = ['transform'],
       },
       locale: {
         handler: function (e, t) {
-          const r = e || this.defaultLocaleForCalendar(this.calendar),
+          const s = e || this.defaultLocaleForCalendar(this.calendar),
             n = (t || this.effectiveLocale)
               .split(',')
               .indexOf(this.currentLocale);
-          ((this.currentLocale = r.split(',')[n] || r.split(',')[0]),
+          ((this.currentLocale = s.split(',')[n] || s.split(',')[0]),
             this.langs[this.currentLocale] || (this.currentLocale = 'en'));
         },
       },
@@ -7950,20 +8329,33 @@ const _hoisted_1$3 = ['transform'],
           Core.getLastUnit(this.to, this.type),
         ).calendar(t)),
         this.core.calendar(t));
-      const r = this.$attrs.modelValue;
-      if (r) this.setDate(r);
+      const s = this.$attrs.modelValue;
+      if (s) this.setDate(s);
       else {
-        const s = this.core.clone();
-        (this.type == 'date' && s.startOf('date'),
-          this.checkDate(s, 'date')
-            ? (this.onDisplay = s)
-            : (this.onDisplay = this.nearestDate(s).startOf('date')));
+        const r = this.core.clone();
+        (this.type == 'date' && r.startOf('date'),
+          this.checkDate(r, 'date')
+            ? (this.onDisplay = r)
+            : (this.onDisplay = this.nearestDate(r).startOf('date')));
       }
-      (window.addEventListener('resize', () => {
+      ((this.resizeHandler = () => {
         this.documentWidth = window.innerWidth;
       }),
+        window.addEventListener('resize', this.resizeHandler),
         this.type != 'date' && this.onDisplay.time(this.core),
         (this.showDatePicker = this.show));
+    },
+    beforeUnmount() {
+      (this.resizeHandler &&
+        (window.removeEventListener('resize', this.resizeHandler),
+        (this.resizeHandler = null)),
+        document.removeEventListener('scroll', this.locate),
+        this.$refs.pdpMain &&
+          this.$refs.pdpMain.removeEventListener(
+            'mouseover',
+            this.selectInRangeDate,
+          ),
+        this.stopChangeTime());
     },
     methods: {
       defaultLocaleForCalendar(e) {
@@ -8044,7 +8436,7 @@ const _hoisted_1$3 = ['transform'],
                   'Tevet',
                   'Shevat',
                   'Adar I',
-                  'Adar',
+                  'Adar II',
                   'Nisan',
                   'Iyar',
                   'Sivan',
@@ -8099,45 +8491,47 @@ const _hoisted_1$3 = ['transform'],
               '冬月',
               '腊月',
             ];
-          const a =
+          const l =
             this.currentLocale === 'fa'
               ? 'ماه'
               : this.currentLocale === 'ar'
                 ? 'الشهر'
                 : 'Month';
-          return Array.from({ length: 12 }, (l, d) => `${a} ${d + 1}`);
+          return Array.from({ length: 12 }, (d, c) => `${l} ${c + 1}`);
         }
-        const r = this.activeCalendar === 'hebrew' ? t.hebrew.length : 12,
-          s = [],
-          n =
+        const s = this.activeCalendar === 'hebrew' ? t.hebrew.length : 12,
+          r = this.localeConfig?.[this.currentLocale]?.months;
+        if (Array.isArray(r) && r.length >= s) return r;
+        const n = [],
+          i =
             this.activeCalendar === 'buddhist'
               ? 'buddhist'
               : this.activeCalendar === 'hebrew'
                 ? 'hebrew'
                 : 'gregory',
-          i = `${this.currentLocale}-u-ca-${n}-nu-latn`,
-          o = new Intl.DateTimeFormat(i, { month: 'long', timeZone: 'UTC' });
-        for (let a = 1; a <= r; a++)
+          a = `${this.currentLocale}-u-ca-${i}-nu-latn`,
+          o = new Intl.DateTimeFormat(a, { month: 'long', timeZone: 'UTC' });
+        for (let l = 1; l <= s; l++)
           try {
-            const l = this.calendarAdapter
+            const d = this.calendarAdapter
               ? this.calendarAdapter.fromParts({
                   year: e || 1,
-                  month: a,
+                  month: l,
                   day: 1,
                 })
               : new Date(
                   Date.UTC(
                     (e || 1970) -
                       (this.activeCalendar === 'buddhist' ? 543 : 0),
-                    a - 1,
+                    l - 1,
                     1,
                   ),
                 );
-            s.push(o.format(l));
+            n.push(o.format(d));
           } catch {
             break;
           }
-        return s.length ? s : t.hebrew || this.lang.months;
+        return n.length ? n : t.hebrew || this.lang.months;
       },
       usesCalendarAdapter() {
         return this.activeCalendar !== 'jalali';
@@ -8148,27 +8542,27 @@ const _hoisted_1$3 = ['transform'],
           return this.calendarAdapter.getParts(
             new Date(this.getDateTimestamp(t)),
           );
-        const r = t
+        const s = t
           .clone()
           .calendar(
             this.activeCalendar === 'gregorian' ? 'gregorian' : 'jalali',
           );
         return {
-          year: r.year(),
-          month: r.month(),
-          day: r.date(),
-          hour: r.hour(),
-          minute: r.minute(),
-          second: r.second(),
-          millisecond: r.millisecond(),
+          year: s.year(),
+          month: s.month(),
+          day: s.date(),
+          hour: s.hour(),
+          minute: s.minute(),
+          second: s.second(),
+          millisecond: s.millisecond(),
         };
       },
       getDateTimestamp(e) {
         const t = e,
-          r = Number(t.valueOf());
-        if (Number.isFinite(r)) return r;
-        const s = t.toDate();
-        return Number.isFinite(Number(s)) ? Number(s) : Date.parse(String(s));
+          s = Number(t.valueOf());
+        if (Number.isFinite(s)) return s;
+        const r = t.toDate();
+        return Number.isFinite(Number(r)) ? Number(r) : Date.parse(String(r));
       },
       getDayTimestamp(e) {
         return Math.floor(this.getDateTimestamp(e) / 864e5) * 864e5;
@@ -8210,22 +8604,37 @@ const _hoisted_1$3 = ['transform'],
         return this.getCalendarParts(e).day;
       },
       calendarMonthDate(e, t) {
-        const r = e;
+        const s = e;
         return this.calendarAdapter
           ? markRaw(
               new PersianDate().fromGregorian(
                 this.calendarAdapter
-                  .addMonths(new Date(this.getDateTimestamp(r)), t)
+                  .addMonths(new Date(this.getDateTimestamp(s)), t)
                   .getTime(),
               ),
             )
-          : markRaw(r.clone().addMonth(t));
+          : markRaw(s.clone().addMonth(t));
       },
       calendarDayDate(e, t) {
-        const r = e;
+        const s = e;
         return this.calendarAdapter
           ? this.fromCalendarParts({ ...this.getCalendarParts(e), day: t })
-          : markRaw(r.clone().date(t));
+          : markRaw(s.clone().date(t));
+      },
+      calendarAddDays(e, t) {
+        return this.calendarAdapter
+          ? markRaw(
+              new PersianDate().fromGregorian(
+                this.calendarAdapter
+                  .addDays(new Date(this.getDateTimestamp(e)), t)
+                  .getTime(),
+              ),
+            )
+          : markRaw(e.clone().addDay(t));
+      },
+      calendarMonthKey(e) {
+        const t = this.getCalendarParts(e);
+        return `${t.year}-${t.month}-${t.leapMonth ? 'leap' : 'normal'}`;
       },
       calendarDaysInMonth(e, t) {
         return this.calendarAdapter
@@ -8234,7 +8643,7 @@ const _hoisted_1$3 = ['transform'],
       },
       calendarWeekdayOffset(e) {
         return (
-          (new Date(this.getDateTimestamp(e)).getDay() -
+          (new Date(this.getDateTimestamp(e)).getUTCDay() -
             this.calendarWeekStart +
             7) %
           7
@@ -8244,38 +8653,49 @@ const _hoisted_1$3 = ['transform'],
         return this.getDayTimestamp(e) === this.getDayTimestamp(this.core);
       },
       isSameCalendarDate(e, t) {
-        const r = this.getCalendarParts(e),
-          s = this.getCalendarParts(t);
-        return r.year === s.year && r.month === s.month && r.day === s.day;
+        const s = this.getCalendarParts(e),
+          r = this.getCalendarParts(t);
+        return (
+          s.year === r.year &&
+          s.month === r.month &&
+          s.day === r.day &&
+          !!s.leapMonth == !!r.leapMonth
+        );
       },
       isBetweenSelectedDates(e) {
         if (this.selectedDates.length !== 2) return !1;
         const t = this.getDayTimestamp(e),
-          r = this.getDayTimestamp(this.selectedDates[0]),
-          s = this.getDayTimestamp(this.selectedDates[1]);
-        return t > Math.min(r, s) && t < Math.max(r, s);
+          s = this.getDayTimestamp(this.selectedDates[0]),
+          r = this.getDayTimestamp(this.selectedDates[1]);
+        return t > Math.min(s, r) && t < Math.max(s, r);
       },
       formatDateValue(e, t) {
-        const r = e;
-        if (!this.calendarAdapter) return r.toString(t);
-        const s = this.getCalendarParts(e),
-          n = (o, a = 2) => String(o).padStart(a, '0'),
-          i = this.monthNamesForYear(s.year)[s.month - 1] || `Month ${s.month}`;
+        const s = e;
+        if (!this.calendarAdapter) return s.toString(t);
+        const r = this.getCalendarParts(e),
+          n = (c, f = 2) => String(c).padStart(f, '0'),
+          i = this.activeCalendar === 'chinese' && r.leapMonth ? 'bis' : '',
+          a = i ? '__LEAP__' : '',
+          o = this.monthNamesForYear(r.year)[r.month - 1] || `Month ${r.month}`,
+          l = `${n(r.month)}${a}`,
+          d = `${r.month}${a}`;
         return t
-          .replace('?MMMM', i)
-          .replace('MMMM', i)
-          .replace('YYYY', String(s.year))
-          .replace('YY', String(s.year).slice(-2))
-          .replace('MM', n(s.month))
-          .replace('M', String(s.month))
-          .replace('DD', n(s.day))
-          .replace('D', String(s.day))
-          .replace('HH', n(s.hour || 0))
-          .replace('H', String(s.hour || 0))
-          .replace('mm', n(s.minute || 0))
-          .replace('m', String(s.minute || 0))
-          .replace('ss', n(s.second || 0))
-          .replace('s', String(s.second || 0));
+          .replace('?D', String(r.day))
+          .replace('?MMMM', o)
+          .replace('MMMM', o)
+          .replace('YYYY', String(r.year))
+          .replace('YY', String(r.year).slice(-2))
+          .replace('MM', l)
+          .replace('M', d)
+          .replace('DD', n(r.day))
+          .replace('D', String(r.day))
+          .replace('HH', n(r.hour || 0))
+          .replace('H', String(r.hour || 0))
+          .replace('mm', n(r.minute || 0))
+          .replace('m', String(r.minute || 0))
+          .replace('ss', n(r.second || 0))
+          .replace('s', String(r.second || 0))
+          .replace(/__LEAP__/g, i);
       },
       formatModelValue(e) {
         const t =
@@ -8284,55 +8704,63 @@ const _hoisted_1$3 = ['transform'],
             : this.modelCalendar;
         if (!t || t === this.activeCalendar)
           return this.formatDateValue(e, this.formats.model);
-        const r = e,
-          s = this.getDateTimestamp(r);
+        const s = e,
+          r = this.getDateTimestamp(s);
         if (t === 'jalali' || t === 'gregorian')
           return new PersianDate()
-            .fromGregorian(s)
+            .fromGregorian(r)
             .calendar(t)
             .toString(this.formats.model);
         const i = createCalendarAdapter(t, {
             hijriProvider: this.hijriProvider,
-          }).getParts(new Date(s)),
-          o = (a, l = 2) => String(a).padStart(l, '0');
+          }).getParts(new Date(r)),
+          a = (d, c = 2) => String(d).padStart(c, '0'),
+          o = t === 'chinese' && i.leapMonth ? 'bis' : '',
+          l = o ? '__LEAP__' : '';
         return this.formats.model
           .replace('YYYY', String(i.year))
           .replace('YY', String(i.year).slice(-2))
-          .replace('MM', o(i.month))
-          .replace('M', String(i.month))
-          .replace('DD', o(i.day))
+          .replace('MM', `${a(i.month)}${l}`)
+          .replace('M', `${i.month}${l}`)
+          .replace('DD', a(i.day))
           .replace('D', String(i.day))
-          .replace('HH', o(i.hour || 0))
+          .replace('HH', a(i.hour || 0))
           .replace('H', String(i.hour || 0))
-          .replace('mm', o(i.minute || 0))
+          .replace('mm', a(i.minute || 0))
           .replace('m', String(i.minute || 0))
-          .replace('ss', o(i.second || 0))
-          .replace('s', String(i.second || 0));
+          .replace('ss', a(i.second || 0))
+          .replace('s', String(i.second || 0))
+          .replace(/__LEAP__/g, o);
       },
       parseCalendarParts(e) {
-        const t = e
-          .split(/[-/ .,\\:]/)
-          .filter(Boolean)
-          .map(Number);
+        const t = e.split(/[-/ .,\\:]/).filter(Boolean),
+          s = t[1] || '1',
+          r = this.activeCalendar === 'chinese' && /bis$/i.test(s),
+          n = Number.parseInt(s.replace(/bis$/i, ''), 10);
         return {
-          year: t[0],
-          month: t[1] || 1,
-          day: t[2] || 1,
-          hour: t[3] || 0,
-          minute: t[4] || 0,
-          second: t[5] || 0,
+          year: Number(t[0]),
+          month: n || 1,
+          day: Number(t[2]) || 1,
+          hour: Number(t[3]) || 0,
+          minute: Number(t[4]) || 0,
+          second: Number(t[5]) || 0,
+          ...(r ? { leapMonth: !0 } : {}),
         };
       },
       parseCalendarDate(e) {
         if (this.calendarAdapter)
           return this.fromCalendarParts(this.parseCalendarParts(e));
         const t = this.core.clone(),
-          r = this.calendar === 'gregorian' ? 'gregorian' : 'jalali';
+          s =
+            this.calendar === 'gregorian' ||
+            (e.includes('-') && !e.includes('/'))
+              ? 'gregorian'
+              : 'jalali';
         return /[-/ ]/.test(e)
-          ? (r === 'gregorian' ? t.fromGregorian(e) : t.fromJalali(e)).calendar(
+          ? (s === 'gregorian' ? t.fromGregorian(e) : t.fromJalali(e)).calendar(
               this.activeCalendar,
             )
-          : t.calendar(r).parse(e).calendar(this.activeCalendar);
+          : t.calendar(s).parse(e).calendar(this.activeCalendar);
       },
       showPart(e) {
         e == 'year'
@@ -8357,11 +8785,11 @@ const _hoisted_1$3 = ['transform'],
         else if (e == 'sub')
           this.onDisplay = this.calendarMonthDate(this.onDisplay, -1);
         else {
-          const r = this.getCalendarParts(this.onDisplay);
+          const s = this.getCalendarParts(this.onDisplay);
           this.onDisplay = this.fromCalendarParts({
-            ...r,
+            ...s,
             month: e,
-            day: Math.min(r.day, this.calendarDaysInMonth(r.year, e)),
+            day: Math.min(s.day, this.calendarDaysInMonth(s.year, e)),
           });
         }
         this.checkDate(this.onDisplay, 'month')
@@ -8384,47 +8812,88 @@ const _hoisted_1$3 = ['transform'],
       },
       isDisableBetween(e, t) {
         if (!this.disable) return !1;
+        if (this.calendarAdapter) {
+          const s = this.getDateTimestamp(e),
+            r = this.getDateTimestamp(t),
+            n = Math.min(s, r),
+            i = Math.max(s, r),
+            a = (l) =>
+              this.type === 'date'
+                ? this.getDayTimestamp(l)
+                : this.getDateTimestamp(l);
+          if (
+            (typeof this.disable == 'string'
+              ? [this.disable]
+              : Array.isArray(this.disable)
+                ? this.disable.filter((l) => typeof l == 'string')
+                : []
+            ).some((l) => {
+              const d =
+                  this.type === 'time'
+                    ? t.clone().time(l)
+                    : this.parseCalendarDate(l),
+                c = a(d);
+              return c > n && c < i;
+            })
+          )
+            return !0;
+          if (this.type !== 'time') {
+            let l = new Date(i);
+            for (
+              ;
+              (l = this.calendarAdapter.addDays(l, -1)), !(l.getTime() <= n);
+
+            )
+              if (
+                this.isInDisable(
+                  this.fromCalendarParts(this.calendarAdapter.getParts(l)),
+                )
+              )
+                return !0;
+          }
+          return !1;
+        }
         if (this.type != 'datetime' && Core.isString(this.disable)) {
-          const r =
+          const s =
             this.type == 'time' ? t.clone().time(this.disable) : this.disable;
           return this.core
             .clone()
-            .parse(r)
+            .parse(s)
             .isBetween(e.toString(), t.toString());
         } else {
           if (
             this.type != 'datetime' &&
             Array.isArray(this.disable) &&
-            this.disable.some((r) => Core.isString(r))
+            this.disable.some((s) => Core.isString(s))
           )
             return this.disable.some(
-              (r) => (
-                this.type == 'time' && (r = t.clone().time(r).toString()),
-                this.core.clone().parse(r).isBetween(e, t)
+              (s) => (
+                this.type == 'time' && (s = t.clone().time(s).toString()),
+                this.core.clone().parse(s).isBetween(e, t)
               ),
             );
           if (this.type != 'time') {
-            const r = t.clone().startOf('date').subDay();
-            for (; !r.isSameOrBefore(e); ) {
-              if (this.isInDisable(r)) return !0;
-              r.subDay();
+            const s = t.clone().startOf('date').subDay();
+            for (; !s.isSameOrBefore(e); ) {
+              if (this.isInDisable(s)) return !0;
+              s.subDay();
             }
           }
         }
         return !1;
       },
       selectDate(e, t) {
-        let r = this.validate(e, t);
-        if (r) {
+        let s = this.validate(e, t);
+        if (s) {
           if (
             this.mode == 'range' &&
             this.selectedDates.length == 1 &&
-            ((r = !this.isDisableBetween(this.selectedDates[0], e)), !r)
+            ((s = !this.isDisableBetween(this.selectedDates[0], e)), !s)
           )
             return -2;
         } else return -1;
         return (
-          this.type == 'date' && e.startOf('date'),
+          this.type == 'date' && !this.calendarAdapter && e.startOf('date'),
           this.mode == 'single'
             ? (this.selectedDates = [e])
             : this.mode == 'range' &&
@@ -8452,10 +8921,10 @@ const _hoisted_1$3 = ['transform'],
                 )),
           this.type == 'datetime' &&
             (this.selectedDates = this.selectedDates.map(
-              (s, n) => (
-                this.selectedTimes[n] && s.time(this.selectedTimes[n]),
-                (this.selectedTimes[n] = s),
-                s
+              (r, n) => (
+                this.selectedTimes[n] && r.time(this.selectedTimes[n]),
+                (this.selectedTimes[n] = r),
+                r
               ),
             )),
           this.$emit('select', e),
@@ -8489,11 +8958,11 @@ const _hoisted_1$3 = ['transform'],
         }
         this.type.includes('date') &&
           this.$nextTick(() => {
-            (document.querySelector('.pdp-day.today').classList.add('tada'),
+            const t = this.$refs.root?.querySelector('.pdp-day.today');
+            t &&
+              (t.classList.add('tada'),
               setTimeout(() => {
-                document
-                  .querySelector('.pdp-day.today')
-                  .classList.remove('tada');
+                t.classList.remove('tada');
               }, 1e3));
           });
       },
@@ -8501,8 +8970,8 @@ const _hoisted_1$3 = ['transform'],
         if (this.calendarAdapter) {
           const n = Core.isPersianDate(e) ? e : this.parseCalendarDate(e),
             i = this.getDateTimestamp(n),
-            o = this.getDateTimestamp(this.fromDate),
-            a = this.getDateTimestamp(this.toDate);
+            a = this.getDateTimestamp(this.fromDate),
+            o = this.getDateTimestamp(this.toDate);
           if (t === 'year' || t === 'month' || t === 'date') {
             const l = this.getDayTimestamp(n);
             return (
@@ -8510,90 +8979,140 @@ const _hoisted_1$3 = ['transform'],
               l >= this.getDayTimestamp(this.fromDate)
             );
           }
-          return i >= o && i <= a;
+          return i >= a && i <= o;
         }
-        let r, s;
+        let s, r;
         switch (
           (Core.isPersianDate(e) || (e = this.core.clone().parse(e)), t)
         ) {
           case 'year':
-            ((r = this.fromDate.toString('?YYYY')),
-              (s = this.toDate.toString('?YYYY')));
+            ((s = this.fromDate.toString('?YYYY')),
+              (r = this.toDate.toString('?YYYY')));
             break;
           case 'month':
-            ((r = this.fromDate.toString('?YYYY/?MM')),
-              (s = this.toDate.toString('?YYYY/?MM')));
+            ((s = this.fromDate.toString('?YYYY/?MM')),
+              (r = this.toDate.toString('?YYYY/?MM')));
             break;
           case 'date':
-            ((r = this.fromDate.toString()), (s = this.toDate.toString()));
+            ((s = this.fromDate.toString()), (r = this.toDate.toString()));
             break;
           case 'time':
-            ((r = this.fromDate.toString(
+            ((s = this.fromDate.toString(
               this.type.includes('time') ? 'datetime' : 'date',
             )),
-              (s = this.toDate.toString(
+              (r = this.toDate.toString(
                 this.type.includes('time') ? 'datetime' : 'date',
               )));
             break;
         }
-        return e.isBetween(r, s, '[]');
+        return e.isBetween(s, r, '[]');
       },
       isInDisable(e, t) {
         if (!this.disable) return !1;
-        if (
-          ((t = t || this.disable),
-          (e = Core.isPersianDate(e) ? e.clone() : this.core.clone().parse(e)),
-          this.calendarAdapter && Core.isString(t))
-        ) {
-          const r = this.parseCalendarDate(t);
-          return this.type === 'time'
-            ? e.hour() === r.hour() && e.minute() === r.minute()
-            : e.clone().startOf('date').isSame(r.clone().startOf('date'));
-        }
-        if (Core.isString(t))
-          return (
-            this.type == 'time' && (t = e.toString() + ' ' + t),
-            e.calendar('jalali').isSame(t)
-          );
-        if (t instanceof RegExp) {
-          if (this.calendarAdapter)
-            return t.test(this.formatDateValue(e, this.formats.input));
-          const r = {
-            date: 'jYYYY/jM/jD',
-            datetime: 'jYYYY/jM/jD H:m',
-            time: 'H:m',
-          };
-          return t.test(e.toString(r[this.type]));
-        } else
-          return Core.isFunction(t)
-            ? t(e)
-            : Array.isArray(t)
-              ? t.some((r) => {
-                  if (Core.isString(r))
-                    return this.calendarAdapter
-                      ? this.isSameCalendarDate(e, this.parseCalendarDate(r))
-                      : (this.type == 'time' && (r = e.toString() + ' ' + r),
-                        e.calendar('jalali').isSame(r));
-                  if (r instanceof RegExp) {
-                    if (this.calendarAdapter)
-                      return r.test(
-                        this.formatDateValue(e, this.formats.input),
+        t = t || this.disable;
+        const s = e,
+          r = Core.isPersianDate(s) ? s.clone() : this.core.clone().parse(s);
+        return Core.isString(t)
+          ? this.isSameDisabledValue(r, t)
+          : t instanceof RegExp
+            ? this.testDisableRegex(t, this.formatDisableValue(r))
+            : Core.isFunction(t)
+              ? t(r)
+              : Array.isArray(t)
+                ? t.some((n) => {
+                    if (Core.isString(n)) return this.isSameDisabledValue(r, n);
+                    if (n instanceof RegExp)
+                      return this.testDisableRegex(
+                        n,
+                        this.formatDisableValue(r),
                       );
-                    const s = {
-                      date: 'jYYYY/jM/jD',
-                      datetime: 'jYYYY/jM/jD H:m',
-                      time: 'H:m',
-                    };
-                    return r.test(e.toString(s[this.type]));
-                  }
-                })
-              : !1;
+                  })
+                : !1;
+      },
+      selectedTimeValue(e) {
+        const t = this.selectedTimes[e];
+        if (!t) return;
+        const s = this.selectedDates[e];
+        return s
+          ? s
+              .clone()
+              .hour(t.hour())
+              .minute(t.minute())
+              .second(t.second())
+              .millisecond(t.millisecond())
+          : t;
+      },
+      isSelectedTimeDisabled(e) {
+        const t = this.selectedTimeValue(e);
+        return !!t && (!this.checkDate(t, 'time') || this.isInDisable(t));
+      },
+      isSameDisabledValue(e, t) {
+        const s = this.parseDisabledValue(
+          this.type === 'time' && !/[\s/-]/.test(t)
+            ? `${e.toString('YYYY-MM-DD')} ${t}`
+            : t,
+        );
+        if (!this.calendarAdapter && !this.calendar && t.includes('/')) {
+          const r = e.clone().calendar('jalali'),
+            n = s.clone().calendar('jalali'),
+            i =
+              r.year() === n.year() &&
+              r.month() === n.month() &&
+              r.date() === n.date();
+          if (this.type === 'date' || !/\s/.test(t)) return i;
+          if (this.type === 'datetime')
+            return i && r.hour() === n.hour() && r.minute() === n.minute();
+        }
+        return this.type === 'time'
+          ? e.hour() === s.hour() && e.minute() === s.minute()
+          : this.type === 'date' || !/[\s:]/.test(t)
+            ? e.clone().startOf('date').isSame(s.clone().startOf('date'))
+            : e.isSame(s);
+      },
+      parseDisabledValue(e) {
+        return !this.calendarAdapter && !this.calendar && e.includes('/')
+          ? this.core.clone().calendar('jalali').parse(e)
+          : this.parseCalendarDate(e);
+      },
+      testDisableRegex(e, t) {
+        e.lastIndex = 0;
+        const s = e.test(t);
+        return ((e.lastIndex = 0), s);
+      },
+      formatDisableValue(e) {
+        return this.calendarAdapter
+          ? this.formatDateValue(e, this.formats.input)
+          : e.toString(jalaliDisableFormats[this.type]);
+      },
+      inputSlotProps(e) {
+        const t = this.inputs[e];
+        return {
+          value: this.displayValue[e] || '',
+          inputAttrs: {
+            ...this.attrs[t],
+            ref: 'inputs',
+            type: 'text',
+            autocomplete: 'off',
+            placeholder:
+              this.inputMaskConfig().placeholder || this.attrs[t].placeholder,
+          },
+          open: () => this.showPicker('input', e),
+          clear: () => this.clear(t),
+          onInput: (s) => {
+            const r = s.target;
+            ((this.displayValue[e] = r.value), this.sanitizeInput(e, s));
+          },
+          onBlur: () => {
+            (this.sanitizeInput(e), this.commitInput(e));
+          },
+          onKeydown: (s) => this.selectWithArrow(s),
+        };
       },
       showPicker(e, t) {
         if (this.clickOn == 'all' || this.clickOn == e) {
-          const r = this.inputs[t];
-          (this.dualInput && (this.inputName = r),
-            this.$refs.inputs[t].focus(),
+          const s = this.inputs[t];
+          (this.dualInput && (this.inputName = s),
+            this.$refs.inputs?.[t]?.focus(),
             (this.showDatePicker = !0),
             this.modal ||
               (this.$nextTick(() => {
@@ -8606,135 +9125,385 @@ const _hoisted_1$3 = ['transform'],
         if (
           ['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown'].includes(e.key)
         ) {
-          let r = { ArrowLeft: 1, ArrowUp: -7, ArrowRight: -1, ArrowDown: 7 }[
+          let s = { ArrowLeft: 1, ArrowUp: -7, ArrowRight: -1, ArrowDown: 7 }[
             e.key
           ];
           this.lang.dir.picker == 'ltr' &&
             ['ArrowLeft', 'ArrowRight'].includes(e.key) &&
-            (r = -r);
-          let s = document.querySelectorAll('.pdp .pdp-day.hover');
-          if (
-            (s.length ||
-              (s = document.querySelectorAll(
-                '.pdp .pdp-day.start-range,.pdp .pdp-day.end-range',
+            (s = -s);
+          const r = this.$refs.root;
+          let n = r.querySelectorAll('.pdp .pdp-day.hover');
+          n.length ||
+            (n = r.querySelectorAll(
+              '.pdp .pdp-day.start-range,.pdp .pdp-day.end-range',
+            ));
+          let i = n[n.length - 1];
+          if (i) {
+            let a = Number(this.getColumn(i));
+            i.classList.remove('hover');
+            const o = this.calendarMonthDate(this.onDisplay, a),
+              l = this.calendarDayDate(o, Number(i.innerText)),
+              d = this.calendarAddDays(l, s);
+            if (!this.checkDate(d, 'date')) return i.classList.add('hover');
+            const c = this.calendarMonthKey(d);
+            a = -1;
+            for (let f = 0; f < this.columnCount; f++)
+              if (
+                this.calendarMonthKey(
+                  this.calendarMonthDate(this.onDisplay, f),
+                ) === c
+              ) {
+                a = f;
+                break;
+              }
+            if (a < 0) {
+              const f = this.calendarMonthDate(this.onDisplay, 0);
+              this.getDateTimestamp(d) < this.getDateTimestamp(f)
+                ? ((this.onDisplay = this.calendarMonthDate(
+                    this.onDisplay,
+                    -this.columnCount,
+                  )),
+                  (a = this.columnCount - 1))
+                : ((this.onDisplay = this.calendarMonthDate(
+                    this.onDisplay,
+                    this.columnCount,
+                  )),
+                  (a = 0));
+            }
+            (await this.$nextTick(),
+              (i = r.querySelector(
+                `.pdp .pdp-main .pdp-column[data-column='${a}'] .pdp-day[value='${this.displayDay(d)}']`,
               )),
-            (s = s[s.length - 1]),
-            s)
-          ) {
-            let n = this.getColumn(s);
-            s.classList.remove('hover');
-            const i = this.onDisplay.toString(),
-              o = this.onDisplay.clone().addMonth(n);
-            let a = o.date(s.innerText).addDay(r);
-            if (!this.checkDate(a, 'date')) return s.classList.add('hover');
-            ((a = a.date()),
-              (n = o.diff(i, 'month')),
-              n < 0
-                ? (this.onDisplay.subMonth(this.columnCount),
-                  (n = this.columnCount - 1))
-                : n >= this.columnCount &&
-                  (this.onDisplay.addMonth(this.columnCount), (n = 0)),
-              await this.$nextTick(),
-              (s = document.querySelector(
-                `.pdp .pdp-main .pdp-column[data-column='${n}'] .pdp-day[value='${a}']`,
-              )),
-              s.classList.add('hover'));
+              i && i.classList.add('hover'));
           } else
-            ((s = document.querySelector(
-              '.pdp .pdp-day:not(.empty):not(.disabled)',
-            )),
-              s ||
-                (s = document.querySelector(
+            ((i = r.querySelector('.pdp .pdp-day:not(.empty):not(.disabled)')),
+              i ||
+                (i = r.querySelector(
                   `.pdp .pdp-main .pdp-column[data-column="0"] .pdp-day[value="${this.fromDate.date()}"]`,
                 )),
-              s.classList.add('hover'));
+              i.classList.add('hover'));
           this.mode === 'range' &&
             this.selectedDates.length == 1 &&
-            this.selectInRangeDate({ target: s });
+            this.selectInRangeDate({ target: i });
         } else if (e.key == 'Enter') {
           e.preventDefault();
-          const t = document.querySelector('.pdp .pdp-day.hover');
-          if (t)
-            this.selectDate(
-              this.onDisplay
-                .clone()
-                .addMonth(this.getColumn(t) || 0)
-                .date(t.innerText),
-              'date',
-            );
-          else {
-            let r;
-            this.displayValue.forEach((s, n) => {
-              if (!s) return !1;
-              if (this.type == 'time') {
-                const i = s.split(/[/ -.,:\\]/);
-                (this.checkDate(this.core.clone(), 'time')
-                  ? (r = this.core.clone())
-                  : (r = this.fromDate.clone()),
-                  r.time(i));
-              } else r = this.core.clone().parse(s);
-              if (this.selectDate(r, 'time') === 0) {
-                const i = r.diff(this.onDisplay, 'month');
-                ((i < 0 || i >= this.columnCount) &&
-                  (this.onDisplay = r.clone()),
-                  (this.displayValue[n] = ''));
-              }
-            });
-          }
+          const t = this.$refs.root.querySelector('.pdp .pdp-day.hover');
+          t
+            ? this.selectDate(
+                this.calendarDayDate(
+                  this.calendarMonthDate(
+                    this.onDisplay,
+                    Number(this.getColumn(t) || 0),
+                  ),
+                  Number(t.innerText),
+                ),
+                'date',
+              )
+            : this.displayValue.forEach((s, r) => {
+                this.commitInput(r);
+              });
         }
+      },
+      commitInput(e) {
+        const s = this.$refs.inputs?.[e],
+          r = this.displayValue[e] || s?.value || '',
+          n = this.dualInput
+            ? this.selectedDates[e]
+              ? this.formatDateValue(this.selectedDates[e], this.formats.input)
+              : ''
+            : this.selectedDates
+                .map((c) => this.formatDateValue(c, this.formats.input))
+                .join(' - ');
+        if (r === n) return;
+        const i = this.inputMask ? r : this.sanitizeInputValue(r);
+        if (!i) return;
+        i !== r && (s && (s.value = i), (this.displayValue[e] = i));
+        const a = this.normalizeInputDigits(i);
+        let o;
+        if (this.type === 'time') {
+          const c = a.split(/[/ -.,:\\]/);
+          ((o = this.checkDate(this.core.clone(), 'time')
+            ? this.core.clone()
+            : this.fromDate.clone()),
+            o.time(c));
+        } else
+          o = this.calendarAdapter
+            ? this.parseCalendarDate(a)
+            : this.core.clone().parse(a);
+        const l = this.type === 'date' ? 'date' : 'time',
+          d = this.selectDate(o, l);
+        if (!(!o.isValid() || d < 0)) {
+          if (this.mode === 'single' && this.type.includes('date'))
+            this.onDisplay = o.clone();
+          else {
+            const c = o.diff(this.onDisplay, 'month');
+            (c < 0 || c >= this.columnCount) && (this.onDisplay = o.clone());
+          }
+          d === 0 && (this.displayValue[e] = '');
+        }
+      },
+      inputMaskPattern() {
+        let t = this.inputMaskConfig().pattern;
+        return (
+          (!t || t === 'calendar-default') &&
+            (t = this.defaultInputMaskPattern()),
+          t === 'date' || t === 'datetime' || t === 'time'
+            ? this.calendarAdapter
+              ? t === 'date'
+                ? 'YYYY-MM-DD'
+                : t === 'datetime'
+                  ? 'YYYY-MM-DD HH:mm'
+                  : 'HH:mm'
+              : t === 'date'
+                ? 'jYYYY/jMM/jDD'
+                : t === 'datetime'
+                  ? 'jYYYY/jMM/jDD HH:mm'
+                  : 'HH:mm'
+            : t
+        );
+      },
+      defaultInputMaskPattern() {
+        const e =
+          this.activeCalendar === 'jalali' ? 'jYYYY/jMM/jDD' : 'YYYY-MM-DD';
+        return this.type === 'date'
+          ? e
+          : this.type === 'datetime'
+            ? `${e} HH:mm`
+            : 'HH:mm';
+      },
+      inputMaskConfig() {
+        const e = this.inputMask;
+        if (!e)
+          return {
+            pattern: this.defaultInputMaskPattern(),
+            autoInsert: !0,
+            allowedDigits:
+              this.activeCalendar === 'jalali' || this.lang.dir.input === 'rtl'
+                ? 'both'
+                : 'latin',
+            strict: !0,
+          };
+        if (typeof e == 'string') return { pattern: e, autoInsert: !0 };
+        if (
+          'pattern' in e ||
+          'allowedDigits' in e ||
+          'strict' in e ||
+          'autoInsert' in e ||
+          'blocks' in e
+        )
+          return e;
+        const t = e[this.type];
+        return typeof t == 'string' ? { pattern: t } : t || {};
+      },
+      normalizeInputDigits(e) {
+        return Array.from(e)
+          .map((t) => {
+            const s = t.codePointAt(0) || 0;
+            return s >= 1776 && s <= 1785
+              ? String(s - 1776)
+              : s >= 1632 && s <= 1641
+                ? String(s - 1632)
+                : t;
+          })
+          .join('');
+      },
+      isInputDigit(e) {
+        return /[0-9۰-۹٠-٩]/.test(e);
+      },
+      maskTokens(e) {
+        const t = [],
+          s = /j?(YYYY|YY|MMMM|MMM|MM|M|DD|D|HH|H|mm|m|ss|s)/g;
+        let r = 0,
+          n;
+        for (; (n = s.exec(e)); )
+          (n.index > r && t.push({ literal: e.slice(r, n.index) }),
+            t.push({ token: n[0] }),
+            (r = n.index + n[0].length));
+        return (r < e.length && t.push({ literal: e.slice(r) }), t);
+      },
+      maskTokenMaximum(e) {
+        const t = e.replace(/^j/, ''),
+          s =
+            this.inputMaskConfig().blocks?.[e] ||
+            this.inputMaskConfig().blocks?.[t] ||
+            this.inputMaskConfig().blocks?.[`j${t}`];
+        if (s?.to !== void 0) return s.to;
+        if (['M', 'MM'].includes(t)) return 12;
+        if (['D', 'DD'].includes(t)) return 31;
+        if (['H', 'HH'].includes(t)) return 23;
+        if (['m', 'mm', 's', 'ss'].includes(t)) return 59;
+      },
+      maskTokenMinimum(e) {
+        const t = e.replace(/^j/, '');
+        return (
+          this.inputMaskConfig().blocks?.[e] ||
+          this.inputMaskConfig().blocks?.[t] ||
+          this.inputMaskConfig().blocks?.[`j${t}`]
+        )?.from;
+      },
+      maskTokenSize(e) {
+        return e.replace(/^j/, '') === 'YYYY' ? 4 : 2;
+      },
+      sanitizeMaskToken(e, t) {
+        const s = this.maskTokenMaximum(e),
+          r = this.maskTokenMinimum(e);
+        if ((s === void 0 && r === void 0) || t.length < 1) return t;
+        const n = this.maskTokenSize(e);
+        if (t.length < n) return t;
+        const i = Number(t.slice(0, n));
+        return (s !== void 0 && i > s) || (r !== void 0 && i < r)
+          ? t.slice(0, n - 1)
+          : t.slice(0, n);
+      },
+      maskedInputValue(e) {
+        if (this.inputMaskConfig().autoInsert === !1) return e;
+        const s = e.split(/\s+-\s+/);
+        if (s.length > 1)
+          return s.map((f) => this.maskedInputValue(f)).join(' - ');
+        const r = this.inputMaskPattern(),
+          n = this.maskTokens(r);
+        if (n.some((f) => f.token && /MMMM|MMM/.test(f.token))) return e;
+        const a = Array.from(e).filter((f) => this.isInputDigit(f)),
+          o = n.reduce(
+            (f, v) => f + (v.token ? this.maskTokenSize(v.token) : 0),
+            0,
+          ),
+          l = a.slice(0, o);
+        let d = 0,
+          c = '';
+        return (
+          n.forEach((f, v) => {
+            if (f.literal) return;
+            const M = f.token.replace(/^j/, ''),
+              P = this.maskTokenSize(M),
+              B = l.slice(d, d + P).join(''),
+              $ = this.sanitizeMaskToken(f.token, B);
+            if (((c += $), (d += B.length), B.length < P)) return;
+            const I = n[v + 1];
+            I?.literal && (c += I.literal);
+          }),
+          c
+        );
+      },
+      maskedCursorPosition(e, t) {
+        if (!t) return 0;
+        let s = 0;
+        for (let r = 0; r < e.length; r++)
+          if (this.isInputDigit(e[r]) && (s++, s === t)) {
+            let n = r + 1;
+            for (; n < e.length && !this.isInputDigit(e[n]); ) n++;
+            return n;
+          }
+        return e.length;
+      },
+      sanitizeInput(e, t) {
+        const s = t?.target,
+          r = s?.value ?? this.displayValue[e];
+        if (!r) {
+          this.displayValue[e] = '';
+          return;
+        }
+        const n = s?.selectionStart ?? r.length,
+          i = Array.from(r.slice(0, n)).filter((o) =>
+            this.isInputDigit(o),
+          ).length,
+          a = this.sanitizeInputValue(r);
+        if (
+          ((this.displayValue[e] = a),
+          a !== r && (s && (s.value = a), s && s === document.activeElement))
+        ) {
+          const o = this.maskedCursorPosition(a, i);
+          s.setSelectionRange(o, o);
+        }
+      },
+      sanitizeInputValue(e) {
+        const t = this.inputMaskPattern(),
+          s = this.inputMaskConfig().allowedDigits || 'latin',
+          r = /\s-\s/.test(e),
+          n = t
+            .replace(/j?(YYYY|YY|MMMM|MMM|MM|M|DD|D|HH|H|mm|m|ss|s)/g, '')
+            .split(''),
+          i = /MMMM|MMM/.test(t),
+          a = Array.from(e)
+            .filter((v) => {
+              const M = /[0-9]/.test(v),
+                P = /[۰-۹٠-٩]/.test(v);
+              return (s === 'latin' && M) ||
+                (s === 'locale' && P) ||
+                (s === 'both' && (M || P)) ||
+                n.includes(v) ||
+                /\s/.test(v) ||
+                (r && v === '-')
+                ? !0
+                : i && new RegExp('\\p{L}', 'u').test(v);
+            })
+            .join('')
+            .replace(/\s{2,}/g, ' ')
+            .replace(/([/:.,-])\1+/g, '$1');
+        if (this.inputMaskConfig().autoInsert === !1) return a;
+        const o = this.maskedInputValue(a),
+          l = this.maskTokens(t),
+          d = l.reduce(
+            (v, M) => v + (M.token ? this.maskTokenSize(M.token) : 0),
+            0,
+          ),
+          c =
+            l.some((v) => v.literal) &&
+            Array.from(a).filter((v) => this.isInputDigit(v)).length === d,
+          f = Array.from(a).filter((v) => this.isInputDigit(v)).length > d;
+        return o === a || o.startsWith(a) || c || f || !/\D/.test(a) ? o : a;
       },
       selectInRangeDate(e) {
         const t = e.target;
         if (!t.classList.contains('pdp-day')) return;
-        document.querySelectorAll('.pdp .pdp-day').forEach((a) => {
-          a.classList.remove('in-range');
+        const s = this.$refs.root;
+        s.querySelectorAll('.pdp .pdp-day').forEach((l) => {
+          l.classList.remove('in-range');
         });
         let r = this.getColumn(t);
-        const s = this.onDisplay
+        const n = this.onDisplay
             .clone()
             .startOf('date')
             .addMonth(r)
             .date(t.innerText),
-          n = this.selectedDates[0].clone().startOf('date'),
-          i = s.isAfter(n) ? 1 : -1,
-          o = document.querySelector('.pdp-day.start-range,.pdp-day.end-range');
+          i = this.selectedDates[0].clone().startOf('date'),
+          a = n.isAfter(i) ? 1 : -1,
+          o = s.querySelector('.pdp-day.start-range,.pdp-day.end-range');
         for (
           o
             ? ((r = +this.getColumn(o)),
               o.classList.replace(
-                ...(s.isBefore(n)
+                ...(n.isBefore(i)
                   ? ['start-range', 'end-range']
                   : ['end-range', 'start-range']),
               ))
-            : (n.parse(this.onDisplay),
-              i === 1
-                ? (n.startOf('month').subDay(), (r = -1))
-                : (n
+            : (i.parse(this.onDisplay),
+              a === 1
+                ? (i.startOf('month').subDay(), (r = -1))
+                : (i
                     .addMonth(this.columnCount - 1)
                     .endOf('month')
                     .addDay()
                     .startOf('date'),
                   (r = this.columnCount)));
-          !s.isSame(n);
+          !n.isSame(i);
 
         ) {
-          const a = n.month();
+          const l = i.month();
           if (
-            (n.addDay(i),
-            a != n.month() && (r += i),
-            this.checkDate(n, 'date') && !this.isInDisable(n))
+            (i.addDay(a),
+            l != i.month() && (r += a),
+            this.checkDate(i, 'date') && !this.isInDisable(i))
           )
-            document
-              .querySelector(
-                `.pdp-column[data-column='${r}'] .pdp-day[value='${n.date()}']`,
-              )
-              .classList.add('in-range');
+            s.querySelector(
+              `.pdp-column[data-column='${r}'] .pdp-day[value='${i.date()}']`,
+            ).classList.add('in-range');
           else break;
         }
       },
       submitDate(e = !0) {
-        const t = this.selectedDates.map((r) =>
-          this.formatDateValue(r, this.formats.input),
+        const t = this.selectedDates.map((s) =>
+          this.formatDateValue(s, this.formats.input),
         );
         (this.dualInput
           ? (this.displayValue = t)
@@ -8756,17 +9525,19 @@ const _hoisted_1$3 = ['transform'],
           : this.toDate.clone();
       },
       locate() {
-        ((this.pickerPlace = { top: !1, left: !1, right: !1 }),
+        const e = this.$refs.inputs;
+        e?.[0] &&
+          ((this.pickerPlace = { top: !1, left: !1, right: !1 }),
           this.$nextTick(() => {
-            const e = this.$refs.inputs[0],
-              t = e.offsetHeight + e.getBoundingClientRect().top,
+            const t = e[0],
+              s = t.offsetHeight + t.getBoundingClientRect().top,
               r = this.$refs.pdpPicker,
-              s = r.offsetHeight + 10,
-              n = r.getBoundingClientRect();
+              n = r.offsetHeight + 10,
+              i = r.getBoundingClientRect();
             this.pickerPlace = {
-              top: t >= s && window.innerHeight - (t + s) < 0,
-              left: n.left <= 0,
-              right: window.innerWidth - (n.left + n.width) <= 0,
+              top: s >= n && window.innerHeight - (s + n) < 0,
+              left: i.left <= 0,
+              right: window.innerWidth - (i.left + i.width) <= 0,
             };
           }));
       },
@@ -8774,13 +9545,14 @@ const _hoisted_1$3 = ['transform'],
         const e = this.effectiveLocale.split(','),
           t = e.indexOf(this.currentLocale);
         this.currentLocale = e[t + 1] || e[0];
-        const r = this.activeCalendar,
-          s = this.calendarAdapter ? 'gregorian' : r;
-        (this.core.calendar(s),
-          this.fromDate.calendar(s),
-          this.toDate.calendar(s),
-          this.onDisplay.calendar(s));
-        for (const n of this.selectedDates) n.calendar(s);
+        const s = this.activeCalendar,
+          r = this.calendarAdapter ? 'gregorian' : s;
+        (this.core.calendar(r),
+          this.fromDate.calendar(r),
+          this.toDate.calendar(r),
+          this.onDisplay.calendar(r));
+        for (const n of this.selectedDates) n.calendar(r);
+        for (const n of this.selectedTimes) n.calendar(r);
         this.submitDate(!1);
       },
       clear(e) {
@@ -8788,57 +9560,68 @@ const _hoisted_1$3 = ['transform'],
         if (
           ((this.displayValue[t] = ''), this.$emit('clear'), this.dualInput)
         ) {
-          const r = this.$attrs.value;
-          if (r && Array.isArray(r))
-            return this.setModel(r.map((s, n) => (n == t ? null : s)));
+          const s = this.$attrs.value;
+          if (s && Array.isArray(s))
+            return this.setModel(s.map((r, n) => (n == t ? null : r)));
         }
         this.setModel('');
       },
-      startChangeTime(e, t, r) {
-        let s = this.selectedTimes[e];
-        (s ||
-          ((s = this.core.clone()),
-          this.checkDate(s, 'time') ||
-            (s = this.toDate.clone().subDay().time(this.core)),
+      startChangeTime(e, t, s) {
+        let r = this.selectedTimes[e];
+        (r ||
+          ((r = this.core.clone()),
+          this.checkDate(r, 'time') ||
+            (r = this.toDate.clone().subDay().time(this.core)),
           e == 1 &&
             !this.selectedTimes.length &&
-            this.selectedTimes.push(s.clone()),
-          this.selectedTimes.push(s)),
+            this.selectedTimes.push(r.clone()),
+          this.selectedTimes.push(r)),
           this.stopChangeTime());
         const n = t == 'hour' ? 23 : 59;
-        let i = s[t](),
-          o = t == 'hour' ? this.hourStepCount : this.minuteStepCount;
-        const a = () => {
-          (r == 'add'
-            ? ((i = i + o), i > n && (i = 0))
-            : ((i = i - o), i < 0 && (i = n)),
-            this.checkDate(s[t](i), 'time')
+        let i = r[t](),
+          a = t == 'hour' ? this.hourStepCount : this.minuteStepCount;
+        const o = () => {
+          (s == 'add'
+            ? ((i = i + a), i > n && (i = 0))
+            : ((i = i - a), i < 0 && (i = n)),
+            this.checkDate(r[t](i), 'time')
               ? this.selectedTimes.length == 2 &&
                 this.selectedTimes[0].isAfter(this.selectedTimes[1]) &&
-                s.parse(e == 0 ? this.selectedTimes[1] : this.selectedTimes[0])
-              : s.parse(
-                  s.isSameOrAfter(this.toDate.clone())
+                r.parse(e == 0 ? this.selectedTimes[1] : this.selectedTimes[0])
+              : r.parse(
+                  r.isSameOrAfter(this.toDate.clone())
                     ? this.toDate.clone()
                     : this.fromDate.clone(),
-                ),
-            this.isInDisable(s) ||
+                ));
+          const l = this.selectedDates[e]
+            ? this.selectedDates[e]
+                .clone()
+                .hour(r.hour())
+                .minute(r.minute())
+                .second(r.second())
+                .millisecond(r.millisecond())
+            : r;
+          ((this.selectedTimes[e] = r.clone()),
+            this.isInDisable(l) ||
               (this.type == 'time'
-                ? (this.selectedDates[e] = s)
-                : this.selectedDates[e] && this.selectedDates[e].time(s),
-              this.$emit('select', s),
+                ? (this.selectedDates[e] = r)
+                : this.selectedDates[e] && this.selectedDates[e].time(r),
+              this.$emit('select', r),
               this.autoSubmit &&
-                !this.selectedTimes.some((l) => this.isInDisable(l)) &&
+                !this.selectedTimes.some((d, c) =>
+                  this.isSelectedTimeDisabled(c),
+                ) &&
                 this.submitDate(!1)));
         };
-        (a(), (this.interval = setInterval(a, 300)));
+        (o(), (this.interval = setInterval(o, 300)));
       },
       stopChangeTime() {
         clearInterval(this.interval);
       },
       selectShorcut(e) {
         ((this.selectedDates = e.map(
-          (t, r) => (
-            r == 0 && (this.onDisplay = t.clone()),
+          (t, s) => (
+            s == 0 && (this.onDisplay = t.clone()),
             this.$emit('select', t),
             t.clone()
           ),
@@ -8849,16 +9632,16 @@ const _hoisted_1$3 = ['transform'],
         e &&
           (this.mode == 'single' && typeof e == 'string' && (e = [e]),
           (this.selectedDates = []),
-          e.some((t, r) => {
-            const s = this.parseCalendarDate(
+          e.some((t, s) => {
+            const r = this.parseCalendarDate(
               (this.type == 'time'
                 ? this.core.toString('YYYY-MM-DD') + ' '
                 : '') + t,
             );
-            if (s)
-              (this.selectedDates.push(markRaw(s.clone())),
-                this.selectedTimes.push(markRaw(s.clone())),
-                r == 0 && (this.onDisplay = markRaw(s.clone())));
+            if (r)
+              (this.selectedDates.push(markRaw(r.clone())),
+                this.selectedTimes.push(markRaw(r.clone())),
+                s == 0 && (this.onDisplay = markRaw(r.clone())));
             else return ((this.selectedDates = this.selectedTimes = []), !0);
           }),
           this.selectedDates.length && this.submitDate());
@@ -8866,13 +9649,13 @@ const _hoisted_1$3 = ['transform'],
     },
   }),
   _export_sfc = (e, t) => {
-    const r = e.__vccOpts || e;
-    for (const [s, n] of t) r[s] = n;
-    return r;
+    const s = e.__vccOpts || e;
+    for (const [r, n] of t) s[r] = n;
+    return s;
   },
   _hoisted_1$1 = ['for'],
   _hoisted_2$1 = ['onClick'],
-  _hoisted_3$1 = ['onUpdate:modelValue', 'onFocus'],
+  _hoisted_3$1 = ['value', 'placeholder', 'onFocus', 'onInput', 'onBlur'],
   _hoisted_4$1 = ['onClick'],
   _hoisted_5$1 = { key: 1 },
   _hoisted_6$1 = { class: 'pdp-auto' },
@@ -8908,9 +9691,9 @@ const _hoisted_1$3 = ['transform'],
   _hoisted_36$1 = ['tabindex'],
   _hoisted_37$1 = { key: 0, class: 'pdp-shortcut' },
   _hoisted_38$1 = ['onClick'];
-function _sfc_render(e, t, r, s, n, i) {
-  const o = resolveComponent('PDPIcon'),
-    a = resolveComponent('PDPAlt'),
+function _sfc_render(e, t, s, r, n, i) {
+  const a = resolveComponent('PDPIcon'),
+    o = resolveComponent('PDPAlt'),
     l = resolveComponent('PDPArrow');
   return (
     openBlock(),
@@ -8980,7 +9763,7 @@ function _sfc_render(e, t, r, s, n, i) {
                             [
                               renderSlot(e.$slots, 'icon', {}, () => [
                                 createVNode(
-                                  o,
+                                  a,
                                   { icon: e.type, width: '23', height: '23' },
                                   null,
                                   8,
@@ -8992,33 +9775,44 @@ function _sfc_render(e, t, r, s, n, i) {
                             _hoisted_2$1,
                           ))
                         : createCommentVNode('', !0),
-                      withDirectives(
-                        createBaseVNode(
-                          'input',
-                          mergeProps(
-                            {
-                              ref_for: !0,
-                              ref: 'inputs',
-                              'onUpdate:modelValue': (f) =>
-                                (e.displayValue[c] = f),
-                              type: 'text',
-                              autocomplete: 'off',
-                            },
-                            { ref_for: !0 },
-                            e.attrs[d],
-                            {
-                              onFocus: (f) => e.showPicker('input', c),
-                              onKeydown:
-                                t[0] ||
-                                (t[0] = (...f) =>
-                                  e.selectWithArrow && e.selectWithArrow(...f)),
-                            },
+                      renderSlot(
+                        e.$slots,
+                        'input',
+                        mergeProps({ ref_for: !0 }, e.inputSlotProps(c)),
+                        () => [
+                          createBaseVNode(
+                            'input',
+                            mergeProps(
+                              {
+                                ref_for: !0,
+                                ref: 'inputs',
+                                value: e.displayValue[c] || '',
+                                type: 'text',
+                                autocomplete: 'off',
+                              },
+                              { ref_for: !0 },
+                              e.attrs[d],
+                              {
+                                placeholder:
+                                  e.inputMaskConfig().placeholder ||
+                                  e.attrs[d].placeholder,
+                                onFocus: (f) => e.showPicker('input', c),
+                                onInput: (f) => e.sanitizeInput(c, f),
+                                onBlur: (f) => {
+                                  (e.sanitizeInput(c, f), e.commitInput(c));
+                                },
+                                onKeydown:
+                                  t[0] ||
+                                  (t[0] = (...f) =>
+                                    e.selectWithArrow &&
+                                    e.selectWithArrow(...f)),
+                              },
+                            ),
+                            null,
+                            16,
+                            _hoisted_3$1,
                           ),
-                          null,
-                          16,
-                          _hoisted_3$1,
-                        ),
-                        [[vModelText, e.displayValue[c]]],
+                        ],
                       ),
                       e.clearable
                         ? (openBlock(),
@@ -9032,7 +9826,7 @@ function _sfc_render(e, t, r, s, n, i) {
                             },
                             [
                               renderSlot(e.$slots, 'clear', {}, () => [
-                                createVNode(o, { icon: 'clear' }),
+                                createVNode(a, { icon: 'clear' }),
                               ]),
                             ],
                             8,
@@ -9053,12 +9847,12 @@ function _sfc_render(e, t, r, s, n, i) {
         e.attrs.alt.name
           ? (openBlock(),
             createBlock(
-              a,
+              o,
               {
                 key: 0,
                 name: e.attrs.alt.name,
                 format: e.formats.alt,
-                dates: e.submitedValue,
+                dates: e.altDates,
               },
               null,
               8,
@@ -9136,7 +9930,7 @@ function _sfc_render(e, t, r, s, n, i) {
                                           key: c,
                                           class: normalizeClass({
                                             selected:
-                                              e.displayYear(e.onDisplay) == d,
+                                              e.displayYear(e.displayDate) == d,
                                           }),
                                           onClick: (f) =>
                                             e.changeSelectedYear(d),
@@ -9194,7 +9988,7 @@ function _sfc_render(e, t, r, s, n, i) {
                                   'pdp-arrow',
                                   {
                                     disabled: !e.checkDate(
-                                      e.calendarMonthDate(e.onDisplay, -1),
+                                      e.calendarMonthDate(e.displayDate, -1),
                                       'month',
                                     ),
                                   },
@@ -9247,7 +10041,7 @@ function _sfc_render(e, t, r, s, n, i) {
                                           e.months[
                                             e.displayMonth(
                                               e.calendarMonthDate(
-                                                e.onDisplay,
+                                                e.displayDate,
                                                 c,
                                               ),
                                             )
@@ -9267,7 +10061,10 @@ function _sfc_render(e, t, r, s, n, i) {
                                         },
                                         toDisplayString(
                                           e.displayYear(
-                                            e.calendarMonthDate(e.onDisplay, c),
+                                            e.calendarMonthDate(
+                                              e.displayDate,
+                                              c,
+                                            ),
                                           ),
                                         ),
                                         1,
@@ -9287,7 +10084,7 @@ function _sfc_render(e, t, r, s, n, i) {
                                   'pdp-arrow',
                                   {
                                     disabled: !e.checkDate(
-                                      e.calendarMonthDate(e.onDisplay, 1),
+                                      e.calendarMonthDate(e.displayDate, 1),
                                       'month',
                                     ),
                                   },
@@ -9349,12 +10146,12 @@ function _sfc_render(e, t, r, s, n, i) {
                                             null,
                                             renderList(
                                               e.orderedWeekdays,
-                                              (f, w) => (
+                                              (f, v) => (
                                                 openBlock(),
                                                 createElementBlock(
                                                   'div',
                                                   {
-                                                    key: w,
+                                                    key: v,
                                                     class: 'pdp-weekday',
                                                   },
                                                   toDisplayString(f),
@@ -9372,11 +10169,11 @@ function _sfc_render(e, t, r, s, n, i) {
                                             null,
                                             renderList(
                                               e.monthDays[c],
-                                              (f, w) => (
+                                              (f, v) => (
                                                 openBlock(),
                                                 createElementBlock(
                                                   'div',
-                                                  { key: w },
+                                                  { key: v },
                                                   [
                                                     (openBlock(!0),
                                                     createElementBlock(
@@ -9384,59 +10181,60 @@ function _sfc_render(e, t, r, s, n, i) {
                                                       null,
                                                       renderList(
                                                         f,
-                                                        (k) => (
+                                                        (M) => (
                                                           openBlock(),
                                                           createElementBlock(
                                                             'div',
                                                             {
-                                                              key: k.raw
-                                                                ? k.raw.toString()
+                                                              key: M.raw
+                                                                ? M.raw.toString()
                                                                 : void 0,
                                                               class:
                                                                 normalizeClass([
                                                                   'pdp-day',
                                                                   {
                                                                     empty:
-                                                                      k.empty,
+                                                                      M.empty,
                                                                   },
                                                                   {
                                                                     friday:
-                                                                      k.friday,
+                                                                      M.friday,
                                                                   },
                                                                   {
                                                                     weekend:
-                                                                      k.weekend,
+                                                                      M.weekend,
                                                                   },
                                                                   {
                                                                     today:
-                                                                      k.today,
+                                                                      M.today,
                                                                   },
                                                                   {
                                                                     'start-range':
-                                                                      k.startRange,
+                                                                      M.startRange,
                                                                   },
                                                                   {
                                                                     'end-range':
-                                                                      k.endRange,
+                                                                      M.endRange,
                                                                   },
                                                                   {
                                                                     disabled:
-                                                                      k.disabled,
+                                                                      M.disabled,
                                                                   },
                                                                   {
                                                                     'in-range':
-                                                                      k.inRange,
+                                                                      M.inRange,
                                                                   },
                                                                 ]),
-                                                              value: k.val,
-                                                              onClick: (N) =>
+                                                              value: M.val,
+                                                              onClick: (P) =>
+                                                                M.raw &&
                                                                 e.selectDate(
-                                                                  k.raw,
+                                                                  M.raw,
                                                                   'date',
                                                                 ),
                                                             },
                                                             toDisplayString(
-                                                              k.val,
+                                                              M.val,
                                                             ),
                                                             11,
                                                             _hoisted_23$1,
@@ -9511,13 +10309,7 @@ function _sfc_render(e, t, r, s, n, i) {
                                               {
                                                 disabled:
                                                   e.selectedTimes[c] &&
-                                                  (!e.checkDate(
-                                                    e.selectedTimes[c],
-                                                    'time',
-                                                  ) ||
-                                                    e.isInDisable(
-                                                      e.selectedTimes[c],
-                                                    )),
+                                                  e.isSelectedTimeDisabled(c),
                                               },
                                             ]),
                                           },
@@ -9989,10 +10781,10 @@ function _sfc_render(e, t, r, s, n, i) {
                                   key: c,
                                   class: normalizeClass({
                                     selected: !d.some(
-                                      (f, w) =>
+                                      (f, v) =>
                                         !f.isSame(
-                                          e.selectedDates[w] &&
-                                            e.selectedDates[w].toString(
+                                          e.selectedDates[v] &&
+                                            e.selectedDates[v].toString(
                                               'datetime',
                                             ),
                                         ),
@@ -10047,50 +10839,83 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
   _hoisted_24 = { class: 'radio-option' },
   _hoisted_25 = { class: 'advanced-options' },
   _hoisted_26 = { class: 'advanced-fields' },
-  _hoisted_27 = ['placeholder'],
-  _hoisted_28 = ['placeholder'],
-  _hoisted_29 = { class: 'check-option' },
-  _hoisted_30 = { class: 'check-option' },
-  _hoisted_31 = { class: 'check-option' },
-  _hoisted_32 = { class: 'check-option' },
-  _hoisted_33 = { class: 'check-option' },
-  _hoisted_34 = { class: 'check-option' },
-  _hoisted_35 = { class: 'check-option' },
-  _hoisted_36 = { class: 'api-note' },
-  _hoisted_37 = { class: 'main-preview' },
-  _hoisted_38 = { class: 'preview-topline' },
-  _hoisted_39 = { class: 'preview-icon' },
-  _hoisted_40 = { class: 'preview-label' },
-  _hoisted_41 = { class: 'status-pill' },
-  _hoisted_42 = ['dir'],
-  _hoisted_43 = { class: 'value-panel' },
-  _hoisted_44 = { class: 'generated-code' },
-  _hoisted_45 = { class: 'gallery', 'aria-labelledby': 'gallery-title' },
-  _hoisted_46 = { class: 'section-heading gallery-heading' },
-  _hoisted_47 = { id: 'gallery-title' },
-  _hoisted_48 = { class: 'calendar-grid' },
-  _hoisted_49 = ['dir'],
-  _hoisted_50 = { class: 'card-header' },
-  _hoisted_51 = { class: 'card-title' },
-  _hoisted_52 = { class: 'card-icon' },
-  _hoisted_53 = { class: 'card-picker' },
-  _hoisted_54 = { class: 'card-actions' },
-  _hoisted_55 = { class: 'card-value' },
-  _hoisted_56 = ['onClick'],
-  _hoisted_57 = { class: 'gallery' },
-  _hoisted_58 = { class: 'section-heading gallery-heading' },
-  _hoisted_59 = { class: 'calendar-grid' },
-  _hoisted_60 = { class: 'card-header' },
-  _hoisted_61 = { class: 'card-title' },
-  _hoisted_62 = { class: 'card-icon' },
-  _hoisted_63 = { class: 'card-picker' },
-  _hoisted_64 = ['onClick'],
-  _hoisted_65 = { class: 'demo-footer' },
-  _hoisted_66 = ['aria-label'],
-  _hoisted_67 = { class: 'modal-header' },
-  _hoisted_68 = ['aria-label'],
-  _hoisted_69 = { class: 'code-tabs single-code' },
-  _hoisted_70 = { class: 'modal-actions' },
+  _hoisted_27 = { value: 'active' },
+  _hoisted_28 = ['value'],
+  _hoisted_29 = ['placeholder'],
+  _hoisted_30 = ['placeholder'],
+  _hoisted_31 = { class: 'format-label' },
+  _hoisted_32 = ['aria-label'],
+  _hoisted_33 = { class: 'field-tooltip', role: 'tooltip' },
+  _hoisted_34 = { class: 'format-label' },
+  _hoisted_35 = ['aria-label'],
+  _hoisted_36 = { class: 'field-tooltip', role: 'tooltip' },
+  _hoisted_37 = { class: 'format-label' },
+  _hoisted_38 = ['aria-label'],
+  _hoisted_39 = { class: 'field-tooltip', role: 'tooltip' },
+  _hoisted_40 = { class: 'format-label' },
+  _hoisted_41 = ['aria-label'],
+  _hoisted_42 = { class: 'field-tooltip', role: 'tooltip' },
+  _hoisted_43 = { class: 'advanced-group' },
+  _hoisted_44 = { class: 'check-option' },
+  _hoisted_45 = { class: 'check-option' },
+  _hoisted_46 = { class: 'check-option' },
+  _hoisted_47 = { class: 'advanced-group behavior-group' },
+  _hoisted_48 = { class: 'check-option' },
+  _hoisted_49 = { class: 'check-option' },
+  _hoisted_50 = { class: 'check-option' },
+  _hoisted_51 = { class: 'check-option' },
+  _hoisted_52 = { class: 'check-option' },
+  _hoisted_53 = { class: 'check-option' },
+  _hoisted_54 = { class: 'check-option' },
+  _hoisted_55 = { class: 'check-option' },
+  _hoisted_56 = { class: 'check-option' },
+  _hoisted_57 = { class: 'check-option' },
+  _hoisted_58 = ['placeholder'],
+  _hoisted_59 = { value: 'default' },
+  _hoisted_60 = { value: 'purple' },
+  _hoisted_61 = { class: 'check-option advanced-toggle' },
+  _hoisted_62 = { class: 'main-preview' },
+  _hoisted_63 = { class: 'preview-topline' },
+  _hoisted_64 = { class: 'preview-icon' },
+  _hoisted_65 = { class: 'preview-label' },
+  _hoisted_66 = { class: 'status-pill' },
+  _hoisted_67 = ['dir'],
+  _hoisted_68 = { class: 'value-panel' },
+  _hoisted_69 = { class: 'playground-hint' },
+  _hoisted_70 = { class: 'generated-code' },
+  _hoisted_71 = { class: 'prop-guide', 'aria-labelledby': 'props-title' },
+  _hoisted_72 = { class: 'section-heading' },
+  _hoisted_73 = { class: 'section-kicker' },
+  _hoisted_74 = { id: 'props-title' },
+  _hoisted_75 = { class: 'prop-guide-grid' },
+  _hoisted_76 = { class: 'prop-card-heading' },
+  _hoisted_77 = { class: 'prop-examples' },
+  _hoisted_78 = { class: 'gallery', 'aria-labelledby': 'gallery-title' },
+  _hoisted_79 = { class: 'section-heading gallery-heading' },
+  _hoisted_80 = { id: 'gallery-title' },
+  _hoisted_81 = { class: 'calendar-grid' },
+  _hoisted_82 = ['dir'],
+  _hoisted_83 = { class: 'card-header' },
+  _hoisted_84 = { class: 'card-title' },
+  _hoisted_85 = { class: 'card-icon' },
+  _hoisted_86 = { class: 'card-picker' },
+  _hoisted_87 = { class: 'card-actions' },
+  _hoisted_88 = { class: 'card-value' },
+  _hoisted_89 = ['onClick'],
+  _hoisted_90 = { class: 'gallery' },
+  _hoisted_91 = { class: 'section-heading gallery-heading' },
+  _hoisted_92 = { class: 'calendar-grid' },
+  _hoisted_93 = { class: 'card-header' },
+  _hoisted_94 = { class: 'card-title' },
+  _hoisted_95 = { class: 'card-icon' },
+  _hoisted_96 = { class: 'card-picker' },
+  _hoisted_97 = ['onClick'],
+  _hoisted_98 = { class: 'demo-footer' },
+  _hoisted_99 = ['aria-label'],
+  _hoisted_100 = { class: 'modal-header' },
+  _hoisted_101 = ['aria-label'],
+  _hoisted_102 = { class: 'code-tabs single-code' },
+  _hoisted_103 = { class: 'modal-actions' },
   _sfc_main = defineComponent({
     __name: 'App',
     setup(e) {
@@ -10160,6 +10985,330 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
             to: '2100-01-01',
           },
         ],
+        s = [
+          {
+            name: 'calendar',
+            type: 'Calendar',
+            defaultValue: 'locale-based',
+            description: {
+              fa: 'تقویم فعال برای تبدیل، نمایش و حرکت بین تاریخ‌ها.',
+              en: 'Calendar used to parse, display, and navigate dates.',
+              ar: 'التقويم المستخدم لتحليل التواريخ وعرضها والتنقل بينها.',
+            },
+            examples: ['calendar="jalali"', 'calendar="gregorian"'],
+          },
+          {
+            name: 'modelCalendar',
+            type: 'Calendar | active',
+            defaultValue: 'active',
+            description: {
+              fa: 'تقویم مستقل برای سریال‌سازی مقدار v-model، بدون تغییر تقویم نمایشی.',
+              en: 'Calendar used to serialize v-model without changing the visible calendar.',
+              ar: 'تقويم مستقل لتسلسل قيمة v-model دون تغيير التقويم المعروض.',
+            },
+            examples: ['model-calendar="gregorian"', 'model-calendar="active"'],
+          },
+          {
+            name: 'type',
+            type: 'date | time | datetime',
+            defaultValue: 'date',
+            description: {
+              fa: 'نوع مقداری که کاربر انتخاب می‌کند: تاریخ، زمان یا هر دو.',
+              en: 'Value selected by the user: date, time, or both.',
+              ar: 'نوع القيمة التي يحددها المستخدم: تاريخ أو وقت أو كلاهما.',
+            },
+            examples: ['type="date"', 'type="datetime"'],
+          },
+          {
+            name: 'mode',
+            type: 'single | range',
+            defaultValue: 'range',
+            description: {
+              fa: 'انتخاب یک مقدار یا یک بازه‌ی شروع و پایان.',
+              en: 'Select one value or a start/end range.',
+              ar: 'اختيار قيمة واحدة أو نطاق ببداية ونهاية.',
+            },
+            examples: ['mode="single"', 'mode="range"'],
+          },
+          {
+            name: 'locale',
+            type: 'String',
+            defaultValue: 'calendar-aware',
+            description: {
+              fa: 'زبان متن‌ها و برچسب‌های تقویم؛ می‌تواند فهرستی با fallback کاما جدا باشد.',
+              en: 'UI language and labels; comma-separated fallback locales are supported.',
+              ar: 'لغة الواجهة والتسميات، مع دعم قائمة لغات بديلة مفصولة بفواصل.',
+            },
+            examples: ['locale="fa"', 'locale="en,fa"'],
+          },
+          {
+            name: 'hijriProvider',
+            type: 'ummalqura | tabular',
+            defaultValue: 'ummalqura',
+            description: {
+              fa: 'روش محاسبه‌ی تاریخ هجری را انتخاب می‌کند.',
+              en: 'Chooses the Hijri calculation method.',
+              ar: 'يحدد طريقة حساب التاريخ الهجري.',
+            },
+            examples: [
+              'hijri-provider="ummalqura"',
+              'hijri-provider="tabular"',
+            ],
+          },
+          {
+            name: 'format',
+            type: 'String',
+            defaultValue: 'type-based',
+            description: {
+              fa: 'فقط شکل رشته‌ی v-model را تعیین می‌کند؛ متن input و footer را تغییر نمی‌دهد.',
+              en: 'Controls only the serialized v-model string; it does not format the input text or footer.',
+              ar: 'يحدد شكل سلسلة v-model فقط، ولا يغير نص الإدخال أو التسمية السفلية.',
+            },
+            examples: ['format="YYYY-MM-DD"', 'format="jYYYY/jMM/jDD"'],
+          },
+          {
+            name: 'inputFormat',
+            type: 'String',
+            defaultValue: 'type-based',
+            description: {
+              fa: 'قالب نمایش و parse شدن متن داخل فیلد ورودی؛ روی رشته‌ی v-model اثر ندارد.',
+              en: 'Displays and parses the input text; it does not change the serialized v-model string.',
+              ar: 'يعرض نص الإدخال ويحلله، ولا يغير سلسلة v-model الناتجة.',
+            },
+            examples: [
+              'input-format="DD.MM.YYYY"',
+              'input-format="jYY/jMM/jDD"',
+            ],
+          },
+          {
+            name: 'displayFormat',
+            type: 'String',
+            defaultValue: 'type-based',
+            description: {
+              fa: 'فقط برچسب خوانای پایین تقویم باز را تغییر می‌دهد؛ روی input و v-model اثر ندارد.',
+              en: 'Changes only the readable footer label; it does not change the input or v-model.',
+              ar: 'يغير التسمية أسفل التقويم المفتوح فقط، ولا يغير الإدخال أو v-model.',
+            },
+            examples: [
+              'display-format="D MMMM YYYY"',
+              'display-format="jYY/jMM/jDD"',
+            ],
+          },
+          {
+            name: 'inputMask',
+            type: 'String | Object',
+            defaultValue: 'calendar-based',
+            description: {
+              fa: 'کاراکترها، ترتیب و جداکننده‌های تایپ را کنترل می‌کند؛ blocks بازه‌ی هر token را تعیین می‌کند و مقدار v-model را قالب‌بندی نمی‌کند.',
+              en: 'Restricts typed characters, order, and separators; blocks define per-token ranges and it does not serialize v-model.',
+              ar: 'يقيد أحرف وترتيب وفواصل الإدخال؛ تحدد blocks نطاق كل token ولا تقوم بتسلسل v-model.',
+            },
+            examples: [
+              'input-mask="YYYY/MM/DD"',
+              `:input-mask="{ pattern: 'jYY/jMM-jDD', autoInsert: true }"`,
+              `:input-mask="{ pattern: 'YYYY/MM/DD HH:mm', blocks: { YYYY: { from: 1970, to: 2030 }, MM: { from: 1, to: 12 }, DD: { from: 1, to: 31 }, HH: { from: 0, to: 23 }, mm: { from: 0, to: 59 } } }"`,
+            ],
+          },
+          {
+            name: 'from / to',
+            type: 'String',
+            defaultValue: '1300 / 1499',
+            description: {
+              fa: 'حداقل و حداکثر تاریخ یا زمان قابل انتخاب را مشخص می‌کنند.',
+              en: 'Set the minimum and maximum selectable date or time.',
+              ar: 'يحددان أدنى وأقصى تاريخ أو وقت يمكن اختياره.',
+            },
+            examples: [
+              'from="1400/01/01" to="1410/12/29"',
+              'from="09:00" to="18:00"',
+            ],
+          },
+          {
+            name: 'column',
+            type: 'Number | Record',
+            defaultValue: '{ 576: 1 }',
+            description: {
+              fa: 'تعداد ستون‌های تقویم را ثابت یا بر اساس breakpoint تنظیم می‌کند.',
+              en: 'Sets visible calendar columns directly or by responsive breakpoint.',
+              ar: 'يضبط عدد أعمدة التقويم مباشرة أو حسب نقاط التوقف responsive.',
+            },
+            examples: [':column="2"', ':column="{ 576: 2, 900: 3 }"'],
+          },
+          {
+            name: 'weekStartsOn',
+            type: 'Number | auto',
+            defaultValue: 'auto',
+            description: {
+              fa: 'روز شروع هفته را از ۰ تا ۶ یا به‌صورت پیش‌فرض تقویم تعیین می‌کند.',
+              en: 'Sets the first weekday from 0 to 6 or uses the calendar default.',
+              ar: 'يحدد أول يوم في الأسبوع من 0 إلى 6 أو يستخدم إعداد التقويم.',
+            },
+            examples: [':week-starts-on="1"', 'week-starts-on="auto"'],
+          },
+          {
+            name: 'weekendDays',
+            type: 'Number[]',
+            defaultValue: 'calendar-aware',
+            description: {
+              fa: 'روزهای تعطیل هفتگی را برای رنگ‌بندی و رفتار تقویم مشخص می‌کند.',
+              en: 'Defines weekly holidays used for calendar styling and behavior.',
+              ar: 'يحدد العطلات الأسبوعية المستخدمة في تنسيق التقويم وسلوكه.',
+            },
+            examples: [':weekend-days="[5, 6]"', ':weekend-days="[0]"'],
+          },
+          {
+            name: 'minuteStep / hourStep',
+            type: 'Number',
+            defaultValue: '1 / 1',
+            description: {
+              fa: 'گام افزایش دقیقه و ساعت در انتخاب‌گر زمان.',
+              en: 'Minute and hour increments in the time picker.',
+              ar: 'مقدار زيادة الدقائق والساعات في منتقي الوقت.',
+            },
+            examples: [':minute-step="5"', ':hour-step="2"'],
+          },
+          {
+            name: 'autoSubmit',
+            type: 'Boolean',
+            defaultValue: 'true',
+            description: {
+              fa: 'پس از کامل شدن انتخاب، مقدار را خودکار ثبت می‌کند یا منتظر دکمه submit می‌ماند.',
+              en: 'Submits after a complete selection or waits for the submit action.',
+              ar: 'يرسل القيمة بعد اكتمال الاختيار أو ينتظر إجراء الإرسال.',
+            },
+            examples: ['auto-submit', ':auto-submit="false"'],
+          },
+          {
+            name: 'clearable',
+            type: 'Boolean',
+            defaultValue: 'false',
+            description: {
+              fa: 'دکمه‌ی پاک‌کردن مقدار را نمایش می‌دهد.',
+              en: 'Shows a control for clearing the selected value.',
+              ar: 'يعرض زرًا لمسح القيمة المحددة.',
+            },
+            examples: ['clearable', ':clearable="false"'],
+          },
+          {
+            name: 'clickOn',
+            type: 'all | input | icon | none',
+            defaultValue: 'all',
+            description: {
+              fa: 'مشخص می‌کند کلیک روی کدام بخش picker را باز کند.',
+              en: 'Chooses which area opens the picker.',
+              ar: 'يحدد الجزء الذي يفتح منتقي التاريخ عند النقر.',
+            },
+            examples: ['click-on="input"', 'click-on="icon"'],
+          },
+          {
+            name: 'modal / show',
+            type: 'Boolean',
+            defaultValue: 'false',
+            description: {
+              fa: 'modal نحوه‌ی نمایش را modal می‌کند؛ show باز یا بسته بودن را کنترل می‌کند.',
+              en: 'modal changes presentation; show controls whether the picker is open.',
+              ar: 'modal يغير طريقة العرض، و show يتحكم في فتح المنتقي.',
+            },
+            examples: ['modal', ':show="isOpen"'],
+          },
+          {
+            name: 'label',
+            type: 'String',
+            defaultValue: '—',
+            description: {
+              fa: 'برچسب دسترس‌پذیر و قابل نمایش برای فیلد ورودی.',
+              en: 'Visible and accessible label for the input field.',
+              ar: 'تسمية مرئية وميسرة لحقل الإدخال.',
+            },
+            examples: ['label="Start date"', 'label="تاریخ شروع"'],
+          },
+          {
+            name: 'dualInput',
+            type: 'Boolean',
+            defaultValue: 'false',
+            description: {
+              fa: 'در حالت range دو فیلد جدا برای شروع و پایان نمایش می‌دهد.',
+              en: 'Renders separate start and end inputs in range mode.',
+              ar: 'يعرض حقلي بداية ونهاية منفصلين في وضع النطاق.',
+            },
+            examples: ['dual-input', ':dual-input="false"'],
+          },
+          {
+            name: 'iconInside',
+            type: 'Boolean',
+            defaultValue: 'false',
+            description: {
+              fa: 'آیکن تقویم را داخل کادر input قرار می‌دهد.',
+              en: 'Places the calendar icon inside the input box.',
+              ar: 'يضع أيقونة التقويم داخل حقل الإدخال.',
+            },
+            examples: ['icon-inside', ':icon-inside="false"'],
+          },
+          {
+            name: 'shortcut',
+            type: 'Boolean | Object',
+            defaultValue: 'false',
+            description: {
+              fa: 'میانبرهای تاریخ و زمان را فعال یا با object سفارشی می‌کند.',
+              en: 'Enables date/time shortcuts or configures custom shortcuts with an object.',
+              ar: 'يفعل اختصارات التاريخ والوقت أو يخصصها بكائن.',
+            },
+            examples: ['shortcut', ':shortcut="{ today: true }"'],
+          },
+          {
+            name: 'disable',
+            type: 'Array | String | Function | RegExp',
+            defaultValue: '—',
+            description: {
+              fa: 'روزها یا زمان‌های غیرقابل انتخاب را با چند نوع قانون مشخص می‌کند.',
+              en: 'Disables dates or times using a list, string, function, or regular expression.',
+              ar: 'يعطل تواريخ أو أوقاتًا باستخدام قائمة أو نص أو دالة أو تعبير منتظم.',
+            },
+            examples: [
+              'disable="1404/01/01"',
+              ':disable="date => date.day() === 5"',
+            ],
+          },
+          {
+            name: 'localeConfig',
+            type: 'Object',
+            defaultValue: '—',
+            description: {
+              fa: 'رشته‌های ترجمه و تنظیمات زبان را اضافه یا override می‌کند.',
+              en: 'Adds or overrides localized strings and locale settings.',
+              ar: 'يضيف أو يستبدل النصوص وإعدادات اللغة.',
+            },
+            examples: [
+              `:locale-config="{ today: 'Now' }"`,
+              ':locale-config="customLocale"',
+            ],
+          },
+          {
+            name: 'styles',
+            type: 'Object',
+            defaultValue: '—',
+            description: {
+              fa: 'استایل‌های داخلی کامپوننت را برای ظاهر سفارشی override می‌کند.',
+              en: 'Overrides internal component styles for visual customization.',
+              ar: 'يستبدل أنماط المكوّن الداخلية للتخصيص البصري.',
+            },
+            examples: [
+              `:styles="{ primaryColor: '#7c3aed' }"`,
+              ':styles="themeStyles"',
+            ],
+          },
+          {
+            name: 'color',
+            type: 'String',
+            defaultValue: 'theme default',
+            description: {
+              fa: 'رنگ آماده‌ی رابط را از بین blue، red، pink، orange، green، purple و gray انتخاب می‌کند.',
+              en: 'Selects a preset UI color: blue, red, pink, orange, green, purple, or gray.',
+              ar: 'يختار لون الواجهة من blue أو red أو pink أو orange أو green أو purple أو gray.',
+            },
+            examples: ['color="blue"', 'color="purple"'],
+          },
+        ],
         r = {
           fa: {
             eyebrow: 'Vue 3 · انتخاب‌گر تاریخ عمومی',
@@ -10186,7 +11335,40 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
             copy: 'کپی کد',
             copied: 'کپی شد',
             timeSamples: 'نمونه‌های زمان و بازه',
-            api: 'با propهای calendar، mode و hijri-provider رفتار کامپوننت را کنترل کنید.',
+            formatGuide: 'راهنمای فرمت‌ها',
+            formatInput: 'فرمت ورودی',
+            formatMask: 'ماسک ورودی',
+            formatDisplay: 'فرمت نمایش',
+            formatGuideIntro:
+              'این سه تنظیم جدا از هم کار می‌کنند: مقدار v-model، متن ورودی و برچسب پایین تقویم.',
+            inputFormatGuide:
+              'قالبی است که کاربر در فیلد متنی وارد می‌کند. مثال: jYY/jMM/jDD برای تاریخ جلالی.',
+            inputMaskGuide:
+              'ورودی را به کاراکترها و ترتیب مجاز محدود می‌کند؛ blocks برای بازه‌ی هر token، روز ۰۱ تا ۳۱، ماه ۰۱ تا ۱۲ و strict برای بررسی تاریخ کامل است.',
+            displayFormatGuide:
+              'فقط برچسب خوانای پایین تقویم باز را تغییر می‌دهد و مقدار input یا v-model را تغییر نمی‌دهد.',
+            formatExample: 'مثال',
+            propsGuide: 'راهنمای کامل پراپ‌ها',
+            propsGuideKicker: 'راهنمای پراپ‌ها',
+            propsGuideIntro:
+              'همه‌ی پراپ‌های ورودی کامپوننت را با کاربرد، مقدار پیش‌فرض و چند مثال ببینید.',
+            defaultValue: 'پیش‌فرض',
+            examples: 'مثال‌ها',
+            modelCalendar: 'تقویم v-model',
+            modelCalendarActive: 'تقویم فعال',
+            format: 'فرمت v-model',
+            modelFormatGuide:
+              'فقط شکل رشته‌ی v-model را تعیین می‌کند؛ متن input و برچسب پایین تقویم را تغییر نمی‌دهد.',
+            modal: 'نمایش modal',
+            show: 'باز بودن اجباری',
+            label: 'برچسب ورودی',
+            shortcut: 'میانبرها',
+            localeConfig: 'سفارشی‌سازی ترجمه',
+            styles: 'استایل سفارشی',
+            stylesDefault: 'پیش‌فرض',
+            stylesPurple: 'تم بنفش',
+            liveHint:
+              'تاریخ را دستی وارد کنید؛ پس از blur، مقدار تقویم و ماه نمایشی همگام می‌شوند.',
           },
           en: {
             eyebrow: 'Vue 3 · Universal datepicker',
@@ -10213,7 +11395,40 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
             copy: 'Copy code',
             copied: 'Copied',
             timeSamples: 'Time and range examples',
-            api: 'Control the component with calendar, mode, and hijri-provider props.',
+            formatGuide: 'Format guide',
+            formatInput: 'Input format',
+            formatMask: 'Input mask',
+            formatDisplay: 'Display format',
+            formatGuideIntro:
+              'These three settings have separate jobs: the v-model value, the text input, and the label at the bottom of the open calendar.',
+            inputFormatGuide:
+              'Controls the text the user enters. Example: jYY/jMM/jDD for a Jalali date.',
+            inputMaskGuide:
+              'Restricts characters and order; blocks define token ranges, day is 01–31, month 01–12, and strict validates the complete date.',
+            displayFormatGuide:
+              'Changes only the readable label at the bottom of the open calendar; it does not change the input or v-model.',
+            formatExample: 'Example',
+            propsGuide: 'Complete props guide',
+            propsGuideKicker: 'PROPS GUIDE',
+            propsGuideIntro:
+              'Review every component input prop with its purpose, default value, and multiple examples.',
+            defaultValue: 'Default',
+            examples: 'Examples',
+            modelCalendar: 'v-model calendar',
+            modelCalendarActive: 'Active calendar',
+            format: 'v-model format',
+            modelFormatGuide:
+              'Controls only the serialized v-model string; it does not format the input text or the calendar footer.',
+            modal: 'Modal presentation',
+            show: 'Force open',
+            label: 'Input label',
+            shortcut: 'Shortcuts',
+            localeConfig: 'Custom translations',
+            styles: 'Custom styles',
+            stylesDefault: 'Default',
+            stylesPurple: 'Purple theme',
+            liveHint:
+              'Type a date manually; on blur, the model and visible calendar stay in sync.',
           },
           ar: {
             eyebrow: 'Vue 3 · منتقي تواريخ شامل',
@@ -10239,38 +11454,110 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
             copy: 'نسخ الكود',
             copied: 'تم النسخ',
             timeSamples: 'أمثلة الوقت والنطاق',
-            api: 'تحكم في المكوّن عبر calendar و mode و hijri-provider.',
+            formatGuide: 'دليل التنسيقات',
+            formatInput: 'تنسيق الإدخال',
+            formatMask: 'قناع الإدخال',
+            formatDisplay: 'تنسيق العرض',
+            formatGuideIntro:
+              'تعمل هذه الإعدادات الثلاثة بشكل مستقل: قيمة v-model، وحقل الإدخال، والتسمية أسفل التقويم المفتوح.',
+            inputFormatGuide:
+              'يحدد النص الذي يدخله المستخدم. مثال: jYY/jMM/jDD للتاريخ الجلالي.',
+            inputMaskGuide:
+              'يقيد الأحرف والترتيب؛ blocks تحدد نطاق كل token، واليوم 01–31 والشهر 01–12، وstrict يحقق التاريخ الكامل.',
+            displayFormatGuide:
+              'يغير التسمية المقروءة أسفل التقويم المفتوح فقط، ولا يغير حقل الإدخال أو v-model.',
+            formatExample: 'مثال',
+            propsGuide: 'الدليل الكامل للخصائص',
+            propsGuideKicker: 'دليل الخصائص',
+            propsGuideIntro:
+              'راجع كل خاصية إدخال مع وظيفتها وقيمتها الافتراضية وأمثلة متعددة.',
+            defaultValue: 'الافتراضي',
+            examples: 'أمثلة',
+            modelCalendar: 'تقويم v-model',
+            modelCalendarActive: 'التقويم النشط',
+            format: 'تنسيق v-model',
+            modelFormatGuide:
+              'يحدد شكل سلسلة v-model فقط، ولا يغير نص الإدخال أو تسمية أسفل التقويم.',
+            modal: 'عرض مشروط',
+            show: 'فتح إجباري',
+            label: 'تسمية الإدخال',
+            shortcut: 'الاختصارات',
+            localeConfig: 'ترجمات مخصصة',
+            styles: 'أنماط مخصصة',
+            stylesDefault: 'الافتراضي',
+            stylesPurple: 'سمة بنفسجية',
+            liveHint:
+              'أدخل التاريخ يدوياً؛ بعد مغادرة الحقل يتزامن النموذج والشهر المعروض.',
           },
         },
-        s = ref('en'),
-        n = ref('jalali'),
-        i = ref('ummalqura'),
+        n = ref('en'),
+        i = ref('jalali'),
+        a = ref('ummalqura'),
         o = ref('single'),
-        a = ref('date'),
-        l = ref('1404/01/15'),
+        l = ref('date'),
         d = ref('1404/01/15'),
-        c = reactive(Object.fromEntries(t.map(($) => [$.id, $.sample]))),
-        f = ref(null),
-        w = ref(!1),
-        k = ref('blue'),
-        N = ref(''),
-        R = ref(''),
-        K = ref('auto'),
+        c = ref('1404/01/15'),
+        f = reactive(Object.fromEntries(t.map((C) => [C.id, C.sample]))),
+        v = ref(null),
+        M = ref(!1),
+        P = ref('blue'),
+        B = ref(''),
+        $ = ref(''),
+        I = ref('auto'),
         O = ref([]),
         j = ref(''),
-        W = ref('2025-04-04'),
-        V = ref(1),
-        Y = ref(!0),
-        G = ref(!0),
-        U = ref(!1),
-        J = ref(!1),
-        se = ref(1),
-        Z = ref(1),
+        E = ref('active'),
+        F = ref('2025-04-04'),
+        q = ref(''),
+        z = ref(''),
+        G = ref(''),
+        ee = ref(''),
+        J = ref(1),
+        te = ref(!0),
+        ne = ref(!0),
+        ie = ref(!0),
+        ce = ref(!0),
+        ue = ref(!1),
+        L = ref(!1),
+        H = ref(!1),
+        x = ref(!1),
+        X = ref(!1),
+        se = ref(''),
+        Q = ref(!1),
+        K = ref(!1),
+        de = ref('default'),
+        he = ref(1),
+        fe = ref(1),
         re = ref('all'),
-        P = computed(() => r[s.value]),
-        q = computed(() => t.find(($) => $.id === n.value)),
-        de = computed(() => (s.value === 'en' ? 'ltr' : 'rtl')),
-        pe = {
+        T = computed(() => r[n.value]),
+        ge = computed(() =>
+          de.value === 'purple'
+            ? {
+                'primary-color': '#7c3aed',
+                'secondary-color': '#ddd6fe',
+                'in-range-background': '#ede9fe',
+              }
+            : void 0,
+        ),
+        pe = computed(() =>
+          K.value
+            ? {
+                en: { translations: { today: 'Now' } },
+                fa: { translations: { today: 'اکنون' } },
+                ar: { translations: { today: 'الآن' } },
+              }
+            : void 0,
+        ),
+        ye = {
+          YYYY: { from: 1970, to: 2030 },
+          MM: { from: 1, to: 12 },
+          DD: { from: 1, to: 31 },
+          HH: { from: 0, to: 23 },
+          mm: { from: 0, to: 59 },
+        },
+        u = computed(() => t.find((C) => C.id === i.value) || t[0]),
+        m = computed(() => (n.value === 'en' ? 'ltr' : 'rtl')),
+        y = {
           jalali: 'fa',
           gregorian: 'en',
           hijri: 'ar',
@@ -10278,163 +11565,196 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
           buddhist: 'th',
           chinese: 'zh',
         };
-      function z($) {
-        return s.value === 'en' ? pe[$] : s.value;
+      function S(C) {
+        return n.value === 'en' ? y[C] : n.value;
       }
-      const L = computed(() => [
+      const D = computed(() => [
           {
-            title: P.value.time,
+            title: T.value.time,
             type: 'time',
             mode: 'single',
             value: '14:30',
             icon: '◷',
           },
           {
-            title: P.value.range,
+            title: T.value.range,
             type: 'time',
             mode: 'range',
             value: '09:00 - 17:30',
             icon: '↔',
           },
           {
-            title: P.value.datetime,
+            title: T.value.datetime,
             type: 'datetime',
             mode: 'single',
             value: '2025-04-04 14:30',
             icon: '◫',
           },
         ]),
-        x = ($, m = 'date', y = 'single') => ({
-          title: `${$.title[s.value]} · ${m}`,
+        k = (C, h = 'date', g = 'single') => ({
+          title: `${C.title[n.value]} · ${h}`,
           html: `<DatePicker
   v-model="value"
-  calendar="${$.id}"
-  type="${m}"
-  mode="${y}"
+  calendar="${C.id}"
+  type="${h}"
+  mode="${g}"
   ${
-    $.id === 'hijri'
+    C.id === 'hijri'
       ? `hijri-provider="ummalqura"
   `
       : ''
   }/>`,
         }),
-        ae = computed(() => {
-          const $ = q.value;
+        V = computed(() => {
+          const C = u.value;
           return [
             '<DatePicker',
             '  v-model="value"',
-            `  calendar="${$.id}"`,
-            `  type="${a.value}"`,
+            `  calendar="${C.id}"`,
+            `  type="${l.value}"`,
             `  mode="${o.value}"`,
-            `  locale="${j.value || z($.id)}"`,
-            `  :column="${V.value}"`,
-            `  color="${k.value}"`,
-            `  week-starts-on="${K.value}"`,
+            `  locale="${j.value || S(C.id)}"`,
+            E.value !== 'active' ? `  model-calendar="${E.value}"` : '',
+            `  :column="${J.value}"`,
+            `  color="${P.value}"`,
+            `  week-starts-on="${I.value}"`,
             `  click-on="${re.value}"`,
-            `  :minute-step="${se.value}"`,
-            `  :hour-step="${Z.value}"`,
-            Y.value ? '  clearable' : '  :clearable="false"',
-            G.value ? '  auto-submit' : '  :auto-submit="false"',
-            U.value ? '  icon-inside' : '',
-            J.value ? '  dual-input' : '',
-            N.value ? `  from="${N.value}"` : '',
-            R.value ? `  to="${R.value}"` : '',
+            `  :minute-step="${he.value}"`,
+            `  :hour-step="${fe.value}"`,
+            te.value ? '  clearable' : '  :clearable="false"',
+            ne.value ? '  auto-submit' : '  :auto-submit="false"',
+            q.value ? `  format="${q.value}"` : '',
+            z.value ? `  input-format="${z.value}"` : '',
+            G.value
+              ? `  :input-mask="{ pattern: '${G.value}', autoInsert: ${ie.value}, strict: ${ce.value}${ue.value ? ', blocks: { YYYY: { from: 1970, to: 2030 }, MM: { from: 1, to: 12 }, DD: { from: 1, to: 31 }, HH: { from: 0, to: 23 }, mm: { from: 0, to: 59 } }' : ''} }"`
+              : '',
+            ee.value ? `  display-format="${ee.value}"` : '',
+            L.value ? '  icon-inside' : '',
+            H.value ? '  dual-input' : '',
+            x.value ? '  modal' : '',
+            X.value ? '  show' : '',
+            se.value ? `  label="${se.value}"` : '',
+            Q.value ? '  shortcut' : '',
+            K.value
+              ? `  :locale-config="{ en: { translations: { today: 'Now' } } }"`
+              : '',
+            de.value === 'purple'
+              ? `  :styles="{ 'primary-color': '#7c3aed' }"`
+              : '',
+            B.value ? `  from="${B.value}"` : '',
+            $.value ? `  to="${$.value}"` : '',
             O.value.length ? `  :weekend-days="[${O.value.join(', ')}]"` : '',
-            $.id === 'hijri' ? '  hijri-provider="ummalqura"' : '',
+            C.id === 'hijri' ? '  hijri-provider="ummalqura"' : '',
             '/>',
           ].filter(Boolean).join(`
 `);
         });
-      function ce($) {
-        l.value = o.value === 'range' ? [$, $] : $;
+      function w(C) {
+        d.value = o.value === 'range' ? [C, C] : C;
       }
-      function le() {
-        return a.value === 'time'
+      function _() {
+        return l.value === 'time'
           ? '14:30'
-          : a.value === 'datetime'
-            ? `${d.value} 14:30`
-            : d.value;
+          : l.value === 'datetime'
+            ? `${c.value} 14:30`
+            : c.value;
       }
-      (watch(n, ($) => {
-        const m = t.find((y) => y.id === $).sample;
-        ((d.value = m),
-          ce(m),
-          (a.value = 'date'),
-          (N.value = ''),
-          (R.value = ''),
-          (K.value = 'auto'),
+      (watch(i, (C) => {
+        const h = t.find((g) => g.id === C).sample;
+        ((c.value = h),
+          w(h),
+          (l.value = 'date'),
+          (B.value = ''),
+          ($.value = ''),
+          (I.value = 'auto'),
           (O.value = []));
       }),
-        watch(i, () => {
-          n.value === 'hijri' && ((d.value = '1446-10-06'), ce('1446-10-06'));
+        watch(a, () => {
+          i.value === 'hijri' && ((c.value = '1446-10-06'), w('1446-10-06'));
         }),
-        watch(a, ($) => {
-          let m = d.value;
-          ($ === 'time'
-            ? (m = '14:30')
-            : $ === 'datetime' && (m = `${d.value} 14:30`),
-            $ === 'time' && o.value === 'range' ? (l.value = void 0) : ce(m));
+        watch(l, (C) => {
+          let h = c.value;
+          (C === 'time'
+            ? (h = '14:30')
+            : C === 'datetime' && (h = `${c.value} 14:30`),
+            C === 'time' && o.value === 'range' ? (d.value = void 0) : w(h));
         }),
-        watch(o, ($) => {
-          $ === 'range'
-            ? a.value === 'time'
-              ? (l.value = void 0)
-              : Array.isArray(l.value) || (l.value = [l.value, l.value])
-            : Array.isArray(l.value) && (l.value = l.value[0] || le());
+        watch(o, (C) => {
+          if (C === 'range') {
+            if (l.value === 'time') d.value = void 0;
+            else if (!Array.isArray(d.value)) {
+              const h = d.value ?? _();
+              d.value = [h, h];
+            }
+          } else Array.isArray(d.value) && (d.value = d.value[0] ?? _());
         }));
-      function ee($) {
-        ((f.value = $), (w.value = !1));
+      function b(C) {
+        ((v.value = C), (M.value = !1));
       }
-      async function me() {
-        f.value &&
-          (await navigator.clipboard?.writeText(f.value.html), (w.value = !0));
+      async function A() {
+        v.value &&
+          (await navigator.clipboard?.writeText(v.value.html), (M.value = !0));
       }
-      function ge() {
-        ((s.value = 'en'),
-          (n.value = 'jalali'),
-          (i.value = 'ummalqura'),
+      function N() {
+        ((n.value = 'en'),
+          (i.value = 'jalali'),
+          (a.value = 'ummalqura'),
           (o.value = 'single'),
-          (a.value = 'date'),
+          (l.value = 'date'),
+          (c.value = '1404/01/15'),
           (d.value = '1404/01/15'),
-          (l.value = '1404/01/15'),
-          (k.value = 'blue'),
-          (N.value = ''),
-          (R.value = ''),
-          (K.value = 'auto'),
+          (P.value = 'blue'),
+          (B.value = ''),
+          ($.value = ''),
+          (I.value = 'auto'),
           (O.value = []),
           (j.value = ''),
-          (W.value = '2025-04-04'),
-          (V.value = 1),
-          (Y.value = !0),
-          (G.value = !0),
-          (U.value = !1),
-          (J.value = !1),
-          (se.value = 1),
-          (Z.value = 1),
+          (E.value = 'active'),
+          (F.value = '2025-04-04'),
+          (q.value = ''),
+          (z.value = ''),
+          (G.value = ''),
+          (ee.value = ''),
+          (J.value = 1),
+          (te.value = !0),
+          (ne.value = !0),
+          (ie.value = !0),
+          (ce.value = !0),
+          (ue.value = !1),
+          (L.value = !1),
+          (H.value = !1),
+          (x.value = !1),
+          (X.value = !1),
+          (se.value = ''),
+          (Q.value = !1),
+          (K.value = !1),
+          (de.value = 'default'),
+          (he.value = 1),
+          (fe.value = 1),
           (re.value = 'all'));
       }
-      return ($, m) => (
+      return (C, h) => (
         openBlock(),
         createElementBlock(
           'main',
-          { class: 'demo-shell', dir: de.value },
+          { class: 'demo-shell', dir: m.value },
           [
             createBaseVNode('nav', _hoisted_2, [
               (openBlock(),
               createElementBlock(
                 Fragment,
                 null,
-                renderList(['fa', 'en', 'ar'], (y) =>
+                renderList(['fa', 'en', 'ar'], (g) =>
                   createBaseVNode(
                     'button',
                     {
-                      key: y,
+                      key: g,
                       type: 'button',
-                      class: normalizeClass({ selected: s.value === y }),
-                      onClick: (ue) => (s.value = y),
+                      class: normalizeClass({ selected: n.value === g }),
+                      onClick: (R) => (n.value = g),
                     },
                     toDisplayString(
-                      y === 'fa' ? 'فارسی' : y === 'en' ? 'English' : 'العربية',
+                      g === 'fa' ? 'فارسی' : g === 'en' ? 'English' : 'العربية',
                     ),
                     11,
                     _hoisted_3,
@@ -10446,20 +11766,20 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
             createBaseVNode('section', _hoisted_4, [
               createBaseVNode('div', _hoisted_5, [
                 createBaseVNode('div', _hoisted_6, [
-                  m[29] ||
-                    (m[29] = createBaseVNode(
+                  h[43] ||
+                    (h[43] = createBaseVNode(
                       'span',
                       { class: 'eyebrow-dot' },
                       null,
                       -1,
                     )),
-                  createTextVNode(toDisplayString(P.value.eyebrow), 1),
+                  createTextVNode(toDisplayString(T.value.eyebrow), 1),
                 ]),
-                createBaseVNode('h1', null, toDisplayString(P.value.title), 1),
+                createBaseVNode('h1', null, toDisplayString(T.value.title), 1),
                 createBaseVNode('p', null, [
-                  createTextVNode(toDisplayString(P.value.intro) + ' ', 1),
-                  m[30] ||
-                    (m[30] = createBaseVNode(
+                  createTextVNode(toDisplayString(T.value.intro) + ' ', 1),
+                  h[44] ||
+                    (h[44] = createBaseVNode(
                       'code',
                       null,
                       '@h-sanadgol/vue3-multi-calendar-datepicker',
@@ -10471,11 +11791,11 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                   createElementBlock(
                     Fragment,
                     null,
-                    renderList(t, (y) =>
+                    renderList(t, (g) =>
                       createBaseVNode(
                         'span',
-                        { key: y.id },
-                        toDisplayString(y.title[s.value]),
+                        { key: g.id },
+                        toDisplayString(g.title[n.value]),
                         1,
                       ),
                     ),
@@ -10483,8 +11803,8 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                   )),
                 ]),
               ]),
-              m[31] ||
-                (m[31] = createBaseVNode(
+              h[45] ||
+                (h[45] = createBaseVNode(
                   'div',
                   { class: 'hero-mark', 'aria-hidden': 'true' },
                   [
@@ -10498,8 +11818,8 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
             createBaseVNode('section', _hoisted_8, [
               createBaseVNode('div', _hoisted_9, [
                 createBaseVNode('div', null, [
-                  m[32] ||
-                    (m[32] = createBaseVNode(
+                  h[46] ||
+                    (h[46] = createBaseVNode(
                       'span',
                       { class: 'section-kicker' },
                       'PLAYGROUND',
@@ -10508,14 +11828,14 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                   createBaseVNode(
                     'h2',
                     _hoisted_10,
-                    toDisplayString(P.value.playground),
+                    toDisplayString(T.value.playground),
                     1,
                   ),
                 ]),
                 createBaseVNode(
                   'button',
-                  { class: 'reset-button', type: 'button', onClick: ge },
-                  toDisplayString(P.value.reset),
+                  { class: 'reset-button', type: 'button', onClick: N },
+                  toDisplayString(T.value.reset),
                   1,
                 ),
               ]),
@@ -10525,7 +11845,7 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                     createBaseVNode(
                       'label',
                       _hoisted_14,
-                      toDisplayString(P.value.active),
+                      toDisplayString(T.value.active),
                       1,
                     ),
                     withDirectives(
@@ -10534,20 +11854,20 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                         {
                           id: 'calendar-select',
                           'onUpdate:modelValue':
-                            m[0] || (m[0] = (y) => (n.value = y)),
+                            h[0] || (h[0] = (g) => (i.value = g)),
                         },
                         [
                           (openBlock(),
                           createElementBlock(
                             Fragment,
                             null,
-                            renderList(t, (y) =>
+                            renderList(t, (g) =>
                               createBaseVNode(
                                 'option',
-                                { key: y.id, value: y.id },
-                                toDisplayString(y.title[s.value]) +
+                                { key: g.id, value: g.id },
+                                toDisplayString(g.title[n.value]) +
                                   ' — ' +
-                                  toDisplayString(y.subtitle),
+                                  toDisplayString(g.subtitle),
                                 9,
                                 _hoisted_15,
                               ),
@@ -10557,16 +11877,16 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                         ],
                         512,
                       ),
-                      [[vModelSelect, n.value]],
+                      [[vModelSelect, i.value]],
                     ),
                   ]),
-                  n.value === 'hijri'
+                  i.value === 'hijri'
                     ? (openBlock(),
                       createElementBlock('div', _hoisted_16, [
                         createBaseVNode(
                           'label',
                           _hoisted_17,
-                          toDisplayString(P.value.provider),
+                          toDisplayString(T.value.provider),
                           1,
                         ),
                         withDirectives(
@@ -10575,11 +11895,11 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                             {
                               id: 'hijri-provider',
                               'onUpdate:modelValue':
-                                m[1] || (m[1] = (y) => (i.value = y)),
+                                h[1] || (h[1] = (g) => (a.value = g)),
                             },
                             [
-                              ...(m[33] ||
-                                (m[33] = [
+                              ...(h[47] ||
+                                (h[47] = [
                                   createBaseVNode(
                                     'option',
                                     { value: 'ummalqura' },
@@ -10596,7 +11916,7 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                             ],
                             512,
                           ),
-                          [[vModelSelect, i.value]],
+                          [[vModelSelect, a.value]],
                         ),
                       ]))
                     : createCommentVNode('', !0),
@@ -10604,7 +11924,7 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                     createBaseVNode(
                       'legend',
                       null,
-                      toDisplayString(P.value.type),
+                      toDisplayString(T.value.type),
                       1,
                     ),
                     createBaseVNode('label', _hoisted_19, [
@@ -10613,7 +11933,7 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                           'input',
                           {
                             'onUpdate:modelValue':
-                              m[2] || (m[2] = (y) => (a.value = y)),
+                              h[2] || (h[2] = (g) => (l.value = g)),
                             name: 'picker-type',
                             type: 'radio',
                             value: 'date',
@@ -10621,9 +11941,9 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                           null,
                           512,
                         ),
-                        [[vModelRadio, a.value]],
+                        [[vModelRadio, l.value]],
                       ),
-                      createTextVNode(toDisplayString(P.value.date), 1),
+                      createTextVNode(toDisplayString(T.value.date), 1),
                     ]),
                     createBaseVNode('label', _hoisted_20, [
                       withDirectives(
@@ -10631,7 +11951,7 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                           'input',
                           {
                             'onUpdate:modelValue':
-                              m[3] || (m[3] = (y) => (a.value = y)),
+                              h[3] || (h[3] = (g) => (l.value = g)),
                             name: 'picker-type',
                             type: 'radio',
                             value: 'time',
@@ -10639,9 +11959,9 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                           null,
                           512,
                         ),
-                        [[vModelRadio, a.value]],
+                        [[vModelRadio, l.value]],
                       ),
-                      createTextVNode(toDisplayString(P.value.time), 1),
+                      createTextVNode(toDisplayString(T.value.time), 1),
                     ]),
                     createBaseVNode('label', _hoisted_21, [
                       withDirectives(
@@ -10649,7 +11969,7 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                           'input',
                           {
                             'onUpdate:modelValue':
-                              m[4] || (m[4] = (y) => (a.value = y)),
+                              h[4] || (h[4] = (g) => (l.value = g)),
                             name: 'picker-type',
                             type: 'radio',
                             value: 'datetime',
@@ -10657,16 +11977,16 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                           null,
                           512,
                         ),
-                        [[vModelRadio, a.value]],
+                        [[vModelRadio, l.value]],
                       ),
-                      createTextVNode(toDisplayString(P.value.datetime), 1),
+                      createTextVNode(toDisplayString(T.value.datetime), 1),
                     ]),
                   ]),
                   createBaseVNode('fieldset', _hoisted_22, [
                     createBaseVNode(
                       'legend',
                       null,
-                      toDisplayString(P.value.playground),
+                      toDisplayString(T.value.playground),
                       1,
                     ),
                     createBaseVNode('label', _hoisted_23, [
@@ -10675,19 +11995,19 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                           'input',
                           {
                             'onUpdate:modelValue':
-                              m[5] || (m[5] = (y) => (o.value = y)),
+                              h[5] || (h[5] = (g) => (o.value = g)),
                             name: 'playground-mode',
                             type: 'radio',
                             value: 'single',
                             onChange:
-                              m[6] || (m[6] = (y) => (o.value = 'single')),
+                              h[6] || (h[6] = (g) => (o.value = 'single')),
                           },
                           null,
                           544,
                         ),
                         [[vModelRadio, o.value]],
                       ),
-                      createTextVNode(toDisplayString(P.value.single), 1),
+                      createTextVNode(toDisplayString(T.value.single), 1),
                     ]),
                     createBaseVNode('label', _hoisted_24, [
                       withDirectives(
@@ -10695,24 +12015,24 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                           'input',
                           {
                             'onUpdate:modelValue':
-                              m[7] || (m[7] = (y) => (o.value = y)),
+                              h[7] || (h[7] = (g) => (o.value = g)),
                             name: 'playground-mode',
                             type: 'radio',
                             value: 'range',
                             onChange:
-                              m[8] || (m[8] = (y) => (o.value = 'range')),
+                              h[8] || (h[8] = (g) => (o.value = 'range')),
                           },
                           null,
                           544,
                         ),
                         [[vModelRadio, o.value]],
                       ),
-                      createTextVNode(toDisplayString(P.value.range), 1),
+                      createTextVNode(toDisplayString(T.value.range), 1),
                     ]),
                   ]),
                   createBaseVNode('details', _hoisted_25, [
-                    m[56] ||
-                      (m[56] = createBaseVNode(
+                    h[74] ||
+                      (h[74] = createBaseVNode(
                         'summary',
                         null,
                         'ADVANCED PROPS',
@@ -10720,17 +12040,17 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                       )),
                     createBaseVNode('div', _hoisted_26, [
                       createBaseVNode('label', null, [
-                        m[35] || (m[35] = createTextVNode('Color', -1)),
+                        h[49] || (h[49] = createTextVNode('Color', -1)),
                         withDirectives(
                           createBaseVNode(
                             'select',
                             {
                               'onUpdate:modelValue':
-                                m[9] || (m[9] = (y) => (k.value = y)),
+                                h[9] || (h[9] = (g) => (P.value = g)),
                             },
                             [
-                              ...(m[34] ||
-                                (m[34] = [
+                              ...(h[48] ||
+                                (h[48] = [
                                   createBaseVNode('option', null, 'blue', -1),
                                   createBaseVNode('option', null, 'red', -1),
                                   createBaseVNode('option', null, 'green', -1),
@@ -10740,21 +12060,21 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                             ],
                             512,
                           ),
-                          [[vModelSelect, k.value]],
+                          [[vModelSelect, P.value]],
                         ),
                       ]),
                       createBaseVNode('label', null, [
-                        m[37] || (m[37] = createTextVNode('Locale', -1)),
+                        h[51] || (h[51] = createTextVNode('Locale', -1)),
                         withDirectives(
                           createBaseVNode(
                             'select',
                             {
                               'onUpdate:modelValue':
-                                m[10] || (m[10] = (y) => (j.value = y)),
+                                h[10] || (h[10] = (g) => (j.value = g)),
                             },
                             [
-                              ...(m[36] ||
-                                (m[36] = [
+                              ...(h[50] ||
+                                (h[50] = [
                                   createStaticVNode(
                                     '<option value="">Calendar default</option><option value="en">English</option><option value="fa">فارسی</option><option value="ar">العربية</option><option value="he">עברית</option><option value="th">ไทย</option><option value="zh">中文</option>',
                                     7,
@@ -10767,51 +12087,240 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                         ),
                       ]),
                       createBaseVNode('label', null, [
-                        m[38] || (m[38] = createTextVNode('From', -1)),
-                        withDirectives(
-                          createBaseVNode(
-                            'input',
-                            {
-                              'onUpdate:modelValue':
-                                m[11] || (m[11] = (y) => (N.value = y)),
-                              placeholder: q.value.from,
-                            },
-                            null,
-                            8,
-                            _hoisted_27,
-                          ),
-                          [[vModelText, N.value]],
+                        createTextVNode(
+                          toDisplayString(T.value.modelCalendar),
+                          1,
                         ),
-                      ]),
-                      createBaseVNode('label', null, [
-                        m[39] || (m[39] = createTextVNode('To', -1)),
-                        withDirectives(
-                          createBaseVNode(
-                            'input',
-                            {
-                              'onUpdate:modelValue':
-                                m[12] || (m[12] = (y) => (R.value = y)),
-                              placeholder: q.value.to,
-                            },
-                            null,
-                            8,
-                            _hoisted_28,
-                          ),
-                          [[vModelText, R.value]],
-                        ),
-                      ]),
-                      createBaseVNode('label', null, [
-                        m[41] || (m[41] = createTextVNode('Months shown', -1)),
                         withDirectives(
                           createBaseVNode(
                             'select',
                             {
                               'onUpdate:modelValue':
-                                m[13] || (m[13] = (y) => (V.value = y)),
+                                h[11] || (h[11] = (g) => (E.value = g)),
                             },
                             [
-                              ...(m[40] ||
-                                (m[40] = [
+                              createBaseVNode(
+                                'option',
+                                _hoisted_27,
+                                toDisplayString(T.value.modelCalendarActive),
+                                1,
+                              ),
+                              (openBlock(),
+                              createElementBlock(
+                                Fragment,
+                                null,
+                                renderList(t, (g) =>
+                                  createBaseVNode(
+                                    'option',
+                                    { key: g.id, value: g.id },
+                                    toDisplayString(g.title[n.value]),
+                                    9,
+                                    _hoisted_28,
+                                  ),
+                                ),
+                                64,
+                              )),
+                            ],
+                            512,
+                          ),
+                          [[vModelSelect, E.value]],
+                        ),
+                      ]),
+                      createBaseVNode('label', null, [
+                        h[52] || (h[52] = createTextVNode('From', -1)),
+                        withDirectives(
+                          createBaseVNode(
+                            'input',
+                            {
+                              'onUpdate:modelValue':
+                                h[12] || (h[12] = (g) => (B.value = g)),
+                              placeholder: u.value.from,
+                            },
+                            null,
+                            8,
+                            _hoisted_29,
+                          ),
+                          [[vModelText, B.value]],
+                        ),
+                      ]),
+                      createBaseVNode('label', null, [
+                        h[53] || (h[53] = createTextVNode('To', -1)),
+                        withDirectives(
+                          createBaseVNode(
+                            'input',
+                            {
+                              'onUpdate:modelValue':
+                                h[13] || (h[13] = (g) => ($.value = g)),
+                              placeholder: u.value.to,
+                            },
+                            null,
+                            8,
+                            _hoisted_30,
+                          ),
+                          [[vModelText, $.value]],
+                        ),
+                      ]),
+                      createBaseVNode('label', null, [
+                        createBaseVNode('span', _hoisted_31, [
+                          createTextVNode(toDisplayString(T.value.format), 1),
+                          createBaseVNode(
+                            'button',
+                            {
+                              type: 'button',
+                              class: 'format-info',
+                              'aria-label': `${T.value.format} ${T.value.formatExample}`,
+                            },
+                            ' ?',
+                            8,
+                            _hoisted_32,
+                          ),
+                          createBaseVNode(
+                            'span',
+                            _hoisted_33,
+                            toDisplayString(T.value.modelFormatGuide),
+                            1,
+                          ),
+                        ]),
+                        withDirectives(
+                          createBaseVNode(
+                            'input',
+                            {
+                              'onUpdate:modelValue':
+                                h[14] || (h[14] = (g) => (q.value = g)),
+                              placeholder: 'YYYY-MM-DD',
+                            },
+                            null,
+                            512,
+                          ),
+                          [[vModelText, q.value]],
+                        ),
+                      ]),
+                      createBaseVNode('label', null, [
+                        createBaseVNode('span', _hoisted_34, [
+                          createTextVNode(
+                            toDisplayString(T.value.formatInput),
+                            1,
+                          ),
+                          createBaseVNode(
+                            'button',
+                            {
+                              type: 'button',
+                              class: 'format-info',
+                              'aria-label': `${T.value.formatInput} ${T.value.formatExample}`,
+                            },
+                            ' ?',
+                            8,
+                            _hoisted_35,
+                          ),
+                          createBaseVNode(
+                            'span',
+                            _hoisted_36,
+                            toDisplayString(T.value.inputFormatGuide),
+                            1,
+                          ),
+                        ]),
+                        withDirectives(
+                          createBaseVNode(
+                            'input',
+                            {
+                              'onUpdate:modelValue':
+                                h[15] || (h[15] = (g) => (z.value = g)),
+                              placeholder: 'YYYY-MM-DD',
+                            },
+                            null,
+                            512,
+                          ),
+                          [[vModelText, z.value]],
+                        ),
+                      ]),
+                      createBaseVNode('label', null, [
+                        createBaseVNode('span', _hoisted_37, [
+                          createTextVNode(
+                            toDisplayString(T.value.formatMask),
+                            1,
+                          ),
+                          createBaseVNode(
+                            'button',
+                            {
+                              type: 'button',
+                              class: 'format-info',
+                              'aria-label': `${T.value.formatMask} ${T.value.formatExample}`,
+                            },
+                            ' ?',
+                            8,
+                            _hoisted_38,
+                          ),
+                          createBaseVNode(
+                            'span',
+                            _hoisted_39,
+                            toDisplayString(T.value.inputMaskGuide),
+                            1,
+                          ),
+                        ]),
+                        withDirectives(
+                          createBaseVNode(
+                            'input',
+                            {
+                              'onUpdate:modelValue':
+                                h[16] || (h[16] = (g) => (G.value = g)),
+                              placeholder: 'calendar-default',
+                            },
+                            null,
+                            512,
+                          ),
+                          [[vModelText, G.value]],
+                        ),
+                      ]),
+                      createBaseVNode('label', null, [
+                        createBaseVNode('span', _hoisted_40, [
+                          createTextVNode(
+                            toDisplayString(T.value.formatDisplay),
+                            1,
+                          ),
+                          createBaseVNode(
+                            'button',
+                            {
+                              type: 'button',
+                              class: 'format-info',
+                              'aria-label': `${T.value.formatDisplay} ${T.value.formatExample}`,
+                            },
+                            ' ?',
+                            8,
+                            _hoisted_41,
+                          ),
+                          createBaseVNode(
+                            'span',
+                            _hoisted_42,
+                            toDisplayString(T.value.displayFormatGuide),
+                            1,
+                          ),
+                        ]),
+                        withDirectives(
+                          createBaseVNode(
+                            'input',
+                            {
+                              'onUpdate:modelValue':
+                                h[17] || (h[17] = (g) => (ee.value = g)),
+                              placeholder: 'YY-MM-DD',
+                            },
+                            null,
+                            512,
+                          ),
+                          [[vModelText, ee.value]],
+                        ),
+                      ]),
+                      createBaseVNode('label', null, [
+                        h[55] || (h[55] = createTextVNode('Months shown', -1)),
+                        withDirectives(
+                          createBaseVNode(
+                            'select',
+                            {
+                              'onUpdate:modelValue':
+                                h[18] || (h[18] = (g) => (J.value = g)),
+                            },
+                            [
+                              ...(h[54] ||
+                                (h[54] = [
                                   createBaseVNode(
                                     'option',
                                     { value: 1 },
@@ -10834,21 +12343,21 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                             ],
                             512,
                           ),
-                          [[vModelSelect, V.value, void 0, { number: !0 }]],
+                          [[vModelSelect, J.value, void 0, { number: !0 }]],
                         ),
                       ]),
                       createBaseVNode('label', null, [
-                        m[43] || (m[43] = createTextVNode('Week starts', -1)),
+                        h[57] || (h[57] = createTextVNode('Week starts', -1)),
                         withDirectives(
                           createBaseVNode(
                             'select',
                             {
                               'onUpdate:modelValue':
-                                m[14] || (m[14] = (y) => (K.value = y)),
+                                h[19] || (h[19] = (g) => (I.value = g)),
                             },
                             [
-                              ...(m[42] ||
-                                (m[42] = [
+                              ...(h[56] ||
+                                (h[56] = [
                                   createBaseVNode(
                                     'option',
                                     { value: 'auto' },
@@ -10877,21 +12386,21 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                             ],
                             512,
                           ),
-                          [[vModelSelect, K.value]],
+                          [[vModelSelect, I.value]],
                         ),
                       ]),
                       createBaseVNode('label', null, [
-                        m[45] || (m[45] = createTextVNode('Click on', -1)),
+                        h[59] || (h[59] = createTextVNode('Click on', -1)),
                         withDirectives(
                           createBaseVNode(
                             'select',
                             {
                               'onUpdate:modelValue':
-                                m[15] || (m[15] = (y) => (re.value = y)),
+                                h[20] || (h[20] = (g) => (re.value = g)),
                             },
                             [
-                              ...(m[44] ||
-                                (m[44] = [
+                              ...(h[58] ||
+                                (h[58] = [
                                   createBaseVNode(
                                     'option',
                                     { value: 'all' },
@@ -10924,13 +12433,13 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                         ),
                       ]),
                       createBaseVNode('label', null, [
-                        m[46] || (m[46] = createTextVNode('Minute step', -1)),
+                        h[60] || (h[60] = createTextVNode('Minute step', -1)),
                         withDirectives(
                           createBaseVNode(
                             'input',
                             {
                               'onUpdate:modelValue':
-                                m[16] || (m[16] = (y) => (se.value = y)),
+                                h[21] || (h[21] = (g) => (he.value = g)),
                               type: 'number',
                               min: '1',
                               max: '60',
@@ -10938,17 +12447,17 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                             null,
                             512,
                           ),
-                          [[vModelText, se.value, void 0, { number: !0 }]],
+                          [[vModelText, he.value, void 0, { number: !0 }]],
                         ),
                       ]),
                       createBaseVNode('label', null, [
-                        m[47] || (m[47] = createTextVNode('Hour step', -1)),
+                        h[61] || (h[61] = createTextVNode('Hour step', -1)),
                         withDirectives(
                           createBaseVNode(
                             'input',
                             {
                               'onUpdate:modelValue':
-                                m[17] || (m[17] = (y) => (Z.value = y)),
+                                h[22] || (h[22] = (g) => (fe.value = g)),
                               type: 'number',
                               min: '1',
                               max: '24',
@@ -10956,208 +12465,403 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                             null,
                             512,
                           ),
-                          [[vModelText, Z.value, void 0, { number: !0 }]],
+                          [[vModelText, fe.value, void 0, { number: !0 }]],
                         ),
                       ]),
-                      m[55] ||
-                        (m[55] = createBaseVNode(
-                          'span',
-                          { class: 'advanced-label weekly-label' },
-                          'Weekly holidays',
-                          -1,
-                        )),
-                      createBaseVNode('label', _hoisted_29, [
+                      createBaseVNode('fieldset', _hoisted_43, [
+                        h[65] ||
+                          (h[65] = createBaseVNode(
+                            'legend',
+                            null,
+                            'Weekly holidays',
+                            -1,
+                          )),
+                        createBaseVNode('label', _hoisted_44, [
+                          withDirectives(
+                            createBaseVNode(
+                              'input',
+                              {
+                                'onUpdate:modelValue':
+                                  h[23] || (h[23] = (g) => (O.value = g)),
+                                type: 'checkbox',
+                                value: 0,
+                              },
+                              null,
+                              512,
+                            ),
+                            [[vModelCheckbox, O.value]],
+                          ),
+                          h[62] || (h[62] = createTextVNode('Sunday', -1)),
+                        ]),
+                        createBaseVNode('label', _hoisted_45, [
+                          withDirectives(
+                            createBaseVNode(
+                              'input',
+                              {
+                                'onUpdate:modelValue':
+                                  h[24] || (h[24] = (g) => (O.value = g)),
+                                type: 'checkbox',
+                                value: 5,
+                              },
+                              null,
+                              512,
+                            ),
+                            [[vModelCheckbox, O.value]],
+                          ),
+                          h[63] || (h[63] = createTextVNode('Friday', -1)),
+                        ]),
+                        createBaseVNode('label', _hoisted_46, [
+                          withDirectives(
+                            createBaseVNode(
+                              'input',
+                              {
+                                'onUpdate:modelValue':
+                                  h[25] || (h[25] = (g) => (O.value = g)),
+                                type: 'checkbox',
+                                value: 6,
+                              },
+                              null,
+                              512,
+                            ),
+                            [[vModelCheckbox, O.value]],
+                          ),
+                          h[64] || (h[64] = createTextVNode('Saturday', -1)),
+                        ]),
+                      ]),
+                      createBaseVNode('fieldset', _hoisted_47, [
+                        h[73] ||
+                          (h[73] = createBaseVNode(
+                            'legend',
+                            null,
+                            'Behavior',
+                            -1,
+                          )),
+                        createBaseVNode('label', _hoisted_48, [
+                          withDirectives(
+                            createBaseVNode(
+                              'input',
+                              {
+                                'onUpdate:modelValue':
+                                  h[26] || (h[26] = (g) => (te.value = g)),
+                                type: 'checkbox',
+                              },
+                              null,
+                              512,
+                            ),
+                            [[vModelCheckbox, te.value]],
+                          ),
+                          h[66] || (h[66] = createTextVNode('Clearable', -1)),
+                        ]),
+                        createBaseVNode('label', _hoisted_49, [
+                          withDirectives(
+                            createBaseVNode(
+                              'input',
+                              {
+                                'onUpdate:modelValue':
+                                  h[27] || (h[27] = (g) => (ne.value = g)),
+                                type: 'checkbox',
+                              },
+                              null,
+                              512,
+                            ),
+                            [[vModelCheckbox, ne.value]],
+                          ),
+                          h[67] || (h[67] = createTextVNode('Auto submit', -1)),
+                        ]),
+                        createBaseVNode('label', _hoisted_50, [
+                          withDirectives(
+                            createBaseVNode(
+                              'input',
+                              {
+                                'onUpdate:modelValue':
+                                  h[28] || (h[28] = (g) => (ie.value = g)),
+                                type: 'checkbox',
+                              },
+                              null,
+                              512,
+                            ),
+                            [[vModelCheckbox, ie.value]],
+                          ),
+                          h[68] ||
+                            (h[68] = createTextVNode(
+                              'Auto mask separators',
+                              -1,
+                            )),
+                        ]),
+                        createBaseVNode('label', _hoisted_51, [
+                          withDirectives(
+                            createBaseVNode(
+                              'input',
+                              {
+                                'onUpdate:modelValue':
+                                  h[29] || (h[29] = (g) => (ce.value = g)),
+                                type: 'checkbox',
+                              },
+                              null,
+                              512,
+                            ),
+                            [[vModelCheckbox, ce.value]],
+                          ),
+                          h[69] ||
+                            (h[69] = createTextVNode('Strict mask dates', -1)),
+                        ]),
+                        createBaseVNode('label', _hoisted_52, [
+                          withDirectives(
+                            createBaseVNode(
+                              'input',
+                              {
+                                'onUpdate:modelValue':
+                                  h[30] || (h[30] = (g) => (ue.value = g)),
+                                type: 'checkbox',
+                              },
+                              null,
+                              512,
+                            ),
+                            [[vModelCheckbox, ue.value]],
+                          ),
+                          h[70] ||
+                            (h[70] = createTextVNode('Custom mask blocks', -1)),
+                        ]),
+                        createBaseVNode('label', _hoisted_53, [
+                          withDirectives(
+                            createBaseVNode(
+                              'input',
+                              {
+                                'onUpdate:modelValue':
+                                  h[31] || (h[31] = (g) => (L.value = g)),
+                                type: 'checkbox',
+                              },
+                              null,
+                              512,
+                            ),
+                            [[vModelCheckbox, L.value]],
+                          ),
+                          h[71] || (h[71] = createTextVNode('Icon inside', -1)),
+                        ]),
+                        createBaseVNode('label', _hoisted_54, [
+                          withDirectives(
+                            createBaseVNode(
+                              'input',
+                              {
+                                'onUpdate:modelValue':
+                                  h[32] || (h[32] = (g) => (H.value = g)),
+                                type: 'checkbox',
+                              },
+                              null,
+                              512,
+                            ),
+                            [[vModelCheckbox, H.value]],
+                          ),
+                          h[72] || (h[72] = createTextVNode('Dual input', -1)),
+                        ]),
+                        createBaseVNode('label', _hoisted_55, [
+                          withDirectives(
+                            createBaseVNode(
+                              'input',
+                              {
+                                'onUpdate:modelValue':
+                                  h[33] || (h[33] = (g) => (x.value = g)),
+                                type: 'checkbox',
+                              },
+                              null,
+                              512,
+                            ),
+                            [[vModelCheckbox, x.value]],
+                          ),
+                          createTextVNode(toDisplayString(T.value.modal), 1),
+                        ]),
+                        createBaseVNode('label', _hoisted_56, [
+                          withDirectives(
+                            createBaseVNode(
+                              'input',
+                              {
+                                'onUpdate:modelValue':
+                                  h[34] || (h[34] = (g) => (X.value = g)),
+                                type: 'checkbox',
+                              },
+                              null,
+                              512,
+                            ),
+                            [[vModelCheckbox, X.value]],
+                          ),
+                          createTextVNode(toDisplayString(T.value.show), 1),
+                        ]),
+                        createBaseVNode('label', _hoisted_57, [
+                          withDirectives(
+                            createBaseVNode(
+                              'input',
+                              {
+                                'onUpdate:modelValue':
+                                  h[35] || (h[35] = (g) => (Q.value = g)),
+                                type: 'checkbox',
+                              },
+                              null,
+                              512,
+                            ),
+                            [[vModelCheckbox, Q.value]],
+                          ),
+                          createTextVNode(toDisplayString(T.value.shortcut), 1),
+                        ]),
+                      ]),
+                      createBaseVNode('label', null, [
+                        createTextVNode(toDisplayString(T.value.label), 1),
                         withDirectives(
                           createBaseVNode(
                             'input',
                             {
                               'onUpdate:modelValue':
-                                m[18] || (m[18] = (y) => (O.value = y)),
-                              type: 'checkbox',
-                              value: 0,
+                                h[36] || (h[36] = (g) => (se.value = g)),
+                              placeholder: T.value.active,
                             },
                             null,
+                            8,
+                            _hoisted_58,
+                          ),
+                          [[vModelText, se.value]],
+                        ),
+                      ]),
+                      createBaseVNode('label', null, [
+                        createTextVNode(toDisplayString(T.value.styles), 1),
+                        withDirectives(
+                          createBaseVNode(
+                            'select',
+                            {
+                              'onUpdate:modelValue':
+                                h[37] || (h[37] = (g) => (de.value = g)),
+                            },
+                            [
+                              createBaseVNode(
+                                'option',
+                                _hoisted_59,
+                                toDisplayString(T.value.stylesDefault),
+                                1,
+                              ),
+                              createBaseVNode(
+                                'option',
+                                _hoisted_60,
+                                toDisplayString(T.value.stylesPurple),
+                                1,
+                              ),
+                            ],
                             512,
                           ),
-                          [[vModelCheckbox, O.value]],
+                          [[vModelSelect, de.value]],
                         ),
-                        m[48] || (m[48] = createTextVNode('Sunday', -1)),
                       ]),
-                      createBaseVNode('label', _hoisted_30, [
+                      createBaseVNode('label', _hoisted_61, [
                         withDirectives(
                           createBaseVNode(
                             'input',
                             {
                               'onUpdate:modelValue':
-                                m[19] || (m[19] = (y) => (O.value = y)),
-                              type: 'checkbox',
-                              value: 5,
-                            },
-                            null,
-                            512,
-                          ),
-                          [[vModelCheckbox, O.value]],
-                        ),
-                        m[49] || (m[49] = createTextVNode('Friday', -1)),
-                      ]),
-                      createBaseVNode('label', _hoisted_31, [
-                        withDirectives(
-                          createBaseVNode(
-                            'input',
-                            {
-                              'onUpdate:modelValue':
-                                m[20] || (m[20] = (y) => (O.value = y)),
-                              type: 'checkbox',
-                              value: 6,
-                            },
-                            null,
-                            512,
-                          ),
-                          [[vModelCheckbox, O.value]],
-                        ),
-                        m[50] || (m[50] = createTextVNode('Saturday', -1)),
-                      ]),
-                      createBaseVNode('label', _hoisted_32, [
-                        withDirectives(
-                          createBaseVNode(
-                            'input',
-                            {
-                              'onUpdate:modelValue':
-                                m[21] || (m[21] = (y) => (Y.value = y)),
+                                h[38] || (h[38] = (g) => (K.value = g)),
                               type: 'checkbox',
                             },
                             null,
                             512,
                           ),
-                          [[vModelCheckbox, Y.value]],
+                          [[vModelCheckbox, K.value]],
                         ),
-                        m[51] || (m[51] = createTextVNode('Clearable', -1)),
-                      ]),
-                      createBaseVNode('label', _hoisted_33, [
-                        withDirectives(
-                          createBaseVNode(
-                            'input',
-                            {
-                              'onUpdate:modelValue':
-                                m[22] || (m[22] = (y) => (G.value = y)),
-                              type: 'checkbox',
-                            },
-                            null,
-                            512,
-                          ),
-                          [[vModelCheckbox, G.value]],
+                        createTextVNode(
+                          toDisplayString(T.value.localeConfig),
+                          1,
                         ),
-                        m[52] || (m[52] = createTextVNode('Auto submit', -1)),
-                      ]),
-                      createBaseVNode('label', _hoisted_34, [
-                        withDirectives(
-                          createBaseVNode(
-                            'input',
-                            {
-                              'onUpdate:modelValue':
-                                m[23] || (m[23] = (y) => (U.value = y)),
-                              type: 'checkbox',
-                            },
-                            null,
-                            512,
-                          ),
-                          [[vModelCheckbox, U.value]],
-                        ),
-                        m[53] || (m[53] = createTextVNode('Icon inside', -1)),
-                      ]),
-                      createBaseVNode('label', _hoisted_35, [
-                        withDirectives(
-                          createBaseVNode(
-                            'input',
-                            {
-                              'onUpdate:modelValue':
-                                m[24] || (m[24] = (y) => (J.value = y)),
-                              type: 'checkbox',
-                            },
-                            null,
-                            512,
-                          ),
-                          [[vModelCheckbox, J.value]],
-                        ),
-                        m[54] || (m[54] = createTextVNode('Dual input', -1)),
                       ]),
                     ]),
                   ]),
-                  createBaseVNode('div', _hoisted_36, [
-                    m[57] ||
-                      (m[57] = createBaseVNode('strong', null, 'API', -1)),
-                    createBaseVNode('p', null, toDisplayString(P.value.api), 1),
-                  ]),
                 ]),
-                createBaseVNode('div', _hoisted_37, [
-                  createBaseVNode('div', _hoisted_38, [
+                createBaseVNode('div', _hoisted_62, [
+                  createBaseVNode('div', _hoisted_63, [
                     createBaseVNode('div', null, [
                       createBaseVNode(
                         'span',
-                        _hoisted_39,
-                        toDisplayString(q.value.icon),
+                        _hoisted_64,
+                        toDisplayString(u.value.icon),
                         1,
                       ),
                       createBaseVNode('div', null, [
                         createBaseVNode(
                           'span',
-                          _hoisted_40,
-                          toDisplayString(P.value.active),
+                          _hoisted_65,
+                          toDisplayString(T.value.active),
                           1,
                         ),
                         createBaseVNode(
                           'h3',
                           null,
-                          toDisplayString(q.value.title[s.value]),
+                          toDisplayString(u.value.title[n.value]),
                           1,
                         ),
                       ]),
                     ]),
-                    createBaseVNode('span', _hoisted_41, [
-                      m[58] || (m[58] = createBaseVNode('i', null, null, -1)),
-                      createTextVNode(toDisplayString(P.value.ready), 1),
+                    createBaseVNode('span', _hoisted_66, [
+                      h[75] || (h[75] = createBaseVNode('i', null, null, -1)),
+                      createTextVNode(toDisplayString(T.value.ready), 1),
                     ]),
                   ]),
                   createBaseVNode(
                     'div',
-                    { class: 'picker-wrap', dir: q.value.direction },
+                    { class: 'picker-wrap', dir: u.value.direction },
                     [
                       (openBlock(),
                       createBlock(
                         DatePicker,
                         {
-                          key: `${n.value}-${i.value}-${o.value}-${a.value}-${s.value}`,
-                          modelValue: l.value,
+                          key: `${i.value}-${a.value}-${o.value}-${l.value}-${n.value}`,
+                          modelValue: d.value,
                           'onUpdate:modelValue':
-                            m[25] || (m[25] = (y) => (l.value = y)),
-                          calendar: n.value,
+                            h[39] || (h[39] = (g) => (d.value = g)),
+                          calendar: i.value,
+                          'model-calendar': E.value,
                           format:
-                            n.value === 'jalali' ? 'jYYYY/jMM/jDD' : void 0,
-                          'hijri-provider': i.value,
+                            q.value ||
+                            (i.value === 'jalali' ? 'jYYYY/jMM/jDD' : void 0),
+                          'input-format': z.value || void 0,
+                          'input-mask': G.value
+                            ? {
+                                pattern: G.value,
+                                autoInsert: ie.value,
+                                strict: ce.value,
+                                blocks: ue.value ? ye : void 0,
+                              }
+                            : void 0,
+                          'display-format': ee.value || void 0,
+                          'hijri-provider': a.value,
                           mode: o.value,
-                          type: a.value,
-                          locale: j.value || z(n.value),
-                          column: V.value,
-                          from: N.value || q.value.from,
-                          to: R.value || q.value.to,
-                          'week-starts-on': K.value,
+                          type: l.value,
+                          locale: j.value || S(i.value),
+                          column: J.value,
+                          from: B.value || u.value.from,
+                          to: $.value || u.value.to,
+                          'week-starts-on': I.value,
                           'weekend-days': O.value.length ? O.value : void 0,
-                          color: k.value,
+                          color: P.value,
                           'click-on': re.value,
-                          'minute-step': se.value,
-                          'hour-step': Z.value,
-                          'icon-inside': U.value,
-                          'dual-input': J.value,
-                          'auto-submit': G.value,
-                          clearable: Y.value,
-                          label: `${P.value.active} ${q.value.title[s.value]}`,
+                          'minute-step': he.value,
+                          'hour-step': fe.value,
+                          'icon-inside': L.value,
+                          'dual-input': H.value,
+                          'auto-submit': ne.value,
+                          clearable: te.value,
+                          modal: x.value,
+                          show: X.value,
+                          label:
+                            se.value ||
+                            `${T.value.active} ${u.value.title[n.value]}`,
+                          shortcut: Q.value,
+                          'locale-config': pe.value,
+                          styles: ge.value,
                         },
                         null,
                         8,
                         [
                           'modelValue',
                           'calendar',
+                          'model-calendar',
                           'format',
+                          'input-format',
+                          'input-mask',
+                          'display-format',
                           'hijri-provider',
                           'mode',
                           'type',
@@ -11175,34 +12879,45 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                           'dual-input',
                           'auto-submit',
                           'clearable',
+                          'modal',
+                          'show',
                           'label',
+                          'shortcut',
+                          'locale-config',
+                          'styles',
                         ],
                       )),
                     ],
                     8,
-                    _hoisted_42,
+                    _hoisted_67,
                   ),
-                  createBaseVNode('div', _hoisted_43, [
+                  createBaseVNode('div', _hoisted_68, [
                     createBaseVNode(
                       'span',
                       null,
-                      toDisplayString(P.value.value),
+                      toDisplayString(T.value.value),
                       1,
                     ),
                     createBaseVNode(
                       'code',
                       null,
-                      toDisplayString(l.value || '—'),
+                      toDisplayString(d.value || '—'),
                       1,
                     ),
                   ]),
-                  createBaseVNode('div', _hoisted_44, [
-                    m[59] || (m[59] = createBaseVNode('h4', null, 'HTML', -1)),
+                  createBaseVNode(
+                    'p',
+                    _hoisted_69,
+                    toDisplayString(T.value.liveHint),
+                    1,
+                  ),
+                  createBaseVNode('div', _hoisted_70, [
+                    h[76] || (h[76] = createBaseVNode('h4', null, 'HTML', -1)),
                     createBaseVNode('pre', null, [
                       createBaseVNode(
                         'code',
                         null,
-                        toDisplayString(ae.value),
+                        toDisplayString(V.value),
                         1,
                       ),
                     ]),
@@ -11210,11 +12925,105 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                 ]),
               ]),
             ]),
-            createBaseVNode('section', _hoisted_45, [
-              createBaseVNode('div', _hoisted_46, [
+            createBaseVNode('section', _hoisted_71, [
+              createBaseVNode('div', _hoisted_72, [
                 createBaseVNode('div', null, [
-                  m[60] ||
-                    (m[60] = createBaseVNode(
+                  createBaseVNode(
+                    'span',
+                    _hoisted_73,
+                    toDisplayString(T.value.propsGuideKicker),
+                    1,
+                  ),
+                  createBaseVNode(
+                    'h2',
+                    _hoisted_74,
+                    toDisplayString(T.value.propsGuide),
+                    1,
+                  ),
+                ]),
+                createBaseVNode(
+                  'p',
+                  null,
+                  toDisplayString(T.value.propsGuideIntro),
+                  1,
+                ),
+              ]),
+              createBaseVNode('div', _hoisted_75, [
+                (openBlock(),
+                createElementBlock(
+                  Fragment,
+                  null,
+                  renderList(s, (g) =>
+                    createBaseVNode(
+                      'article',
+                      { key: g.name, class: 'prop-card' },
+                      [
+                        createBaseVNode('div', _hoisted_76, [
+                          createBaseVNode(
+                            'code',
+                            null,
+                            toDisplayString(g.name),
+                            1,
+                          ),
+                          createBaseVNode(
+                            'span',
+                            null,
+                            toDisplayString(g.type),
+                            1,
+                          ),
+                        ]),
+                        createBaseVNode(
+                          'p',
+                          null,
+                          toDisplayString(g.description[n.value]),
+                          1,
+                        ),
+                        createBaseVNode(
+                          'small',
+                          null,
+                          toDisplayString(T.value.defaultValue) +
+                            ': ' +
+                            toDisplayString(g.defaultValue),
+                          1,
+                        ),
+                        createBaseVNode('div', _hoisted_77, [
+                          createBaseVNode(
+                            'strong',
+                            null,
+                            toDisplayString(T.value.examples),
+                            1,
+                          ),
+                          (openBlock(!0),
+                          createElementBlock(
+                            Fragment,
+                            null,
+                            renderList(
+                              g.examples,
+                              (R) => (
+                                openBlock(),
+                                createElementBlock(
+                                  'code',
+                                  { key: R },
+                                  toDisplayString(R),
+                                  1,
+                                )
+                              ),
+                            ),
+                            128,
+                          )),
+                        ]),
+                      ],
+                    ),
+                  ),
+                  64,
+                )),
+              ]),
+            ]),
+            createBaseVNode('section', _hoisted_78, [
+              createBaseVNode('div', _hoisted_79, [
+                createBaseVNode('div', null, [
+                  h[77] ||
+                    (h[77] = createBaseVNode(
                       'span',
                       { class: 'section-kicker' },
                       'CALENDAR GALLERY',
@@ -11222,65 +13031,65 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                     )),
                   createBaseVNode(
                     'h2',
-                    _hoisted_47,
-                    toDisplayString(P.value.gallery),
+                    _hoisted_80,
+                    toDisplayString(T.value.gallery),
                     1,
                   ),
                 ]),
                 createBaseVNode(
                   'p',
                   null,
-                  toDisplayString(P.value.galleryHint),
+                  toDisplayString(T.value.galleryHint),
                   1,
                 ),
               ]),
-              createBaseVNode('div', _hoisted_48, [
+              createBaseVNode('div', _hoisted_81, [
                 (openBlock(),
                 createElementBlock(
                   Fragment,
                   null,
-                  renderList(t, (y) =>
+                  renderList(t, (g) =>
                     createBaseVNode(
                       'article',
-                      { key: y.id, class: 'calendar-card', dir: y.direction },
+                      { key: g.id, class: 'calendar-card', dir: g.direction },
                       [
-                        createBaseVNode('div', _hoisted_50, [
-                          createBaseVNode('div', _hoisted_51, [
+                        createBaseVNode('div', _hoisted_83, [
+                          createBaseVNode('div', _hoisted_84, [
                             createBaseVNode(
                               'span',
-                              _hoisted_52,
-                              toDisplayString(y.icon),
+                              _hoisted_85,
+                              toDisplayString(g.icon),
                               1,
                             ),
                             createBaseVNode('div', null, [
                               createBaseVNode(
                                 'h3',
                                 null,
-                                toDisplayString(y.title[s.value]),
+                                toDisplayString(g.title[n.value]),
                                 1,
                               ),
                               createBaseVNode(
                                 'p',
                                 null,
-                                toDisplayString(y.subtitle),
+                                toDisplayString(g.subtitle),
                                 1,
                               ),
                             ]),
                           ]),
                         ]),
-                        createBaseVNode('div', _hoisted_53, [
+                        createBaseVNode('div', _hoisted_86, [
                           (openBlock(),
                           createBlock(
                             DatePicker,
                             {
-                              key: `${y.id}-${s.value}`,
-                              modelValue: c[y.id],
-                              'onUpdate:modelValue': (ue) => (c[y.id] = ue),
-                              calendar: y.id,
-                              from: y.from,
-                              to: y.to,
-                              'hijri-provider': i.value,
-                              locale: z(y.id),
+                              key: `${g.id}-${n.value}`,
+                              modelValue: f[g.id],
+                              'onUpdate:modelValue': (R) => (f[g.id] = R),
+                              calendar: g.id,
+                              from: g.from,
+                              to: g.to,
+                              'hijri-provider': a.value,
+                              locale: S(g.id),
                               column: 1,
                               mode: 'single',
                               label: '',
@@ -11298,18 +13107,18 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                             ],
                           )),
                         ]),
-                        createBaseVNode('div', _hoisted_54, [
-                          createBaseVNode('div', _hoisted_55, [
+                        createBaseVNode('div', _hoisted_87, [
+                          createBaseVNode('div', _hoisted_88, [
                             createBaseVNode(
                               'span',
                               null,
-                              toDisplayString(P.value.output),
+                              toDisplayString(T.value.output),
                               1,
                             ),
                             createBaseVNode(
                               'code',
                               null,
-                              toDisplayString(y.sample),
+                              toDisplayString(g.sample),
                               1,
                             ),
                           ]),
@@ -11318,27 +13127,27 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                             {
                               class: 'code-button',
                               type: 'button',
-                              onClick: (ue) => ee(x(y)),
+                              onClick: (R) => b(k(g)),
                             },
-                            toDisplayString(P.value.code) + ' · HTML ',
+                            toDisplayString(T.value.code) + ' · HTML ',
                             9,
-                            _hoisted_56,
+                            _hoisted_89,
                           ),
                         ]),
                       ],
                       8,
-                      _hoisted_49,
+                      _hoisted_82,
                     ),
                   ),
                   64,
                 )),
               ]),
             ]),
-            createBaseVNode('section', _hoisted_57, [
-              createBaseVNode('div', _hoisted_58, [
+            createBaseVNode('section', _hoisted_90, [
+              createBaseVNode('div', _hoisted_91, [
                 createBaseVNode('div', null, [
-                  m[61] ||
-                    (m[61] = createBaseVNode(
+                  h[78] ||
+                    (h[78] = createBaseVNode(
                       'span',
                       { class: 'section-kicker' },
                       'TIME & RANGE',
@@ -11347,59 +13156,59 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                   createBaseVNode(
                     'h2',
                     null,
-                    toDisplayString(P.value.timeSamples),
+                    toDisplayString(T.value.timeSamples),
                     1,
                   ),
                 ]),
               ]),
-              createBaseVNode('div', _hoisted_59, [
+              createBaseVNode('div', _hoisted_92, [
                 (openBlock(!0),
                 createElementBlock(
                   Fragment,
                   null,
                   renderList(
-                    L.value,
-                    (y) => (
+                    D.value,
+                    (g) => (
                       openBlock(),
                       createElementBlock(
                         'article',
-                        { key: y.title, class: 'calendar-card' },
+                        { key: g.title, class: 'calendar-card' },
                         [
-                          createBaseVNode('div', _hoisted_60, [
-                            createBaseVNode('div', _hoisted_61, [
+                          createBaseVNode('div', _hoisted_93, [
+                            createBaseVNode('div', _hoisted_94, [
                               createBaseVNode(
                                 'span',
-                                _hoisted_62,
-                                toDisplayString(y.icon),
+                                _hoisted_95,
+                                toDisplayString(g.icon),
                                 1,
                               ),
                               createBaseVNode('div', null, [
                                 createBaseVNode(
                                   'h3',
                                   null,
-                                  toDisplayString(y.title),
+                                  toDisplayString(g.title),
                                   1,
                                 ),
                                 createBaseVNode(
                                   'p',
                                   null,
                                   toDisplayString(
-                                    y.mode === 'range'
-                                      ? P.value.range
-                                      : P.value.single,
+                                    g.mode === 'range'
+                                      ? T.value.range
+                                      : T.value.single,
                                   ),
                                   1,
                                 ),
                               ]),
                             ]),
                           ]),
-                          createBaseVNode('div', _hoisted_63, [
+                          createBaseVNode('div', _hoisted_96, [
                             createVNode(
                               DatePicker,
                               {
-                                type: y.type,
-                                mode: y.mode,
-                                'model-value': y.value,
+                                type: g.type,
+                                mode: g.mode,
+                                'model-value': g.value,
                                 locale: 'en',
                                 'minute-step': 5,
                                 'hour-step': 1,
@@ -11416,11 +13225,11 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                             {
                               class: 'code-button',
                               type: 'button',
-                              onClick: (ue) => ee(x(q.value, y.type, y.mode)),
+                              onClick: (R) => b(k(u.value, g.type, g.mode)),
                             },
-                            toDisplayString(P.value.code),
+                            toDisplayString(T.value.code),
                             9,
-                            _hoisted_64,
+                            _hoisted_97,
                           ),
                         ],
                       )
@@ -11430,17 +13239,17 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                 )),
               ]),
             ]),
-            createBaseVNode('footer', _hoisted_65, [
-              createBaseVNode('span', null, toDisplayString(P.value.title), 1),
-              m[62] ||
-                (m[62] = createBaseVNode(
+            createBaseVNode('footer', _hoisted_98, [
+              createBaseVNode('span', null, toDisplayString(T.value.title), 1),
+              h[79] ||
+                (h[79] = createBaseVNode(
                   'code',
                   null,
                   '@h-sanadgol/vue3-multi-calendar-datepicker',
                   -1,
                 )),
             ]),
-            f.value
+            v.value
               ? (openBlock(),
                 createElementBlock(
                   'div',
@@ -11449,9 +13258,9 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                     class: 'code-modal-backdrop',
                     role: 'presentation',
                     onClick:
-                      m[28] ||
-                      (m[28] = withModifiers(
-                        (y) => (f.value = null),
+                      h[42] ||
+                      (h[42] = withModifiers(
+                        (g) => (v.value = null),
                         ['self'],
                       )),
                   },
@@ -11462,13 +13271,13 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                         class: 'code-modal',
                         role: 'dialog',
                         'aria-modal': 'true',
-                        'aria-label': f.value.title,
+                        'aria-label': v.value.title,
                       },
                       [
-                        createBaseVNode('div', _hoisted_67, [
+                        createBaseVNode('div', _hoisted_100, [
                           createBaseVNode('div', null, [
-                            m[63] ||
-                              (m[63] = createBaseVNode(
+                            h[80] ||
+                              (h[80] = createBaseVNode(
                                 'span',
                                 { class: 'section-kicker' },
                                 'CODE SAMPLE',
@@ -11477,7 +13286,7 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                             createBaseVNode(
                               'h2',
                               null,
-                              toDisplayString(f.value.title),
+                              toDisplayString(v.value.title),
                               1,
                             ),
                           ]),
@@ -11486,39 +13295,39 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                             {
                               class: 'modal-close',
                               type: 'button',
-                              'aria-label': P.value.close,
+                              'aria-label': T.value.close,
                               onClick:
-                                m[26] || (m[26] = (y) => (f.value = null)),
+                                h[40] || (h[40] = (g) => (v.value = null)),
                             },
                             ' × ',
                             8,
-                            _hoisted_68,
+                            _hoisted_101,
                           ),
                         ]),
-                        createBaseVNode('div', _hoisted_69, [
+                        createBaseVNode('div', _hoisted_102, [
                           createBaseVNode('div', null, [
-                            m[64] ||
-                              (m[64] = createBaseVNode('h3', null, 'HTML', -1)),
+                            h[81] ||
+                              (h[81] = createBaseVNode('h3', null, 'HTML', -1)),
                             createBaseVNode('pre', null, [
                               createBaseVNode(
                                 'code',
                                 null,
-                                toDisplayString(f.value.html),
+                                toDisplayString(v.value.html),
                                 1,
                               ),
                             ]),
                           ]),
                         ]),
-                        createBaseVNode('div', _hoisted_70, [
+                        createBaseVNode('div', _hoisted_103, [
                           createBaseVNode(
                             'button',
                             {
                               class: 'code-button',
                               type: 'button',
-                              onClick: me,
+                              onClick: A,
                             },
                             toDisplayString(
-                              w.value ? P.value.copied : P.value.copy,
+                              M.value ? T.value.copied : T.value.copy,
                             ),
                             1,
                           ),
@@ -11528,15 +13337,15 @@ const DatePicker = _export_sfc(_sfc_main$1, [['render', _sfc_render]]),
                               class: 'reset-button',
                               type: 'button',
                               onClick:
-                                m[27] || (m[27] = (y) => (f.value = null)),
+                                h[41] || (h[41] = (g) => (v.value = null)),
                             },
-                            toDisplayString(P.value.close),
+                            toDisplayString(T.value.close),
                             1,
                           ),
                         ]),
                       ],
                       8,
-                      _hoisted_66,
+                      _hoisted_99,
                     ),
                   ],
                 ))

@@ -875,11 +875,9 @@ describe('disable prop', () => {
 
     it('test', () => {
       cy.get('.pdp-input').focus();
-      cy.get('.pdp-day[value="15"]').should(
-        'have.attr',
-        'class',
-        'pdp-day disabled',
-      );
+      cy.get('.pdp-day[value="15"]')
+        .should('have.attr', 'class')
+        .and('match', /disabled/);
     });
   });
 

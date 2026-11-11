@@ -241,6 +241,9 @@
         <a href="#usage">Usage</a>
         <a href="#calendars">Calendars</a>
         <a href="#props">Props</a>
+        <a href="#formats">Formats and masks</a>
+        <a href="#behavior">Behavior and events</a>
+        <a href="#advanced">Advanced examples</a>
         <a href="#nuxt">Nuxt 3</a>
         <a href="#contribute">Contribute</a>
       </nav>
@@ -414,6 +417,243 @@ const date = ref('1404/01/15');
               >README</a
             >.
           </p>
+        </section>
+
+        <section id="formats">
+          <h2>Formats and input masks</h2>
+          <p>
+            The four format props have deliberately separate responsibilities.
+            <code>format</code> serializes <code>v-model</code>;
+            <code>input-format</code> controls the editable text field;
+            <code>display-format</code> controls the readable label at the
+            bottom of the open calendar; and <code>input-mask</code> controls
+            what can be typed and whether separators are inserted.
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>Prop</th>
+                <th>Example</th>
+                <th>Effect</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>format</code></td>
+                <td><code>jYYYY/jMM/jDD</code></td>
+                <td>Serialized model string only.</td>
+              </tr>
+              <tr>
+                <td><code>input-format</code></td>
+                <td><code>jYY/jMM/jDD</code></td>
+                <td>Input display and manual parser.</td>
+              </tr>
+              <tr>
+                <td><code>display-format</code></td>
+                <td><code>jD jMMMM jYYYY</code></td>
+                <td>Readable footer label in the open picker.</td>
+              </tr>
+              <tr>
+                <td><code>input-mask</code></td>
+                <td><code>{ pattern: 'jYY/jMM/jDD' }</code></td>
+                <td>Typing rules, separators, digits, and token ranges.</td>
+              </tr>
+            </tbody>
+          </table>
+          <pre><code>&lt;DatePicker
+  v-model="date"
+  calendar="jalali"
+  format="jYYYY/jMM/jDD"
+  input-format="jYY/jMM/jDD"
+  display-format="jD jMMMM jYYYY"
+  :input-mask="{
+    pattern: 'jYY/jMM/jDD',
+    autoInsert: true,
+    strict: true,
+    allowedDigits: 'both',
+    blocks: {
+      jYY: { from: 0, to: 99 },
+      jMM: { from: 1, to: 12 },
+      jDD: { from: 1, to: 31 },
+    },
+  }"
+/&gt;</code></pre>
+          <h3>Mask blocks without IMask</h3>
+          <p>
+            The object form is inspired by IMask's <code>MaskedRange</code>, but
+            it is implemented internally and does not add IMask as a dependency.
+            Use blocks to restrict each token while typing.
+          </p>
+          <pre><code>&lt;DatePicker
+  v-model="dateTime"
+  calendar="gregorian"
+  type="datetime"
+  input-format="YYYY/MM/DD HH:mm"
+  :input-mask="{
+    pattern: 'YYYY/MM/DD HH:mm',
+    placeholder: 'YYYY/MM/DD HH:mm',
+    autoInsert: true,
+    strict: true,
+    blocks: {
+      YYYY: { from: 1970, to: 2030 },
+      MM: { from: 1, to: 12 },
+      DD: { from: 1, to: 31 },
+      HH: { from: 0, to: 23 },
+      mm: { from: 0, to: 59 },
+    },
+  }"
+/&gt;</code></pre>
+          <p>
+            With <code>autoInsert</code>, entering <code>050415</code> for
+            <code>jYY/jMM-jDD</code> becomes <code>05/04-15</code>. The complete
+            value is committed on blur or Enter only when it passes the
+            calendar's real date validation.
+          </p>
+          <p>
+            Token reminder: <code>MM</code> is month and <code>mm</code> is
+            minute. Therefore <code>YY-mm-DD</code> is not a normal date format;
+            use <code>YY-MM-DD</code> or <code>YY-MM-DD HH:mm</code>.
+          </p>
+        </section>
+
+        <section id="behavior">
+          <h2>Behavior, ranges, and events</h2>
+          <h3>Bounds and time values</h3>
+          <p>
+            Date bounds use the active calendar. In <code>time</code> mode, use
+            <code>HH:mm</code> bounds instead of date strings.
+          </p>
+          <pre><code>&lt;DatePicker
+  v-model="time"
+  type="time"
+  from="08:00"
+  to="18:00"
+  minute-step="5"
+/&gt;
+
+&lt;DatePicker
+  v-model="range"
+  calendar="gregorian"
+  mode="range"
+  from="2020-01-01"
+  to="2030-12-31"
+  :week-starts-on="1"
+  :weekend-days="[0, 6]"
+/&gt;</code></pre>
+          <h3>Behavior props</h3>
+          <p>
+            <code>auto-submit</code> commits complete selections immediately;
+            <code>clearable</code> adds a clear action;
+            <code>click-on</code> accepts <code>all</code>, <code>input</code>,
+            <code>icon</code>, or <code>none</code>; <code>modal</code> changes
+            presentation; <code>show</code> controls visibility; and
+            <code>dual-input</code> renders separate range inputs.
+          </p>
+          <pre><code>&lt;DatePicker
+  v-model="booking"
+  mode="range"
+  clearable
+  dual-input
+  icon-inside
+  :auto-submit="false"
+  label="Booking dates"
+  color="purple"
+/&gt;</code></pre>
+          <h3>Events</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>When it fires</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>update:modelValue</code></td>
+                <td>The committed model changes.</td>
+              </tr>
+              <tr>
+                <td><code>select</code></td>
+                <td>A day, time, or range endpoint is selected.</td>
+              </tr>
+              <tr>
+                <td><code>submit</code></td>
+                <td>The complete selection is submitted.</td>
+              </tr>
+              <tr>
+                <td><code>open</code> / <code>close</code></td>
+                <td>The picker opens or closes.</td>
+              </tr>
+              <tr>
+                <td><code>clear</code></td>
+                <td>The current value is cleared.</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="advanced">
+          <h2>Advanced examples</h2>
+          <h3>Shortcuts</h3>
+          <p>
+            Set <code>shortcut</code> to true for built-in date/time actions.
+            The object form supports labeled single values, ranges, times, and
+            datetimes.
+          </p>
+          <pre><code>&lt;DatePicker v-model="date" shortcut /&gt;
+
+&lt;DatePicker
+  v-model="range"
+  mode="range"
+  :shortcut="{
+    Today: [today],
+    'This week': [weekStart, weekEnd],
+  }"
+/&gt;
+
+&lt;DatePicker
+  v-model="appointment"
+  type="datetime"
+  :shortcut="{
+    'Release time': ['2025-04-15 14:30'],
+    'Office hours': ['09:00', '17:00'],
+  }"
+/&gt;</code></pre>
+          <h3>Disable rules</h3>
+          <p>
+            Disable values with a string, array, regular expression, or
+            function. The rule is evaluated using the active calendar and
+            configured formats.
+          </p>
+          <pre><code>&lt;DatePicker v-model="date" disable="2025-04-15" /&gt;
+&lt;DatePicker v-model="date" :disable="['2025-04-15', '2025-04-20']" /&gt;
+&lt;DatePicker v-model="date" :disable="(value) =&gt; value.getDay() === 0" /&gt;</code></pre>
+          <h3>Locale and style customization</h3>
+          <pre><code>&lt;DatePicker
+  v-model="date"
+  locale="en"
+  :locale-config="{
+    en: { today: 'Go to today', submit: 'Apply' },
+  }"
+  :styles="{
+    primaryColor: '#7c3aed',
+    borderRadius: '12px',
+  }"
+/&gt;</code></pre>
+          <h3>Custom input slot</h3>
+          <pre><code>&lt;DatePicker v-model="date"&gt;
+  &lt;template #input="{ value, inputAttrs, open, onInput, onBlur, onKeydown, clear }"&gt;
+    &lt;input
+      v-bind="inputAttrs"
+      :value="value"
+      @focus="open"
+      @input="onInput"
+      @blur="onBlur"
+      @keydown="onKeydown"
+    /&gt;
+    &lt;button type="button" @click="clear"&gt;Clear&lt;/button&gt;
+  &lt;/template&gt;
+&lt;/DatePicker&gt;</code></pre>
         </section>
 
         <section id="nuxt">

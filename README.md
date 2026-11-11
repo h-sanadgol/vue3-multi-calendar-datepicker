@@ -292,6 +292,278 @@ switcher, so the same API can be reviewed without changing the code examples.
 **الدليل العربي:** يعرض قسم «الدليل الكامل للخصائص» كل خاصية مع النوع والقيمة
 الافتراضية والوظيفة وأمثلة متعددة. اختر العربية من أعلى العرض التفاعلي.
 
+### API details and complete examples
+
+#### Calendar, model, locale, and value type
+
+- `calendar` selects the calendar used by the visible picker, navigation,
+  parsing, validation, and input formatting. Supported values are `jalali`,
+  `gregorian`, `hijri`, `hebrew`, `buddhist`, and `chinese`.
+- `modelCalendar` changes only the calendar used to serialize `v-model`.
+  It does not change the visible calendar. Use `active` to keep the legacy
+  behavior where the active calendar is also the model calendar.
+- `locale` controls translated labels, weekday names, month names, direction,
+  and locale digits. It is independent from `calendar`, and can contain a
+  comma-separated fallback list such as `en,fa`.
+- `hijriProvider` applies only to the Hijri adapter. `ummalqura` is the default;
+  `tabular` is deterministic and useful when a tabular Islamic calculation is
+  required.
+- `type` is `date`, `time`, or `datetime`. In time mode use time bounds such as
+  `00:00` and `23:59`; date bounds are not valid time bounds.
+- `mode` is `single` or `range`. A range model is an array with start and end
+  values in the configured model format.
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="jalali"
+  model-calendar="gregorian"
+  locale="fa,en"
+  type="date"
+  mode="single"
+/>
+
+<DatePicker
+  v-model="appointment"
+  calendar="hijri"
+  model-calendar="hijri"
+  hijri-provider="tabular"
+  type="datetime"
+  mode="single"
+  from="1446/01/01 08:00"
+  to="1446/12/29 18:00"
+/>
+```
+
+#### The four format contracts
+
+These props intentionally have separate jobs:
+
+| Prop            | Controls                                                                         | Does not control                      |
+| --------------- | -------------------------------------------------------------------------------- | ------------------------------------- |
+| `format`        | The serialized string emitted in `v-model`                                       | The visible input or footer           |
+| `inputFormat`   | The text shown in the input and the parser used for manual entry                 | The `v-model` serialization or footer |
+| `displayFormat` | The readable label at the bottom of the open calendar                            | The input or `v-model`                |
+| `inputMask`     | What characters and token ranges may be typed, plus optional separator insertion | The calendar model format by itself   |
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="jalali"
+  format="jYYYY/jMM/jDD"
+  input-format="jYY/jMM/jDD"
+  display-format="jD jMMMM jYYYY"
+  :input-mask="{
+    pattern: 'jYY/jMM/jDD',
+    autoInsert: true,
+    strict: true,
+    blocks: {
+      jYY: { from: 0, to: 99 },
+      jMM: { from: 1, to: 12 },
+      jDD: { from: 1, to: 31 },
+    },
+  }"
+/>
+```
+
+Format tokens are case-sensitive. `MM` is month, while `mm` is minute. For
+example, `YY-mm-DD` is not a normal date format because `mm` means minutes;
+use `YY-MM-DD` for a date or `YY-MM-DD HH:mm` for a datetime.
+
+#### Input masks and custom blocks
+
+`inputMask` may be a string, `calendar-default`, or an object. It is an
+internal implementation inspired by range masks such as IMask's
+`MaskedRange`; the package does not install or depend on IMask.
+
+```vue
+<DatePicker
+  v-model="dateTime"
+  calendar="gregorian"
+  input-format="YYYY/MM/DD HH:mm"
+  :input-mask="{
+    pattern: 'YYYY/MM/DD HH:mm',
+    placeholder: 'YYYY/MM/DD HH:mm',
+    autoInsert: true,
+    strict: true,
+    allowedDigits: 'both',
+    blocks: {
+      YYYY: { from: 1970, to: 2030 },
+      MM: { from: 1, to: 12 },
+      DD: { from: 1, to: 31 },
+      HH: { from: 0, to: 23 },
+      mm: { from: 0, to: 59 },
+    },
+  }"
+/>
+```
+
+Mask options:
+
+- `pattern`: token/literal pattern used by the mask.
+- `autoInsert`: inserts literals such as `/`, `-`, and `:` while typing;
+  enabled by default.
+- `strict`: rejects impossible complete dates and times on commit.
+- `allowedDigits`: `latin`, `locale`, or `both`.
+- `placeholder`: optional text shown while the field is incomplete.
+- `blocks`: per-token `{ from, to }` ranges. `jYYYY` may use the `YYYY` block.
+- `date`, `datetime`, and `time`: type-specific configurations when one
+  component must support different masks for each picker type.
+
+With `autoInsert: true`, typing `050415` for `jYY/jMM-jDD` produces
+`05/04-15`. A mask limits typing, but `inputFormat` still defines how the
+complete value is parsed and `strict` controls whether the complete calendar
+date is accepted.
+
+#### Bounds, navigation, and weekly holidays
+
+`from` and `to` use the active calendar for date values and the configured
+`inputFormat` for date-time values. In `time` mode they must be `HH:mm` values.
+`weekStartsOn` accepts `0` through `6` or `auto`. `weekendDays` uses JavaScript
+weekday numbering: Sunday `0`, Monday `1`, ..., Saturday `6`.
+
+```vue
+<DatePicker
+  v-model="date"
+  calendar="gregorian"
+  from="2020-01-01"
+  to="2030-12-31"
+  :week-starts-on="1"
+  :weekend-days="[0, 6]"
+  :column="{ 576: 1, 900: 2 }"
+/>
+
+<DatePicker
+  v-model="time"
+  type="time"
+  from="08:00"
+  to="18:00"
+  minute-step="5"
+  hour-step="1"
+/>
+```
+
+#### Behavior and presentation
+
+- `autoSubmit` submits a complete selection automatically. Set it to `false`
+  when the user must press the footer submit action.
+- `clearable` adds a clear control.
+- `clickOn` chooses `all`, `input`, `icon`, or `none` as the area that opens
+  the picker.
+- `modal` changes the presentation to a modal picker; `show` controls whether
+  it is open and can be used for controlled presentation.
+- `dualInput` renders separate start and end fields in range mode.
+- `iconInside` places the calendar icon inside the input box.
+- `label` supplies a visible/accessibility label for the input.
+- `column` accepts a number or a responsive breakpoint map.
+- `color` accepts the preset theme names `blue`, `red`, `pink`, `orange`,
+  `green`, `purple`, and `gray`.
+
+```vue
+<DatePicker
+  v-model="range"
+  mode="range"
+  :auto-submit="false"
+  clearable
+  dual-input
+  icon-inside
+  label="Booking dates"
+  color="purple"
+/>
+```
+
+#### Shortcuts
+
+`shortcut` is `false` by default. Set it to `true` for built-in shortcuts.
+The object form defines custom labeled values. A value can be a single date,
+a date range, a time, a datetime, or a datetime range.
+
+```vue
+<DatePicker v-model="date" shortcut />
+
+<DatePicker
+  v-model="range"
+  mode="range"
+  type="date"
+  :shortcut="{
+    Today: [today],
+    'This week': [weekStart, weekEnd],
+  }"
+/>
+
+<DatePicker
+  v-model="appointment"
+  type="datetime"
+  :shortcut="{
+    'Office hours': ['09:00', '17:00'],
+    'Release time': ['2025-04-15 14:30'],
+  }"
+/>
+```
+
+#### Disable rules
+
+`disable` can be an exact value, a list of values, a regular expression, or a
+function. Values are interpreted using the active calendar and input/model
+format rules.
+
+```vue
+<DatePicker v-model="date" calendar="gregorian" disable="2025-04-15" />
+
+<DatePicker v-model="date" :disable="['2025-04-15', '2025-04-20']" />
+
+<DatePicker v-model="date" :disable="(value) => value.getDay() === 0" />
+
+<DatePicker v-model="date" :disable="/^2025-12-/" />
+```
+
+#### Locale configuration and styles
+
+`localeConfig` recursively overrides localized labels without replacing the
+whole locale. `styles` overrides the component's internal style variables.
+
+```vue
+<DatePicker
+  v-model="date"
+  locale="en"
+  :locale-config="{
+    en: { today: 'Go to today', submit: 'Apply' },
+  }"
+  :styles="{
+    primaryColor: '#7c3aed',
+    borderRadius: '12px',
+  }"
+/>
+```
+
+#### Controlled input and slots
+
+Manual text entry is synchronized on blur or Enter. A complete valid value
+updates `v-model`, the selected day, and the visible month. Invalid input is
+not committed. For a custom field, use the `input` scoped slot; it exposes the
+canonical value, input attributes, open/input/blur/keydown handlers, and clear
+handler:
+
+```vue
+<DatePicker v-model="date" calendar="gregorian">
+  <template
+    #input="{ value, inputAttrs, open, onInput, onBlur, onKeydown, clear }"
+  >
+    <div class="my-date-field">
+      <input
+        v-bind="inputAttrs"
+        :value="value"
+        @focus="open"
+        @input="onInput"
+        @blur="onBlur"
+        @keydown="onKeydown"
+      />
+      <button type="button" @click="clear">Clear</button>
+    </div>
+  </template>
+</DatePicker>
+```
+
 ### Input mask
 
 `inputMask` accepts a format string or an object. When omitted, a calendar-aware

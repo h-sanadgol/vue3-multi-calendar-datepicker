@@ -25,7 +25,13 @@
     props.disable = new RegExp(props.disableR);
     delete props.disableR;
   } else if (props.disableF) {
-    props.disable = eval(props.disableF);
+    const match = String(props.disableF).match(
+      /^\(date\)=>date\.(hour|date)\(\)==(\d+)$/,
+    );
+    if (!match) throw new Error('Unsupported disable test function');
+    const part = match[1] as 'hour' | 'date';
+    const expected = Number(match[2]);
+    props.disable = (date: PersianDate) => date[part]() === expected;
     delete props.disableF;
   }
   if (props.model) model.value = props.model;

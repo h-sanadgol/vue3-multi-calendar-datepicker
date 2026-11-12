@@ -12,7 +12,7 @@ import {
   formatCalendarParts,
   normalizeCalendarFormat,
 } from '../../src/calendars/formatting';
-import { Core } from '../../src/components/utils/modules/core';
+import { Core, PersianDate } from '../../src/components/utils/modules/core';
 
 describe('calendar adapters', () => {
   const calendars: Exclude<CalendarId, 'jalali'>[] = [
@@ -27,6 +27,17 @@ describe('calendar adapters', () => {
     calendars.forEach((calendar) => {
       expect(Boolean(createCalendarAdapter(calendar))).to.equal(true);
     });
+  });
+
+  it('compares Jalali dates without dynamic code evaluation', () => {
+    const earlier = new PersianDate().parse(1404, 1, 1);
+    const later = new PersianDate().parse(1404, 1, 2);
+
+    expect(earlier.isBefore(later)).to.equal(true);
+    expect(later.isAfter(earlier)).to.equal(true);
+    expect(earlier.isSameOrBefore(earlier)).to.equal(true);
+    expect(later.isSameOrAfter(later)).to.equal(true);
+    expect(earlier.isBetween('1404/1/1', '1404/1/2', '[]')).to.equal(true);
   });
 
   it('uses Umm al-Qura as the default Hijri provider', () => {

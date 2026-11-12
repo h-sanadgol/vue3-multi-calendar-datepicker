@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.1.1] - 2026-11-12
+
+### Security
+
+- Removed dynamic `eval`-based date comparisons from the bundled PersianDate implementation for CSP compatibility.
+- Added a locked local patch for `@alireza-ab/persian-date` and regression coverage for comparison operators.
+
+### Verification
+
+- 26 calendar adapter tests and 80 prop tests passing.
+- ESLint passing.
+- Library, demo, and npm pack checks passing.
+
 ## [2.1.0] - 2026-11-10
 
 ### Added

@@ -3,3 +3,5 @@ allowBuilds:
   cypress: false
   esbuild: false
   yorkie: false
+patchedDependencies:
+  '@alireza-ab/persian-date@2.6.2': patches/@alireza-ab__persian-date@2.6.2.patch

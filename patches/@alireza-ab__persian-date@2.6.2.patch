@@ -1,0 +1,106 @@
+diff --git a/dist/PersianDate.js b/dist/PersianDate.js
+index be5895d49d82c03b89edcc06396c54227f1f585d..a05186caa341bbecdc61f948dba639c10f3c2700 100644
+--- a/dist/PersianDate.js
++++ b/dist/PersianDate.js
+@@ -1235,8 +1235,23 @@ var getWeekOfYear = function getWeekOfYear(year, month, day, calendar) {
+ 
+ var compare = function compare(date, operator) {
+   date = typesToArray.apply(void 0, [this.c].concat(_toConsumableArray(date)));
+-  if (this.isValid.apply(this, _toConsumableArray(date))) return eval("this.timestamp()" + operator + "this.clone().parse(...date).timestamp()");
+-  return false;
++  if (!this.isValid.apply(this, _toConsumableArray(date))) return false;
++  var left = this.timestamp();
++  var right = this.clone().parse.apply(this.clone(), date).timestamp();
++  switch (operator) {
++    case ">":
++      return left > right;
++    case ">=":
++      return left >= right;
++    case "<":
++      return left < right;
++    case "<=":
++      return left <= right;
++    case "==":
++      return left === right;
++    default:
++      return false;
++  }
+ };
+ 
+ /**
+diff --git a/dist/PersianDate.umd.js b/dist/PersianDate.umd.js
+index 22db3ab05440d8082f2fe5174f788aceed595bed..9fe2d346e4a52875076e674727ec7588c2bcf22c 100644
+--- a/dist/PersianDate.umd.js
++++ b/dist/PersianDate.umd.js
+@@ -1239,8 +1239,23 @@
+ 
+ 	var compare = function compare(date, operator) {
+ 	  date = typesToArray.apply(void 0, [this.c].concat(_toConsumableArray(date)));
+-	  if (this.isValid.apply(this, _toConsumableArray(date))) return eval("this.timestamp()" + operator + "this.clone().parse(...date).timestamp()");
+-	  return false;
++	  if (!this.isValid.apply(this, _toConsumableArray(date))) return false;
++	  var left = this.timestamp();
++	  var right = this.clone().parse.apply(this.clone(), date).timestamp();
++	  switch (operator) {
++	    case ">":
++	      return left > right;
++	    case ">=":
++	      return left >= right;
++	    case "<":
++	      return left < right;
++	    case "<=":
++	      return left <= right;
++    case "==":
++      return left === right;
++    default:
++      return false;
++  }
+ 	};
+ 
+ 	/**
+diff --git a/package.json b/package.json
+index c861abfcd789d0079e6de75545d7b030644ae5bd..e62725b41e1d6227dd2851cbbfda65685621771b 100644
+--- a/package.json
++++ b/package.json
+@@ -2,7 +2,7 @@
+ 	"name": "@alireza-ab/persian-date",
+ 	"version": "2.6.2",
+ 	"description": "A lightweight but professional library for working with Persian dates",
+-	"main": "./dist/PersianDate.min.js",
++	"main": "./dist/PersianDate.js",
+ 	"typings": "./typings/PersianDate.d.ts",
+ 	"homepage": "https://alireza-ab.ir/persian-date",
+ 	"repository": {
+diff --git a/src/base/compare.js b/src/base/compare.js
+index 58f867b044bedf01c9fd0a284d5b290379f6f3fc..cd4230a6dc93835f60068fa36d524190da68b42f 100644
+--- a/src/base/compare.js
++++ b/src/base/compare.js
+@@ -10,9 +10,23 @@ import { typesToArray } from "../base";
+ export const compare = function (date, operator) {
+ 	date = typesToArray(this.c, ...date);
+ 
+-	if (this.isValid(...date))
+-		return eval(
+-			"this.timestamp()" + operator + "this.clone().parse(...date).timestamp()"
+-		);
+-	return false;
++	if (!this.isValid(...date)) return false;
++
++	const left = this.timestamp();
++	const right = this.clone().parse(...date).timestamp();
++
++	switch (operator) {
++		case ">":
++			return left > right;
++		case ">=":
++			return left >= right;
++		case "<":
++			return left < right;
++		case "<=":
++			return left <= right;
++		case "==":
++			return left === right;
++		default:
++			return false;
++	}
+ };

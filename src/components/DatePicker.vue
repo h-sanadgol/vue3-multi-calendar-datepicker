@@ -66,7 +66,7 @@
       :format="formats.alt"
       :dates="altDates"
     />
-    <div v-if="showDatePicker">
+    <div v-if="showDatePicker && !inputDisabled">
       <div class="pdp-overlay" @click="showDatePicker = false"></div>
       <div v-bind="attrs.picker" ref="pdpPicker">
         <div class="pdp-auto">
@@ -808,6 +808,10 @@
       };
     },
     computed: {
+      inputDisabled(): boolean {
+        const disabled = this.$attrs.disabled;
+        return disabled === '' || Boolean(disabled);
+      },
       lang(): Langs[string] {
         return this.langs[this.currentLocale] || this.langs.en;
       },
@@ -1144,6 +1148,9 @@
       },
     },
     watch: {
+      inputDisabled(disabled: boolean) {
+        if (disabled) this.showDatePicker = false;
+      },
       show: {
         handler: function (val) {
           this.showDatePicker = val;
@@ -1989,6 +1996,7 @@
         return false;
       },
       selectDate(date: PersianDate, part: TypePart): number {
+        if (this.inputDisabled) return -1;
         let isValid = this.validate(date, part);
         if (!isValid) {
           return -1;
@@ -2282,6 +2290,7 @@
         };
       },
       showPicker(el: 'icon' | 'input', index: number): void {
+        if (this.inputDisabled) return;
         if (this.clickOn == 'all' || this.clickOn == el) {
           const inputName = this.inputs[index as 0 | 1];
           if (this.dualInput) this.inputName = inputName;
@@ -2417,6 +2426,7 @@
         }
       },
       commitInput(index: number): void {
+        if (this.inputDisabled) return;
         const inputs = this.$refs.inputs as HTMLInputElement[];
         const input = inputs?.[index];
         // `displayValue` is updated by v-model before Enter/blur handlers run.
